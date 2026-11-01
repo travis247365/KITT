@@ -1,0 +1,116 @@
+name: KITT
+options:
+  bundleIdPrefix: com.tpcl
+  deploymentTarget:
+    iOS: "26.0"
+packages:
+  KITTKit:
+    path: KITTKit
+targets:
+  KITT:
+    type: application
+    platform: iOS
+    sources:
+      - path: KITT
+    dependencies:
+      - package: KITTKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt
+        PRODUCT_NAME: KITT
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Kitt
+        INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: KITT/Info.plist
+      properties:
+        CFBundleDisplayName: Kitt
+        LSApplicationCategoryType: public.app-category.productivity
+        UIApplicationSupportsIndirectInputEvents: true
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+  KITTMac:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: KITT
+        excludes:
+          - Info.plist
+    dependencies:
+      - package: KITTKit
+    entitlements:
+      path: KITTMac/KITTMac.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt.mac
+        PRODUCT_NAME: KITT
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Kitt
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+  KITTtv:
+    type: application
+    platform: tvOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: KITTtv
+      - path: TvShared
+      - path: KITT/AppModel.swift
+      - path: KITT/KeychainTokenStore.swift
+    dependencies:
+      - package: KITTKit
+    info:
+      path: KITTtv/Info.plist
+      properties:
+        CFBundleDisplayName: Kitt
+        UIUserInterfaceStyle: Dark
+        UILaunchScreen: {}
+        UIAppFonts:
+          - Orbitron-Bold.ttf
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt.tv
+        PRODUCT_NAME: KITT
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "3"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Kitt
+        CODE_SIGN_STYLE: Automatic
+  # Mac-only tool: renders the Apple TV screens (TvShared) to PNG so layout can be reviewed without a tvOS simulator.
+  KITTtvPreview:
+    type: tool
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: TvShared
+      - path: TvPreview
+    dependencies:
+      - package: KITTKit
+    settings:
+      base:
+        PRODUCT_NAME: KITTtvPreview
+        SWIFT_VERSION: "6.0"
+        CODE_SIGNING_ALLOWED: NO

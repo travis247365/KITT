@@ -1,0 +1,29 @@
+!shortcuts/.gitkeep
+*.env
+*.log
+*.sqlite
+*.sqlite-*
+.DS_Store
+.env
+.vercel
+data/
+graphify-out/
+mockups/dist/
+mockups/node_modules/
+node_modules/
+shortcuts/*
+shortcuts/*.shortcut
+src/graphify-out/
+.env*
+# Swift / Xcode build output and per-user state
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+# throwaway working files left by the dead QA reviewers (raw audit logs, result JSON, scratch scripts)
+mockups/qa/a11y/
+mockups/qa/behaviour/
+mockups/qa/devdep/
+mockups/qa/visual/
+# generated build output (DerivedData, logs, IPK)
+build/

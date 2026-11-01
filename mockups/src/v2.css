@@ -1,0 +1,59 @@
+/* KITT Design System v2 "Scanner Grid": tokens and the shared pieces (scanner bar, grid floor, LED readout, cockpit panel).
+   Radius 0, glow not shadow, one signature motion (the sweep). v1 (TPCL) stays in styles.css. */
+.ds2 {
+  --void: #050507; --cockpit: #0e1116; --panel: #161b22; --ice: #eaf6ff; --fog: #8fa3b8;
+  --cyan: #19e6ff; --red: #ff2a2a; --signal: #ff6b6b; --amber: #ffb020;
+  --glow24: rgba(25, 230, 255, 0.24); --glow8: rgba(25, 230, 255, 0.08);
+  --sys: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --display: 'Orbitron', 'Michroma', var(--sys);
+  font-family: var(--sys); color: var(--ice); background: var(--void);
+}
+.ds2 *, .ds2 *::before, .ds2 *::after { box-sizing: border-box; }
+.ds2 :where(h1, h2, p, ul, ol) { margin: 0; padding: 0; }
+.ds2 :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+
+/* signature: the scanner bar (top border) and the KITT name. Both sweep all the time and take their colours from the status level:
+   critical = red / blue / white (red leads), amber = blue / white, green = blue only. Sweep speed also steps with the level (green slow,
+   critical fast), so the state never rests on colour alone. Reduce Motion freezes both at the centre. */
+.sb, .kn { --lv-dur: 2.6s; --kn-base: #14c4dc; --kn-mid: #19e6ff; --kn-hi: #b8fbff; --kn-glow: rgba(25, 230, 255, 0.45); --kn-s: 38%; }
+.sb[data-level='amber'], .kn[data-level='amber'] { --lv-dur: 1.6s; --kn-hi: #ffffff; --kn-glow: rgba(25, 230, 255, 0.4); }
+.sb[data-level='critical'], .kn[data-level='critical'] { --lv-dur: 0.9s; --kn-base: #ff2a2a; --kn-hi: #ffffff; --kn-s: 42%; --kn-glow: rgba(255, 42, 42, 0.55); }
+
+.sb { --sb-w: 22%; --sb-line: rgba(25, 230, 255, 0.4); position: relative; height: 8px; width: 100%; background: rgba(25, 230, 255, 0.1); overflow: hidden; }
+.sb::before, .sb::after { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: var(--sb-line); }
+.sb::before { top: 0; } .sb::after { bottom: 0; }
+.sb i { position: absolute; top: 0; bottom: 0; left: 0; width: var(--sb-w); animation: sb-sweep var(--lv-dur) ease-in-out infinite alternate;
+  background: linear-gradient(90deg, rgba(25, 230, 255, 0), rgba(25, 230, 255, 0.6) 28%, var(--cyan) 50%, rgba(25, 230, 255, 0.6) 72%, rgba(25, 230, 255, 0));
+  box-shadow: 0 0 36px rgba(25, 230, 255, 0.3); }
+.sb[data-level='amber'] i { background: linear-gradient(90deg, rgba(25, 230, 255, 0), var(--cyan) 28%, #fff 50%, var(--cyan) 72%, rgba(25, 230, 255, 0));
+  box-shadow: 0 0 36px rgba(25, 230, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.18); }
+.sb[data-level='critical'] { --sb-w: 26%; --sb-line: rgba(255, 42, 42, 0.5); background: rgba(255, 42, 42, 0.12); }
+.sb[data-level='critical'] i { background: linear-gradient(90deg, rgba(25, 230, 255, 0), var(--cyan) 12%, #fff 27%, var(--red) 42%, var(--red) 58%, #fff 73%, var(--cyan) 88%, rgba(25, 230, 255, 0));
+  box-shadow: 0 0 40px rgba(255, 42, 42, 0.4), 0 0 24px rgba(25, 230, 255, 0.2); }
+@keyframes sb-sweep { from { left: 0; } to { left: calc(100% - var(--sb-w)); } }
+
+/* the KITT name: a light band travels through the letters in step with the bar (same duration, same direction) */
+.kn { display: inline-block; color: transparent; -webkit-text-fill-color: transparent; -webkit-background-clip: text; background-clip: text;
+  background-size: 400% 100%; background-position: 80% 0; filter: drop-shadow(0 0 14px var(--kn-glow)); animation: kn-shine var(--lv-dur) ease-in-out infinite alternate;
+  background-image: linear-gradient(90deg, var(--kn-base) 0 var(--kn-s), var(--kn-mid) calc(var(--kn-s) + 5%), var(--kn-hi) 50%, var(--kn-mid) calc(95% - var(--kn-s)), var(--kn-base) calc(100% - var(--kn-s)) 100%); }
+@keyframes kn-shine { from { background-position: 80% 0; } to { background-position: 20% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sb i { animation: none; left: calc(50% - var(--sb-w) / 2); }
+  .kn { animation: none; background-position: 50% 0; }
+}
+
+/* the grid floor: custom surfaces only, never on the car */
+.gridfloor { position: absolute; left: -20%; right: -20%; bottom: 0; height: 46%; opacity: 0.08; pointer-events: none;
+  background-image: linear-gradient(var(--cyan) 1px, transparent 1px), linear-gradient(90deg, var(--cyan) 1px, transparent 1px);
+  background-size: 96px 96px; transform: perspective(700px) rotateX(64deg); transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(to top, #000 30%, transparent); mask-image: linear-gradient(to top, #000 30%, transparent); }
+
+/* LED readout: dim label, bright tabular figure */
+.led { display: flex; flex-direction: column; gap: 8px; }
+.led-v { font: 600 92px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--ice); }
+.led-l { font: 500 22px/1.2 var(--sys); letter-spacing: 0.16em; text-transform: uppercase; color: var(--fog); }
+
+/* cockpit panel: glow instead of shadow */
+.pn { background: var(--cockpit); border-top: 1px solid rgba(25, 230, 255, 0.4); box-shadow: 0 0 48px var(--glow8); }
+.pn.is-focus { background: var(--panel); border-top-color: var(--cyan); box-shadow: 0 0 0 2px var(--cyan), 0 0 64px var(--glow24); transform: scale(1.06); position: relative; z-index: 2; }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key><string>com.tpcl.kitt-ngrok</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/opt/homebrew/bin/ngrok</string><string>http</string><string>2000</string>
+		<string>--url</string><string>https://REPLACE-WITH-ASSIGNED.ngrok-free.dev</string>
+		<string>--inspect=false</string>
+	</array>
+	<key>RunAtLoad</key><true/>
+	<key>KeepAlive</key><true/>
+	<key>ThrottleInterval</key><integer>30</integer>
+	<key>ProcessType</key><string>Background</string>
+	<key>StandardOutPath</key><string>__HOME__/Library/Logs/kitt-ngrok.log</string>
+	<key>StandardErrorPath</key><string>__HOME__/Library/Logs/kitt-ngrok.log</string>
+</dict>
+</plist>

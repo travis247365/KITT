@@ -1,0 +1,24 @@
+.lab { min-height: 100%; background: var(--tp-charcoal); color: #fff; font-family: var(--font); padding: 52px 0 40px; }
+.lab-head { padding: 0 48px; display: flex; gap: 48px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin-bottom: 44px; }
+.lab-title { display: grid; gap: 16px; max-width: 640px; }
+.lab-lede { color: rgba(255, 255, 255, 0.72); line-height: 1.6; }
+.lab-grid { padding: 0 48px; display: flex; flex-wrap: wrap; gap: 48px 56px; align-items: flex-start; }
+.dev { display: grid; gap: 12px; align-content: start; }
+.dev--wide { max-width: 700px; }
+.dev-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.dev-cap a { font-size: 12px; font-weight: 500; letter-spacing: 0.04em; color: var(--tp-cyan); text-underline-offset: 3px; }
+.lab-foot { padding: 56px 48px 0; display: grid; gap: 10px; max-width: 760px; color: rgba(255, 255, 255, 0.72); line-height: 1.6; }
+.lab-foot b { color: #fff; font-weight: 500; }
+
+.proto-body { display: flex; flex-wrap: wrap; gap: 22px 32px; align-items: flex-start; font-family: var(--font); color: #fff; }
+.proto-grp { display: grid; gap: 8px; align-content: start; }
+.proto-grp .eyebrow { color: rgba(255, 255, 255, 0.66); }
+.proto-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.proto-chips .eyebrow { margin-right: 4px; color: rgba(255, 255, 255, 0.66); }
+.proto-chips button { min-height: 36px; padding: 0 14px; border: 2px solid var(--tp-cyan); font-size: 13px; font-weight: 500; color: #fff; }
+.proto-chips button[aria-pressed='true'] { background: var(--tp-cyan); color: var(--tp-charcoal); }
+.proto-hint { color: rgba(255, 255, 255, 0.66); max-width: 360px; }
+.proto { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; background: var(--tp-charcoal-deep); padding: 10px 16px; }
+.proto-toggle { color: #fff; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; min-height: 36px; text-decoration: underline; text-underline-offset: 3px; }
+.proto .proto-body { padding: 12px 0 6px; }
+.proto-chips--car { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }

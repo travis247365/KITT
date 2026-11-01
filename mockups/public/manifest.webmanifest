@@ -1,0 +1,16 @@
+{
+  "name": "KITT mockups",
+  "short_name": "KITT",
+  "description": "KITT interactive mockups. Synthetic demo data.",
+  "start_url": "./#/iphone",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#3A3A3A",
+  "theme_color": "#3A3A3A",
+  "orientation": "any",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

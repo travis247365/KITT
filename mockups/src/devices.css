@@ -1,0 +1,23 @@
+/* Hardware drawn in neutral black; the UI inside follows TPCL (radius 0, no shadows). */
+.scaled { position: relative; flex: none; }
+.fit-stage { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+.ph-frame { width: 413px; height: 872px; padding: 10px; background: #121212; border-radius: 66px; position: relative; flex: none; }
+.ph-screen { width: 393px; height: 852px; border-radius: 56px; overflow: hidden; position: relative; }
+.ph-island { position: absolute; top: 21px; left: 50%; width: 124px; height: 36px; margin-left: -62px; background: #000; border-radius: 20px; z-index: 60; }
+
+.pd-frame { width: 1214px; height: 854px; padding: 10px; background: #121212; border-radius: 40px; position: relative; flex: none; }
+.pd-screen { width: 1194px; height: 834px; border-radius: 30px; overflow: hidden; position: relative; }
+.pd-cam { position: absolute; top: 4px; left: 50%; width: 6px; height: 6px; margin-left: -3px; background: #2a2a2a; border-radius: 50%; }
+
+.wt-wrap { display: flex; flex-direction: column; align-items: center; flex: none; width: 250px; }
+.wt-band { width: 150px; height: 36px; background: #1b1b1b; display: block; }
+.wt-band--top { border-radius: 14px 14px 0 0; margin-bottom: -6px; }
+.wt-band--bot { border-radius: 0 0 14px 14px; margin-top: -6px; }
+.wt-case { position: relative; width: 236px; height: 276px; padding: 14px; background: #121212; border-radius: 62px; flex: none; }
+.wt-screen { width: 208px; height: 248px; border-radius: 48px; overflow: hidden; position: relative; background: #000; }
+.wt-crown { position: absolute; right: -9px; top: 70px; width: 11px; height: 44px; background: #2a2a2a; border-radius: 4px; }
+.wt-button { position: absolute; right: -6px; top: 130px; width: 7px; height: 30px; background: #2a2a2a; border-radius: 3px; }
+
+.car-frame { width: 1300px; height: 740px; padding: 10px; background: #0b0b0b; border-radius: 28px; flex: none; }
+.car-screen { width: 1280px; height: 720px; border-radius: 18px; overflow: hidden; position: relative; }

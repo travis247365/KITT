@@ -1,0 +1,20 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@fontsource/poppins/latin-400.css';
+import '@fontsource/poppins/latin-500.css';
+import '@fontsource/poppins/latin-700.css';
+import '@fontsource/orbitron/latin-700.css';
+import './styles.css';
+import './devices.css';
+import './phone.css';
+import './pad.css';
+import './watch.css';
+import './car.css';
+import './surfaces.css';
+import './tv.css';
+import './v2.css';
+import './tv2.css';
+import './lab.css';
+import { App } from './App';
+
+createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

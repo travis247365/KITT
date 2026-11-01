@@ -1,0 +1,108 @@
+/* Apple TV (tvOS) in Design System v2, 1920 x 1080 with 90 px side and 60 px top safe areas. Three directions share one layout:
+   .tv2--hybrid (the spec), .tv2--scanner (red scanner lean), .tv2--grid (neon grid lean). */
+.tv2 { width: 1920px; height: 1080px; position: relative; overflow: hidden; padding: 60px 90px; display: flex; flex-direction: column; }
+.tv2 > * { position: relative; }
+.tv2 > .gridfloor { position: absolute; }
+.tv2-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+.tv2-brand { display: flex; align-items: center; gap: 24px; }
+.tv2-word { font: 700 38px/1 var(--display); letter-spacing: 0.3em; }
+.tv2-clock { text-align: right; }
+.tv2-clock b { display: block; font: 600 104px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.tv2-clock span { font: 500 26px var(--sys); letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
+.tv2-notice { margin-top: 24px; padding: 20px 28px; border: 2px solid var(--signal); color: var(--signal); font-size: 30px; display: flex; gap: 18px; align-items: center; }
+.tv2-main { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1560px; }
+.tv2-eyebrow { font: 500 26px var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--fog); }
+.tv2-headline { margin: 20px 0 14px; font: 600 88px/1.06 var(--sys); letter-spacing: -0.015em; }
+.tv2-sub { font: 400 40px/1.35 var(--sys); color: var(--fog); }
+.tv2-tiles { list-style: none; display: flex; gap: 30px; margin-bottom: 40px; }
+.tv2-tile { width: 322px; height: 304px; padding: 26px 28px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.15s ease; text-align: left; }
+.tv2-tile .led-v { font-size: 72px; }
+.tv2-shelf-card .led-v { font-size: 84px; }
+.tv2-t-head { display: flex; align-items: center; gap: 14px; font: 500 22px var(--sys); letter-spacing: 0.16em; text-transform: uppercase; color: var(--fog); }
+.tv2-t-sub { font: 400 23px/1.35 var(--sys); color: var(--fog); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tv2-foot { display: flex; justify-content: space-between; align-items: center; }
+.tv2-chips { display: flex; gap: 18px; }
+.tv2-chip { display: inline-flex; align-items: center; gap: 14px; padding: 12px 24px; border: 1px solid rgba(25, 230, 255, 0.5); font: 500 24px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.tv2-chip::before { content: ''; width: 12px; height: 12px; background: var(--cyan); box-shadow: 0 0 16px var(--glow24); }
+.tv2-chip--alert { border-color: var(--red); color: var(--signal); }
+.tv2-chip--alert::before { background: var(--red); box-shadow: 0 0 16px rgba(255, 42, 42, 0.4); }
+.tv2-chip--quiet { border-color: rgba(143, 163, 184, 0.35); color: var(--fog); }
+.tv2-chip--quiet::before { background: var(--fog); box-shadow: none; }
+.tv2-hint { font: 400 25px var(--sys); color: var(--fog); display: flex; gap: 22px; align-items: center; }
+.tv2-hint b { font: 600 22px var(--mono); color: var(--ice); border: 1px solid var(--fog); padding: 4px 12px; letter-spacing: 0.06em; text-transform: uppercase; margin-right: 8px; }
+.tv2-detail { position: absolute !important; inset: 0; background: rgba(5, 5, 7, 0.94); display: flex; flex-direction: column; justify-content: center; padding: 0 160px; gap: 24px; z-index: 5; }
+.tv2-detail .led-v { font-size: 200px; }
+
+/* waiting for your decision */
+.tv2-ask { margin: auto; width: 1620px; background: var(--cockpit); padding: 0 0 64px; box-shadow: 0 0 80px rgba(255, 42, 42, 0.1); }
+.tv2-ask .sb { margin-bottom: 56px; }
+.tv2-ask > *:not(.sb) { margin-left: 80px; margin-right: 80px; }
+.tv2-ask-eyebrow { display: flex; align-items: center; gap: 16px; font: 500 28px var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--signal); }
+.tv2-ask h1 { margin-top: 24px; font: 600 74px/1.1 var(--sys); letter-spacing: -0.015em; }
+.tv2-ask-quote { margin-top: 22px; margin-bottom: 46px; font: 400 38px/1.4 var(--sys); color: var(--fog); }
+.tv2-actions { display: flex; gap: 32px; }
+.tv2-btn { min-width: 420px; height: 128px; display: inline-flex; align-items: center; justify-content: center; gap: 22px; font: 600 44px var(--sys); border: 2px solid transparent; transition: transform 0.15s ease; text-align: center !important; }
+.tv2-btn--primary { background: var(--cyan); color: var(--void); }
+.tv2-btn--ghost { border-color: var(--fog); color: var(--ice); }
+.tv2-btn.is-focus { transform: scale(1.06); outline: 4px solid var(--ice); outline-offset: 6px; box-shadow: 0 0 64px var(--glow24); }
+.tv2-ask-hint { margin-top: 40px; font: 400 29px var(--sys); color: var(--fog); }
+
+/* pairing */
+.tv2-pair { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 110px; }
+.tv2-pair-l { max-width: 880px; }
+.tv2-pair-title { margin: 20px 0 42px; font: 600 76px/1.08 var(--sys); letter-spacing: -0.015em; }
+.tv2-steps { list-style: none; display: grid; gap: 24px; font: 400 40px var(--sys); margin-bottom: 44px; }
+.tv2-steps li { display: flex; align-items: center; gap: 26px; }
+.tv2-steps b { width: 60px; height: 60px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--cyan); color: var(--cyan); font: 600 32px var(--mono); flex: none; }
+.tv2-found { display: flex; align-items: center; gap: 16px; font: 400 29px var(--sys); color: var(--fog); }
+.tv2-pair-r { width: 780px; display: grid; gap: 30px; }
+.tv2-code { font: 600 168px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; text-shadow: 0 0 56px var(--glow24); white-space: nowrap; }
+.tv2-pair-note { font: 400 29px var(--sys); color: var(--fog); }
+
+/* Top Shelf on the Apple TV home screen */
+.tv2--shelfpage { padding: 0; }
+.tv2-shelf-strip { height: 700px; padding: 70px 90px; display: flex; flex-direction: column; justify-content: flex-end; gap: 30px; background: var(--void); }
+.tv2-shelf-tag { display: flex; align-items: center; gap: 20px; font: 700 30px var(--display); letter-spacing: 0.26em; }
+.tv2-shelf-cards { display: flex; gap: 36px; }
+.tv2-shelf-card { width: 540px; height: 300px; padding: 30px 36px; display: flex; flex-direction: column; justify-content: space-between; }
+.tv2-dock { flex: 1; display: flex; align-items: center; gap: 56px; padding: 0 90px; background: #08090c; }
+.tv2-app { display: flex; flex-direction: column; align-items: center; gap: 18px; font: 500 26px var(--sys); color: var(--fog); }
+.tv2-app-icon { width: 220px; height: 220px; display: inline-flex; align-items: center; justify-content: center; background: var(--cockpit); border-top: 1px solid rgba(143, 163, 184, 0.3); color: var(--fog); font: 700 80px var(--mono); }
+.tv2-app--focus { color: var(--ice); transform: scale(1.18); }
+.tv2-app--focus .tv2-app-icon { padding: 0; outline: 3px solid var(--cyan); outline-offset: 6px; box-shadow: 0 0 64px var(--glow24); }
+
+/* direction: red scanner lean = red-edged panels, amber figures, no grid */
+.tv2--scanner .gridfloor { display: none; }
+.tv2--scanner .led-v { color: var(--amber); }
+.tv2--scanner .pn { border-top-color: rgba(255, 42, 42, 0.55); box-shadow: 0 0 48px rgba(255, 42, 42, 0.06); }
+.tv2--scanner .pn.is-focus { border-top-color: var(--red); box-shadow: 0 0 0 2px var(--red), 0 0 64px rgba(255, 42, 42, 0.26); }
+/* the scanner bar and the KITT name follow the status level (v2.css), in every direction */
+.tv2--scanner .tv2-chip::before { background: var(--amber); box-shadow: none; } .tv2--scanner .tv2-chip { border-color: rgba(255, 176, 32, 0.5); }
+/* direction: neon grid lean = wireframe panels, neon cyan rules, visible grid */
+.tv2--grid { background: #03070d; }
+.tv2--grid .gridfloor { opacity: 0.2; }
+.tv2--grid .pn { background: transparent; border-top: 0; box-shadow: inset 0 0 0 1px rgba(25, 230, 255, 0.45), 0 0 32px var(--glow8); }
+.tv2--grid .pn.is-focus { background: rgba(25, 230, 255, 0.06); box-shadow: inset 0 0 0 2px var(--cyan), 0 0 64px var(--glow24); }
+.tv2--grid .tv2-headline, .tv2--grid .led-v { text-shadow: 0 0 40px var(--glow24); }
+
+/* gallery pages */
+.tvg2 { min-height: 100%; background: #0b0d11; color: #eaf6ff; font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif; padding: 48px 56px 120px; }
+.tvg2-head h1 { font-size: 34px; margin: 0 0 8px; font-weight: 600; }
+.tvg2-head p { margin: 0 0 12px; color: #8fa3b8; max-width: 900px; line-height: 1.5; }
+.tvg2 h2.tvg2-sec { margin: 44px 0 6px; font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: #19e6ff; font-weight: 600; }
+.tvg2-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); gap: 40px 36px; }
+.tvg2-thumb { display: block; color: inherit; text-decoration: none; width: fit-content; }
+.tvg2-frame { background: #000; padding: 4px; width: fit-content; }
+.tvg2-cap h3 { margin: 14px 0 4px; font-size: 18px; font-weight: 600; }
+.tvg2-cap p { margin: 0 0 8px; font-size: 14px; line-height: 1.45; color: #8fa3b8; max-width: 600px; }
+.tvg2-open { color: #19e6ff; font-weight: 500; font-size: 14px; }
+.tvg2-remote { margin: 30px 0 0; padding: 18px 22px; border: 1px solid rgba(25, 230, 255, 0.35); max-width: 900px; font-size: 14px; line-height: 1.6; color: #eaf6ff; }
+.tvg2-remote b { color: #19e6ff; }
+
+/* gallery: the three status levels, live */
+.tvg2-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1100px; }
+.tvg2-status-cell { background: #050507; padding: 26px 24px 22px; display: flex; flex-direction: column; gap: 18px; }
+.tvg2-status-name { align-self: flex-start; font: 700 30px/1 var(--display); letter-spacing: 0.3em; }
+.tvg2-status-cell h3 { margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #eaf6ff; }
+.tvg2-status-cell p { margin: 0; font-size: 13.5px; line-height: 1.5; color: #8fa3b8; }
+.tvg2-status-cell p b { color: #eaf6ff; font-weight: 600; }

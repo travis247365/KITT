@@ -1,0 +1,99 @@
+{
+  "version": "0.1.0",
+  "now": "2026-11-01T01:20:06.859Z",
+  "tz": "Africa/Lusaka",
+  "brain": {
+    "at": 1793496006858,
+    "ok": true,
+    "detail": "claude-cli 4121 ms",
+    "provider": "claude-cli"
+  },
+  "notifier": {
+    "push": true,
+    "email": true,
+    "defaultTo": "you@example.com"
+  },
+  "pending": [
+    {
+      "code": "13",
+      "source": "tv",
+      "skill": "money",
+      "summary": "log cash 50 parking",
+      "created_at": "2026-11-01 01:20:02",
+      "expires_at": "2026-11-01 01:30:02"
+    }
+  ],
+  "coverage": {
+    "days": 7,
+    "heartbeats": 0,
+    "expected": 672,
+    "uptime_pct": 0,
+    "on_ac_pct": null
+  },
+  "routines": [
+    {
+      "name": "money.daily_summary",
+      "skill": "money",
+      "last_run_at": null,
+      "last_status": null
+    },
+    {
+      "name": "ideas.session_sync",
+      "skill": "ideas",
+      "last_run_at": null,
+      "last_status": null
+    },
+    {
+      "name": "shoplog.render",
+      "skill": "shoplog",
+      "last_run_at": null,
+      "last_status": null
+    },
+    {
+      "name": "core.spool_flush",
+      "skill": "kitt",
+      "last_run_at": null,
+      "last_status": null
+    },
+    {
+      "name": "core.heartbeat",
+      "skill": "kitt",
+      "last_run_at": null,
+      "last_status": null
+    },
+    {
+      "name": "core.podcast_morning",
+      "skill": "kitt",
+      "last_run_at": null,
+      "last_status": null
+    },
+    {
+      "name": "core.podcast_evening",
+      "skill": "kitt",
+      "last_run_at": null,
+      "last_status": null
+    }
+  ],
+  "skills": {
+    "money": {
+      "name": "Money Dashboard",
+      "description": "wallet balances and spend from forwarded mobile-money and bank messages, plus voice cash entries",
+      "ok": true,
+      "detail": "0 transactions, 0 unparsed messages; 0 wallet balances"
+    },
+    "ideas": {
+      "name": "Idea Catcher",
+      "description": "captures ideas by voice, structures them, and keeps them in a standing Claude conversation and a markdown ledger",
+      "ok": true,
+      "detail": "0 ideas; ledger /var/folders/44/tcncl6wd2_nfj6fl_nqvn8kw0000gn/T/kitt-fixture-K8sdbB/cfg/ideas.md; session not created yet"
+    },
+    "shoplog": {
+      "name": "Shop Log",
+      "description": "a build-in-public log for TPCL: capture by voice, publish on confirmation, client names made generic",
+      "ok": true,
+      "detail": "0 entries, 0 public; output /var/folders/44/tcncl6wd2_nfj6fl_nqvn8kw0000gn/T/kitt-fixture-K8sdbB/data/shoplog"
+    }
+  },
+  "unavailable": [],
+  "briefs": {}
+}

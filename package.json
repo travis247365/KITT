@@ -1,0 +1,24 @@
+{
+  "name": "kitt",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "KITT — Travis's hybrid personal AI agent: a 12-skill hub on the Mac, voice in/out through Apple CarPlay via Siri Shortcuts.",
+  "type": "module",
+  "bin": {
+    "kitt": "./bin/kitt"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "smoke": "node bin/kitt health",
+    "shortcuts": "node bin/kitt shortcuts build"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "qrcode": "1.5.4"
+  }
+}
