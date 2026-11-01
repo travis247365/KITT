@@ -124,11 +124,11 @@ export async function createApp({ skillsFilter } = {}) {
           delete out.confirm;
         }
       }
-      recordAudit(db, { source, skill: r.skill, intent: r.intent, input: text, outcome: out.needs_confirm ? 'needs_confirm' : 'ok', detail: `${r.via}${r.confidence ? ` ${r.confidence}` : ''}`, latency_ms: Date.now() - started });
+      recordAudit(db, { source, skill: r.skill, intent: r.intent, input: text, outcome: out.needs_confirm ? 'needs_confirm' : 'ok', detail: `${r.via}${r.confidence ? ` ${r.confidence}` : ''}`, latency_ms: Date.now() - started, intent_hit: r.via === 'global' || r.via === 'pattern' ? 1 : 0 });
       return finish(source, out.speak, { display: out.display, needs_confirm: out.needs_confirm || false, intent: `${r.skill}.${r.intent}`, via: r.via });
     } catch (e) {
       log.error('ask failed', { intent: `${r.skill}.${r.intent}`, err: e.message, stack: e.stack?.split('\n').slice(0, 3).join(' | ') });
-      recordAudit(db, { source, skill: r.skill, intent: r.intent, input: text, outcome: 'error', detail: e.message, latency_ms: Date.now() - started });
+      recordAudit(db, { source, skill: r.skill, intent: r.intent, input: text, outcome: 'error', detail: e.message, latency_ms: Date.now() - started, intent_hit: r.via === 'global' || r.via === 'pattern' ? 1 : 0 });
       const friendly = e instanceof BrainError ? (e.kind === 'rate_limit' ? 'My language brain is rate limited. Try again in a few minutes.' : 'My language brain is unavailable.') : e.needsLink ? `That needs a connection I don't have yet: ${e.slug || 'a Composio link'}. I've noted it.` : `That failed: ${e.message.slice(0, 120)}`;
       return finish(source, friendly, { error: true, intent: `${r.skill}.${r.intent}` });
     }

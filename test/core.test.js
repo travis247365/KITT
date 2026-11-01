@@ -119,3 +119,22 @@ test('pending actions: one claim wins, expired ones leave the listing, and codes
   for (let i = 0; i < 300; i++) { const p = createPending(db, { source: 'siri', skill: 'money', summary: `n${i}`, action: {} }); resolvePending(db, p.code, 'done'); }
   assert.equal(createPending(db, { source: 'siri', skill: 'money', summary: 'last', action: {} }).summary, 'last', 'codes are reused once their rows are finished');
 });
+
+test('audit records whether the grammar answered (intent_hit) and the migration adds the column to an old database', async () => {
+  const { DatabaseSync } = await import('node:sqlite');
+  const { migrateCore } = await import('../src/db.js');
+  const { recordAudit } = await import('../src/audit.js');
+  const db = new DatabaseSync(':memory:'); migrateCore(db);
+  assert.ok(db.prepare('PRAGMA table_info(audit)').all().some((c) => c.name === 'intent_hit'));
+  recordAudit(db, { source: 'siri', skill: 'money', intent: 'log_cash', outcome: 'ok', latency_ms: 120, intent_hit: 1 });
+  recordAudit(db, { source: 'siri', skill: 'none', intent: 'unknown', outcome: 'ok', latency_ms: 4800, intent_hit: 0 });
+  assert.deepEqual(db.prepare('SELECT intent_hit FROM audit ORDER BY id').all().map((r) => r.intent_hit), [1, 0]);
+  // an old database (schema from before the column) is upgraded in place, once
+  const old = new DatabaseSync(':memory:');
+  old.exec("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')));");
+  migrateCore(old);
+  old.exec("UPDATE meta SET value = '1' WHERE key = 'migrations:core'");
+  old.exec('ALTER TABLE audit DROP COLUMN intent_hit');
+  migrateCore(old); migrateCore(old);
+  assert.ok(old.prepare('PRAGMA table_info(audit)').all().some((c) => c.name === 'intent_hit'));
+});

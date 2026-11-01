@@ -28,6 +28,8 @@ const CORE_MIGRATIONS = [
      id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, payload TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
      last_error TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), sent_at TEXT
    );`,
+  // 1 Nov 2026 (Run 0 of docs/RUN_PLAN_3X.md): did the deterministic grammar answer (1) or did it fall through to the LLM / nothing (0)?
+  `ALTER TABLE audit ADD COLUMN intent_hit INTEGER;`,
 ];
 
 export function openDb(file) {
