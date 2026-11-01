@@ -81,3 +81,14 @@ export function spokenTime(d, { tz = 'Africa/Lusaka' } = {}) {
   const date = d instanceof Date ? d : new Date(d);
   return new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true }).format(date).replace(/\b0?(\d{1,2}):00\b/, '$1').replace(/\s?(am|pm)/i, ' $1');
 }
+
+/** Cut spoken text to at most `max` words, at the last sentence end that keeps most of it (never mid-sentence unless there is none). */
+export function clipWords(text, max = 80) {
+  const t = String(text || '').trim();
+  const words = t.split(/\s+/);
+  if (words.length <= max) return t;
+  const cut = words.slice(0, max).join(' ');
+  const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+  if (end >= cut.length * 0.4) return cut.slice(0, end + 1);
+  return cut.replace(/[,;:\s]+$/, '') + '.';
+}

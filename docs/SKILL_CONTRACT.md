@@ -21,7 +21,7 @@ export default function define(ctx) {
     routines: [ { name: 'money.daily_rollup', cron: '0 6 * * *', description: '...', catchUpMinutes: 360, run: async (ctx) => ({ summary, speak?, notify?: { push?: {title, body, tags, priority}, email?: {subject, html, text} } }) } ],
     async handle(intent, slots, ctx) { return { speak, display?, confirm?: { summary, action } }; },
     async execute(action, ctx) { return { speak }; },      // required when any intent has write:true
-    async brief(ctx) { return { speak } | string | null; }, // ctx.kind = 'morning' | 'evening' | 'full'
+    async brief(ctx) { return { speak, decisions? } | string | null; }, // ctx.kind = 'morning' | 'evening' | 'full'; decisions = how many things need the owner's decision (the brief says the total second)
     async health(ctx) { return { ok, detail }; },
     async dashboard(app) { return '<table>…</table>'; },    // optional HTML panel (escape everything)
     routes: [ { method: 'POST', path: '/import', scope: 'write', handler: async (c) => ({...}) } ], // mounted at /v1/<id>/import

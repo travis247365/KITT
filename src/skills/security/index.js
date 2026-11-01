@@ -239,7 +239,7 @@ export default function define(ctx) {
       const last = ctx.kv.get('security', 'last_run'); if (!last) return kind === 'morning' ? { speak: 'Security: no sweep yet.' } : null;
       const open = openFindings().filter((f) => !f.acknowledged && SEV[f.severity] >= SEV.MEDIUM);
       if (!open.length) return kind === 'morning' ? { speak: 'Security is clear.' } : null;
-      return { speak: `Security: ${plural(open.length, 'finding')}, top: ${spokenList(open.slice(0, 2).map((f) => f.title), { max: 2 })}.` };
+      return { speak: `Security: ${plural(open.length, 'finding')}, top: ${spokenList(open.slice(0, 2).map((f) => f.title), { max: 2 })}.`, decisions: open.length };
     },
     async view() { return { last_run: ctx.kv.get('security', 'last_run'), ...summarize(), findings: openFindings() }; },
     async health() { const last = ctx.kv.get('security', 'last_run'); const ok = fs.existsSync(BIN.gh) && fs.existsSync(BIN.vercel); return { ok, detail: `${ok ? 'gh+vercel present' : 'gh or vercel missing'}${fs.existsSync(BIN.flyctl) ? ', flyctl present' : ', flyctl missing'}${secrets.KITT_CLOUDFLARE_TOKEN ? ', cloudflare token set' : ', cloudflare token not set'}; last run ${last ? last.at : 'never'}` }; },

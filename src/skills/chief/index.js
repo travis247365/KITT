@@ -144,8 +144,8 @@ export default function define(ctx) {
     async brief({ kind }) {
       if (!ctx.kv.get('chief', 'last_sync')) { if (!password) return kind === 'morning' ? { speak: 'The Operations board is not connected yet.' } : null; try { await sync(); } catch { return { speak: 'The Operations board is unreachable.' }; } }
       const p = plate(); const d = p.display;
-      if (kind === 'evening') return { speak: `Board: ${d.overdue.length} overdue, ${d.blocked.length} blocked, ${d.incidents.length} open incidents, ${d.approvals.length} approvals waiting.` };
-      return { speak: `Board: ${p.speak}` };
+      if (kind === 'evening') return { speak: `Board: ${d.overdue.length} overdue, ${d.blocked.length} blocked, ${d.incidents.length} open incidents, ${d.approvals.length} approvals waiting.`, decisions: d.approvals.length };
+      return { speak: `Board: ${p.speak}`, decisions: d.approvals.length };
     },
     async view() { const ls = ctx.kv.get('chief', 'last_sync'); if (!ls) return { connected: Boolean(password), synced: false }; const p = plate(); return { connected: true, synced: true, last_sync: ls, speak: p.speak, ...p.display, counts: { total: db.prepare('SELECT count(*) n FROM chief_items').get().n, by_status: db.prepare('SELECT status, count(*) n FROM chief_items GROUP BY status').all() } }; },
     async health() { const ls = ctx.kv.get('chief', 'last_sync'); return { ok: Boolean(password) && (!ls || !Object.values(ls.ops || {}).some((v) => typeof v === 'string')), detail: !password ? 'KITT_COO_PASSWORD not set' : ls ? `last sync ${ls.at} as ${ls.role}; ${ls.items} items; ops ${JSON.stringify(ls.ops)}` : 'never synced' }; },

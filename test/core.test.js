@@ -138,3 +138,21 @@ test('audit records whether the grammar answered (intent_hit) and the migration 
   migrateCore(old); migrateCore(old);
   assert.ok(old.prepare('PRAGMA table_info(audit)').all().some((c) => c.name === 'intent_hit'));
 });
+
+test('a brief says the greeting, then how many decisions wait, then decision-bearing items first, clipped, then signs off', async () => {
+  const { assembleBrief, BRIEF_SIGN_OFF } = await import('../src/brief.js');
+  const { clipWords } = await import('../src/voice.js');
+  const long = Array.from({ length: 30 }, (_, i) => `Sentence number ${i} says something useful.`).join(' ');
+  const t = assembleBrief({ kind: 'morning', greet: 'Good morning.', hubDecisions: 1, parts: [
+    { speak: 'Money: steady.', decisions: 0 }, { speak: 'Inbox: 2 need a reply.', decisions: 2 }, 'WhatsApp: 3 unread.', { speak: long, decisions: 1 }, null,
+  ] });
+  assert.ok(t.startsWith('Good morning. 4 things need your decision. Inbox: 2 need a reply.'), t.slice(0, 120));
+  assert.ok(t.indexOf('Inbox') < t.indexOf('Money') && t.indexOf('Money') < t.indexOf('WhatsApp'), 'decision-bearing items first, the rest keep their order');
+  assert.ok(t.endsWith(BRIEF_SIGN_OFF));
+  assert.ok(t.split(/\s+/).length < 140, 'each item is clipped (80 words) so the brief stays short');
+  assert.equal(assembleBrief({ kind: 'evening', greet: 'Evening recap.', parts: [{ speak: 'Money: steady.' }] }), 'Evening recap. Nothing needs your decision. Money: steady. ' + BRIEF_SIGN_OFF);
+  assert.equal(assembleBrief({ kind: 'morning', greet: 'Good morning.', parts: [] }), 'Good morning. Nothing to report yet; the skills are still being connected.');
+  assert.equal(assembleBrief({ kind: 'morning', greet: 'Good morning.', parts: [], hubDecisions: 1 }).startsWith('Good morning. 1 thing needs your decision.'), true);
+  assert.match(clipWords(long, 20), /\.$/);
+  assert.equal(clipWords('short text.', 20), 'short text.');
+});

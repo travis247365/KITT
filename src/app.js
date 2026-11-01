@@ -10,6 +10,7 @@ import { createIntentRouter } from './intents/router.js';
 import { createScheduler } from './scheduler.js';
 import { recordAudit } from './audit.js';
 import { createPending, getPending, resolvePending, claimPending, listPending } from './confirm.js';
+import { assembleBrief } from './brief.js';
 import { speakable, spokenList } from './voice.js';
 import { createPodcast } from './carplay/podcast.js';
 
@@ -82,12 +83,11 @@ export async function createApp({ skillsFilter } = {}) {
       if (!r.ok) { log.warn('brief part failed', { id, err: r.error }); return null; }
       const v = r.value;
       if (!v) return null;
-      return typeof v === 'string' ? v : v.speak;
+      return typeof v === 'string' ? { speak: v, decisions: 0 } : { speak: v.speak, decisions: v.decisions || 0 };
     }));
     const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: config.tz, hour: 'numeric', hourCycle: 'h23' }).format(new Date()));
     const greet = kind === 'morning' ? (hour < 12 ? 'Good morning, Travis.' : 'Hello, Travis.') : 'Evening recap.';
-    const body = parts.filter(Boolean).join(' ');
-    return body ? `${greet} ${body}` : `${greet} Nothing to report yet; the skills are still being connected.`;
+    return assembleBrief({ kind, greet, parts, hubDecisions: listPending(db).length });
   }
 
   async function brief(name, { source = 'cli' } = {}) {

@@ -210,7 +210,7 @@ export default function define(ctx) {
       if (soon.length) parts.push(`${spokenList(soon.map((m) => m.display))} renew${soon.length === 1 ? 's' : ''} within three days.`);
       const dow = new Date().getDay();
       if (!parts.length && kind === 'morning' && dow === 1) parts.push(`Subscriptions steady at about ${kw(t.monthly_zmw)} a month.`);
-      return parts.length ? { speak: parts.join(' ') } : null;
+      return parts.length ? { speak: parts.join(' '), decisions: bad.length } : null;
     },
     async view() { return { totals: totals(), merchants: merchants({ activeOnly: false }), renewing_7d: renewingWithin(7), renewing_30d: renewingWithin(30), last_sync: ctx.kv.get('subscriptions', 'last_sync') }; },
     async health() { const ls = ctx.kv.get('subscriptions', 'last_sync'); const err = db.prepare("SELECT last_error FROM mail_sync WHERE last_error IS NOT NULL AND query LIKE '%-in:draft newer_than:%' ORDER BY last_sync_at DESC LIMIT 1").get()?.last_error; return { ok: !err, detail: ls ? `last sync ${ls.at}, ${merchants().length} merchants${err ? `; last error: ${err}` : ''}` : 'never synced' }; },
