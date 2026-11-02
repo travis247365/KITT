@@ -312,10 +312,9 @@ private struct SettingsView: View {
 
     private var hasToken: Bool { model.hasSavedToken || model.isConnected }
 
-    /// Tab / Shift-Tab walk the controls in order: address, token, Connect, then Disconnect when it is shown.
+    /// Tab / Shift-Tab move between the two fields (address, token). Buttons are reached with Return (Connect) or, with Full Keyboard Access, Tab.
     private func tab(from field: Field, back: Bool) -> KeyPress.Result {
-        var order: [Field] = [.address, .token, .connect]
-        if hasToken { order.append(.disconnect) }
+        let order: [Field] = [.address, .token]
         guard let i = order.firstIndex(of: field) else { return .ignored }
         focus = order[(i + (back ? order.count - 1 : 1)) % order.count]
         return .handled
@@ -389,39 +388,27 @@ private struct SettingsView: View {
             Section {
                 Button(action: connect) {
                     HStack(spacing: 10) {
-                        if model.isBusy { ProgressView() }
-                        Text(model.isBusy ? "Connecting…" : (model.isConnected ? "Reconnect" : "Connect")).font(.headline)
+                        if model.isBusy { ProgressView().controlSize(.small).tint(.black) }
+                        Text(model.isBusy ? "Connecting…" : (model.isConnected ? "Reconnect" : "Connect"))
+                            .font(.headline)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .foregroundStyle(Color.black)
+                    .frame(maxWidth: .infinity, minHeight: 48)
+                    .background(Tv.cyan.opacity(canConnect || model.isBusy ? 1 : 0.28))
+                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(.plain)
                 .disabled(!canConnect)
-                .focusable(canConnect)
-                .focused($focus, equals: .connect)
-                .onKeyPress(keys: [.tab]) { press in tab(from: .connect, back: press.modifiers.contains(.shift)) }
-                .onKeyPress(.return) { if canConnect { connect() }; return .handled }
-                .onKeyPress(.space) { if canConnect { connect() }; return .handled }
+                .keyboardShortcut(.defaultAction)    // Return connects from anywhere in the form
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 .listRowBackground(Color.clear)
 
-                if let missing, !model.isBusy {
-                    Label(missing, systemImage: "info.circle").font(.footnote).foregroundStyle(.secondary)
-                } else if let error = model.errorMessage {
-                    Label(error, systemImage: "exclamationmark.triangle.fill").font(.footnote).foregroundStyle(.red)
-                } else if model.isConnected, let state = model.state {
-                    Label("Connected to the hub · version \(state.version)", systemImage: "checkmark.circle.fill").font(.footnote).foregroundStyle(.green)
-                }
+                ConnectStatus(missing: missing, onRetry: connect)
             }
 
             if hasToken {
                 Section {
                     Button("Disconnect and remove saved token", role: .destructive) { disconnect() }
-                        .focusable()
-                        .focused($focus, equals: .disconnect)
-                        .onKeyPress(keys: [.tab]) { press in tab(from: .disconnect, back: press.modifiers.contains(.shift)) }
-                        .onKeyPress(.return) { disconnect(); return .handled }
-                        .onKeyPress(.space) { disconnect(); return .handled }
                 } footer: {
                     Text("This removes the saved token and hub address from this device. It does not revoke the token on the hub.")
                 }
@@ -482,5 +469,44 @@ private struct ErrorBanner: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
             .background(.red.opacity(0.08))
+    }
+}
+
+/// The answer to "did my click do anything?": a spinner with the current step and the seconds so far while connecting, then a green
+/// "connected and verified" card or a red card with the exact refusal and a Retry button.
+private struct ConnectStatus: View {
+    @EnvironmentObject private var model: AppModel
+    let missing: String?
+    let onRetry: () -> Void
+
+    var body: some View {
+        Group {
+            if model.isBusy {
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    HStack(spacing: 12) {
+                        ProgressView()
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.connectStep ?? "Working…").font(.subheadline.weight(.semibold))
+                            Text("Waiting for the hub… up to 20 seconds").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    }
+                }
+            } else if let error = model.errorMessage {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Not connected", systemImage: "xmark.octagon.fill").font(.subheadline.weight(.semibold)).foregroundStyle(.red)
+                    Text(error).font(.callout)
+                    Button("Try again", action: onRetry)
+                }
+            } else if model.isConnected, let state = model.state {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("Connected and verified", systemImage: "checkmark.circle.fill").font(.subheadline.weight(.semibold)).foregroundStyle(.green)
+                    Text(model.connectSummary ?? "Hub \(state.version)").font(.caption).foregroundStyle(.secondary)
+                }
+            } else if let missing {
+                Label(missing, systemImage: "info.circle").font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }

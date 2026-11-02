@@ -14,6 +14,9 @@ final class AppModel: ObservableObject {
     @Published private(set) var isOffline = false
     /// The hub answered 401/403: the saved token no longer works. This is not "offline"; the user has to connect again.
     @Published private(set) var authFailed = false
+    /// What a connect attempt is doing right now ("Contacting the hub…"), so the Settings screen can show progress; nil when idle.
+    @Published private(set) var connectStep: String?
+    @Published private(set) var connectSummary: String?
     /// The hub's activity log, newest 300 rows, for the Feed screen; the filter lives here so the Overview can open the feed already filtered.
     @Published private(set) var feedEvents: [FeedEvent] = []
     @Published private(set) var feedError: String?
@@ -82,10 +85,18 @@ final class AppModel: ObservableObject {
 
     func connect(serverAddress: String, appToken: String) async {
         errorMessage = nil
+        connectSummary = nil
         isBusy = true
-        defer { isBusy = false }
+        defer { isBusy = false; connectStep = nil }
+
+        // Each step is shown for a moment, so even a hub on this Mac (answers in milliseconds) visibly "does something".
+        func step(_ text: String) async {
+            connectStep = text
+            try? await Task.sleep(for: .milliseconds(450))
+        }
 
         do {
+            await step("Checking the address…")
             let token: String
             if appToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 guard let saved = try KeychainTokenStore.load() else { throw HubClientError.invalidToken }
@@ -97,8 +108,15 @@ final class AppModel: ObservableObject {
             guard let url = URL(string: serverAddress.trimmingCharacters(in: .whitespacesAndNewlines)) else {
                 throw HubClientError.invalidServerURL
             }
-            let candidate = try HubClient(baseURL: url, token: token, source: Self.deviceSource)
+            let cfg = URLSessionConfiguration.ephemeral
+            cfg.timeoutIntervalForRequest = 20       // a hub that does not answer fails in 20 s, not a minute
+            cfg.waitsForConnectivity = false
+            let candidate = try HubClient(baseURL: url, token: token, source: Self.deviceSource, session: URLSession(configuration: cfg))
+
+            await step("Contacting the hub and checking the token…")
             let loadedState = try await candidate.state()
+
+            await step("Saving the token in the Keychain…")
             try KeychainTokenStore.save(token.trimmingCharacters(in: .whitespacesAndNewlines))
             UserDefaults.standard.set(url.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/")), forKey: "hubBaseURL")
             baseURL = url.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
@@ -109,6 +127,10 @@ final class AppModel: ObservableObject {
             isOffline = false
             authFailed = false
             lastUpdated = Date()
+
+            await step("Loading the feed…")
+            await refreshFeed()
+            connectSummary = "Hub \(loadedState.version) · \(loadedState.skillList.count) skills · \(feedEvents.count) feed items"
         } catch {
             errorMessage = error.localizedDescription
         }
