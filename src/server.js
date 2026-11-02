@@ -36,7 +36,7 @@ export async function startServer({ port, host } = {}) {
   router.get('/v1/audit', (c) => { requireScope(c.identity, 'admin'); return { audit: tailAudit(app.db, Number(c.url.searchParams.get('limit') || 50)) }; });
   router.get('/v1/pending', (c) => { requireScope(c.identity, 'read'); return { pending: listPending(app.db) }; });
   router.get('/v1/state', async (c) => { requireScope(c.identity, 'read'); return app.state(); });
-  router.get('/v1/events', (c) => { requireScope(c.identity, 'read'); return app.events(c.url.searchParams.get('since') || 0, Number(c.url.searchParams.get('limit') || 100)); });
+  router.get('/v1/events', (c) => { requireScope(c.identity, 'read'); return app.events(c.url.searchParams.get('since') || 0, Number(c.url.searchParams.get('limit') || 100), c.url.searchParams.get('latest') || 0); });
   router.get('/v1/skills/:id/view', async (c) => { requireScope(c.identity, 'read'); const s = app.skills[c.params.id]; if (!s) throw new HttpError(404, 'unknown skill'); const view = typeof s.view === 'function' ? await s.view({ ...app, source: 'api' }) : {}; const health = typeof s.health === 'function' ? await s.health(app) : { ok: true }; return { id: s.id, name: s.name, description: s.description, health, intents: s.intents.map((i) => ({ name: i.name, examples: i.examples || [], write: Boolean(i.write) })), routines: (s.routines || []).map((r) => ({ name: r.name, cron: r.cron, description: r.description })), view }; });
 
   // Podcast feed: Apple Podcasts cannot send headers, so the feed token lives in the path.

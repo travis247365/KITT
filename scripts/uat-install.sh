@@ -13,7 +13,11 @@ TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 team() {
   # a team picked in the Xcode UI (Signing & Capabilities) is written into the project: use it
   local picked; picked=$(sed -n 's/.*DEVELOPMENT_TEAM = \([A-Z0-9]\{10\}\);.*/\1/p' "$APPDIR/KITT.xcodeproj/project.pbxproj" 2>/dev/null | head -1)
-  if [ -n "$picked" ]; then echo "$picked"; return; fi
+  if [ -n "$picked" ]; then
+    # remember it outside the generated project, so `xcodegen generate` can never lose the choice
+    [ -f "$APPDIR/Config/Signing.local.xcconfig" ] || printf 'DEVELOPMENT_TEAM = %s\n' "$picked" > "$APPDIR/Config/Signing.local.xcconfig"
+    echo "$picked"; return
+  fi
   if [ -f "$APPDIR/Config/Signing.local.xcconfig" ]; then sed -n 's/^DEVELOPMENT_TEAM *= *//p' "$APPDIR/Config/Signing.local.xcconfig" | head -1 | tr -d ' '; return; fi
   defaults export com.apple.dt.Xcode - 2>/dev/null | python3 -c '
 import plistlib, sys

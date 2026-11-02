@@ -3,6 +3,7 @@ import KITTKit
 
 private enum AppSection: String, CaseIterable, Identifiable, Hashable {
     case overview
+    case feed
     case ask
     case settings
 
@@ -10,6 +11,7 @@ private enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var title: String {
         switch self {
         case .overview: "Overview"
+        case .feed: "Feed"
         case .ask: "Ask Kitt"
         case .settings: "Settings"
         }
@@ -17,6 +19,7 @@ private enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var symbol: String {
         switch self {
         case .overview: "rectangle.grid.1x2"
+        case .feed: "list.bullet.rectangle"
         case .ask: "waveform"
         case .settings: "gearshape"
         }
@@ -38,7 +41,12 @@ struct ContentView: View {
             Group {
                 switch selection ?? .overview {
                 case .overview:
-                    OverviewView()
+                    OverviewView(openFeed: { filter in
+                        model.feedFilter = filter
+                        selection = .feed
+                    })
+                case .feed:
+                    FeedView()
                 case .ask:
                     AskView()
                 case .settings:
@@ -54,6 +62,8 @@ struct ContentView: View {
 
 private struct OverviewView: View {
     @EnvironmentObject private var model: AppModel
+    /// Opens the Feed, already filtered (a card, a skill or a routine on this screen is a shortcut to its items in the feed).
+    let openFeed: (FeedFilter) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 190), spacing: 12)]
 
@@ -111,27 +121,27 @@ private struct OverviewView: View {
 
     private func summaryCards(_ state: KITTState) -> some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-            SummaryCard(
+            Button { openFeed(FeedFilter()) } label: { SummaryCard(
                 title: "Hub",
                 value: "Connected",
-                detail: "Version \(state.version)",
+                detail: "Version \(state.version) · open the feed",
                 symbol: "checkmark.circle.fill",
                 color: .green
-            )
-            SummaryCard(
+            ) }.buttonStyle(.plain)
+            Button { openFeed(FeedFilter(kinds: [FeedKind.decision.rawValue])) } label: { SummaryCard(
                 title: "Pending",
                 value: "\(state.pendingActions.count)",
                 detail: state.pendingActions.isEmpty ? "No action needs approval" : "Review before confirming",
                 symbol: "hand.raised.fill",
                 color: state.pendingActions.isEmpty ? .secondary : .orange
-            )
-            SummaryCard(
+            ) }.buttonStyle(.plain)
+            Button { openFeed(FeedFilter(showNoise: false)) } label: { SummaryCard(
                 title: "Skills",
                 value: "\(state.skillList.count)",
                 detail: state.brain?.ok == false ? "Assistant brain needs attention" : "Available from your hub",
                 symbol: "square.grid.2x2.fill",
                 color: state.brain?.ok == false ? .orange : .accentColor
-            )
+            ) }.buttonStyle(.plain)
         }
     }
 
@@ -170,7 +180,7 @@ private struct OverviewView: View {
             Text("Skills").font(.title2.bold())
             ForEach(skills.keys.sorted(), id: \.self) { key in
                 if let skill = skills[key] {
-                    HStack(alignment: .top, spacing: 12) {
+                    Button { openFeed(FeedFilter(skills: [key])) } label: { HStack(alignment: .top, spacing: 12) {
                         Image(systemName: skill.ok == true ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                             .foregroundStyle(skill.ok == true ? .green : .orange)
                         VStack(alignment: .leading, spacing: 3) {
@@ -183,8 +193,10 @@ private struct OverviewView: View {
                         Text(skill.ok == true ? "Ready" : "Attention")
                             .font(.caption.weight(.medium))
                             .foregroundStyle(skill.ok == true ? .green : .orange)
+                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
                     }
                     .padding(.vertical, 8)
+                    .contentShape(Rectangle()) }.buttonStyle(.plain)
                 }
             }
         }
@@ -198,7 +210,7 @@ private struct OverviewView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(routines.prefix(8)) { routine in
-                    HStack {
+                    Button { openFeed(FeedFilter(skills: routine.skill.map { [$0] } ?? [], kinds: [FeedKind.routine.rawValue], showNoise: true)) } label: { HStack {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(routine.name).font(.subheadline.weight(.medium))
                             Text(routine.lastRunAt ?? "Not run yet")
@@ -211,6 +223,7 @@ private struct OverviewView: View {
                             .foregroundStyle(routine.lastStatus == "error" ? .red : .secondary)
                     }
                     .padding(.vertical, 5)
+                    .contentShape(Rectangle()) }.buttonStyle(.plain)
                 }
             }
         }

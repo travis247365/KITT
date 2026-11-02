@@ -14,6 +14,10 @@ final class AppModel: ObservableObject {
     @Published private(set) var isOffline = false
     /// The hub answered 401/403: the saved token no longer works. This is not "offline"; the user has to connect again.
     @Published private(set) var authFailed = false
+    /// The hub's activity log, newest 300 rows, for the Feed screen; the filter lives here so the Overview can open the feed already filtered.
+    @Published private(set) var feedEvents: [FeedEvent] = []
+    @Published private(set) var feedError: String?
+    @Published var feedFilter = FeedFilter()
     @Published private(set) var lastUpdated: Date?
 
     private var client: HubClient?
@@ -47,6 +51,22 @@ final class AppModel: ObservableObject {
     }
 
     var isConnected: Bool { client != nil }
+
+    var feedItems: [FeedItem] {
+        let names = (state?.skillList ?? [:]).mapValues(\.name)
+        return feedEvents.map { FeedItem($0, skillNames: names) }
+    }
+
+    func refreshFeed() async {
+        guard let client else { return }
+        do {
+            feedEvents = try await client.events(latest: 300).audit
+            feedError = nil
+        } catch {
+            if error is CancellationError || (error as? URLError)?.code == .cancelled { return }
+            feedError = error.localizedDescription
+        }
+    }
 
     #if DEBUG
     /// Debug builds only: launch with KITT_DEV_URL and KITT_DEV_TOKEN in the environment to connect without typing (simulator runs and UI tests).
@@ -122,6 +142,7 @@ final class AppModel: ObservableObject {
             isOffline = false
             authFailed = false
             lastUpdated = Date()
+            await refreshFeed()
         } catch {
             if error is CancellationError || (error as? URLError)?.code == .cancelled { return }
             errorMessage = error.localizedDescription
@@ -178,5 +199,6 @@ final class AppModel: ObservableObject {
         isOffline = false
         authFailed = false
         lastUpdated = Date()
+        await refreshFeed()
     }
 }

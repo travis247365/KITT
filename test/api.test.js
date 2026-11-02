@@ -41,6 +41,9 @@ test('hub HTTP contract: auth, ask, confirm, sms, state, events, view, feed', as
     assert.equal(state.version, '0.1.0'); assert.ok(state.skills.money); assert.ok(Array.isArray(state.routines));
     const ev = await (await fetch(`${base}/v1/events?since=0`, { headers: H })).json();
     assert.ok(ev.audit.length >= 3); assert.ok(ev.next > 0);
+    // the feed asks for the newest rows, oldest first within them
+    const newest = await (await fetch(`${base}/v1/events?latest=2`, { headers: H })).json();
+    assert.equal(newest.audit.length, 2); assert.ok(newest.audit[0].id < newest.audit[1].id); assert.equal(newest.audit[1].id, ev.next);
     const view = await (await fetch(`${base}/v1/skills/money/view`, { headers: H })).json();
     assert.equal(view.id, 'money'); assert.equal(view.view.balances[0].wallet, 'MTN MoMo'); assert.equal(view.view.recent.length, 3);
     assert.equal((await fetch(`${base}/v1/skills/nope/view`, { headers: H })).status, 404);

@@ -10,6 +10,8 @@ targets:
   KITT:
     type: application
     platform: iOS
+    scheme:
+      testTargets: []
     configFiles:
       Debug: Config/Signing.xcconfig
       Release: Config/Signing.xcconfig
@@ -52,6 +54,8 @@ targets:
   KITTMac:
     type: application
     platform: macOS
+    scheme:
+      testTargets: []
     configFiles:
       Debug: Config/Signing.xcconfig
       Release: Config/Signing.xcconfig

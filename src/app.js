@@ -204,8 +204,11 @@ export async function createApp({ skillsFilter } = {}) {
   }
 
   /** Changes since an audit id (for app polling): audit rows, pending actions, continuation flags. */
-  function events(since = 0, limit = 100) {
-    const rows = db.prepare('SELECT id, ts, source, skill, intent, input, outcome, detail, latency_ms FROM audit WHERE id > ? ORDER BY id LIMIT ?').all(Number(since) || 0, Math.min(500, limit));
+  function events(since = 0, limit = 100, latest = 0) {
+    const n = Math.min(500, Number(latest) || 0);
+    const rows = n
+      ? db.prepare('SELECT id, ts, source, skill, intent, input, outcome, detail, latency_ms FROM (SELECT id, ts, source, skill, intent, input, outcome, detail, latency_ms FROM audit ORDER BY id DESC LIMIT ?) ORDER BY id').all(n)
+      : db.prepare('SELECT id, ts, source, skill, intent, input, outcome, detail, latency_ms FROM audit WHERE id > ? ORDER BY id LIMIT ?').all(Number(since) || 0, Math.min(500, limit));
     return { since: Number(since) || 0, next: rows.length ? rows[rows.length - 1].id : Number(since) || 0, audit: rows, pending: listPending(db), continuations: db.prepare('SELECT source, created_at FROM continuations').all() };
   }
 
