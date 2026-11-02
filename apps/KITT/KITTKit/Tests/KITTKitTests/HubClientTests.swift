@@ -87,4 +87,18 @@ final class HubClientTests: XCTestCase {
         XCTAssertNoThrow(try HubClient(baseURL: URL(string: "http://127.0.0.1:2000")!, token: String(repeating: "a", count: 32)))
         XCTAssertThrowsError(try HubClient(baseURL: URL(string: "http://example.com")!, token: String(repeating: "a", count: 32)))
     }
+
+    func testZoomLevelSteps() {
+        XCTAssertEqual(ZoomLevel.zoomedIn(1.0), 1.1)
+        XCTAssertEqual(ZoomLevel.zoomedOut(1.0), 0.9)
+        XCTAssertEqual(ZoomLevel.zoomedIn(2.0), 2.0, "stops at the top")
+        XCTAssertEqual(ZoomLevel.zoomedOut(0.75), 0.75, "stops at the bottom")
+        XCTAssertFalse(ZoomLevel.canZoomIn(2.0)); XCTAssertTrue(ZoomLevel.canZoomIn(1.5))
+        XCTAssertFalse(ZoomLevel.canZoomOut(0.75)); XCTAssertTrue(ZoomLevel.canZoomOut(1.0))
+        XCTAssertEqual(ZoomLevel.snapped(1.37), 1.25, "a stray stored value snaps to a real step")
+        XCTAssertEqual(ZoomLevel.snapped(9), 2.0)
+        XCTAssertEqual(ZoomLevel.label(1.25), "125 %")
+        var z = 1.0; for _ in 0..<10 { z = ZoomLevel.zoomedIn(z) }; XCTAssertEqual(z, 2.0)
+        for _ in 0..<10 { z = ZoomLevel.zoomedOut(z) }; XCTAssertEqual(z, 0.75)
+    }
 }
