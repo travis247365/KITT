@@ -53,24 +53,22 @@ struct TvRootView: View {
 
     private func board(_ state: KITTState) -> some View {
         let glance = state.glance(offline: model.isOffline)
-        return TimelineView(.everyMinute) { context in
-            NowScreen(
-                glance: glance, clock: context.date, offline: model.isOffline, lastUpdated: model.lastUpdated, speaking: voice.speaking,
-                onOpen: { detail = $0 },
-                onReview: { asking = AskSnapshot(code: glance.pendingCode, summary: glance.pendingSummary ?? "", expiresAt: glance.pendingExpiresAt) }
+        return NowScreen(
+            glance: glance, clock: .live, offline: model.isOffline, lastUpdated: model.lastUpdated, speaking: voice.speaking,
+            onOpen: { detail = $0 },
+            onReview: { asking = AskSnapshot(code: glance.pendingCode, summary: glance.pendingSummary ?? "", expiresAt: glance.pendingExpiresAt) }
+        )
+        .onPlayPauseCommand { voice.toggle([glance.headline, glance.sub].filter { !$0.isEmpty }.joined(separator: ". ")) }
+        .fullScreenCover(item: $detail) { tile in
+            DetailScreen(tile: tile, level: glance.level)
+        }
+        .fullScreenCover(item: $asking, onDismiss: { Task { await model.refresh() } }) { snapshot in
+            AskScreen(
+                summary: snapshot.summary, expiresAt: snapshot.expiresAt, level: glance.level, outcome: snapshot.outcome,
+                onConfirm: { resolve(confirm: true) },
+                onCancel: { resolve(confirm: false) },
+                onDone: { asking = nil }
             )
-            .onPlayPauseCommand { voice.toggle([glance.headline, glance.sub].filter { !$0.isEmpty }.joined(separator: ". ")) }
-            .fullScreenCover(item: $detail) { tile in
-                DetailScreen(tile: tile, level: glance.level, clock: context.date)
-            }
-            .fullScreenCover(item: $asking, onDismiss: { Task { await model.refresh() } }) { snapshot in
-                AskScreen(
-                    summary: snapshot.summary, expiresAt: snapshot.expiresAt, clock: context.date, level: glance.level, outcome: snapshot.outcome,
-                    onConfirm: { resolve(confirm: true) },
-                    onCancel: { resolve(confirm: false) },
-                    onDone: { asking = nil }
-                )
-            }
         }
     }
 

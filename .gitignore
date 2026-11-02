@@ -27,3 +27,5 @@ mockups/qa/devdep/
 mockups/qa/visual/
 # generated build output (DerivedData, logs, IPK)
 build/
+# your Apple Developer team id (see apps/KITT/Config/Signing.xcconfig)
+apps/KITT/Config/Signing.local.xcconfig

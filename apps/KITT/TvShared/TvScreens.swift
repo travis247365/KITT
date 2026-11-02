@@ -68,22 +68,44 @@ private func dateString(_ date: Date) -> String {
     let f = DateFormatter(); f.locale = Locale(identifier: "en_GB"); f.dateFormat = "EEE d MMM"; return f.string(from: date).uppercased()
 }
 
+/// Which clock a screen shows: none, the live one (it updates itself every minute, in its own small view, so the screen above it is never rebuilt
+/// by a clock tick: a rebuilt screen could close a presented sheet), or a fixed time (the Mac preview tool).
+enum TvClock {
+    case none
+    case live
+    case fixed(Date)
+}
+
+struct ClockBlock: View {
+    let clock: TvClock
+
+    var body: some View {
+        switch clock {
+        case .none: EmptyView()
+        case .fixed(let d): block(d)
+        case .live: TimelineView(.everyMinute) { block($0.date) }
+        }
+    }
+
+    private func block(_ date: Date) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            Text(timeString(date)).font(Tv.mono(104, .semibold)).monospacedDigit().tracking(-3).foregroundStyle(Tv.ice)
+            Text(dateString(date)).font(Tv.sys(26, .medium)).tracking(3).foregroundStyle(Tv.fog)
+        }
+    }
+}
+
 /// Brand row (mark + animated name) with the clock on the right, then the animated top border.
 struct TvHeader: View {
     let level: StatusLevel
-    var clock: Date? = nil
+    var clock: TvClock = .none
 
     var body: some View {
         VStack(spacing: 26) {
             HStack(alignment: .center) {
                 HStack(spacing: 24) { KittMark(size: 72); KittName(level: level) }
                 Spacer()
-                if let clock {
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text(timeString(clock)).font(Tv.mono(104, .semibold)).monospacedDigit().tracking(-3).foregroundStyle(Tv.ice)
-                        Text(dateString(clock)).font(Tv.sys(26, .medium)).tracking(3).foregroundStyle(Tv.fog)
-                    }
-                }
+                ClockBlock(clock: clock)
             }
             ScannerBar(level: level)
         }
@@ -133,7 +155,7 @@ struct SkillTile: View {
 
 struct NowScreen: View {
     let glance: Glance
-    let clock: Date
+    var clock: TvClock = .live
     var offline = false
     var lastUpdated: Date? = nil
     var speaking = false
@@ -201,6 +223,10 @@ struct NowScreen: View {
             }
         }
         .defaultFocus($focus, glance.hasPending ? "review" : (glance.tiles.first?.id ?? ""))
+        // The system's default focus alone is not reliable when the content arrives after launch (the hub answers a moment later), so ask for it.
+        .onAppear { focus = glance.hasPending ? "review" : (glance.tiles.first?.id) }
+        .onChange(of: glance.pendingCode) { _, new in if new != nil { focus = "review" } }
+        .onChange(of: glance.tiles.first?.id) { _, new in if !glance.hasPending, focus == nil { focus = new } }
     }
 }
 
@@ -209,7 +235,7 @@ struct NowScreen: View {
 struct DetailScreen: View {
     let tile: GlanceTile
     let level: StatusLevel
-    let clock: Date
+    var clock: TvClock = .live
 
     var body: some View {
         Backdrop(grid: false) {
@@ -233,7 +259,7 @@ struct DetailScreen: View {
 struct AskScreen: View {
     let summary: String
     var expiresAt: Date? = nil
-    let clock: Date
+    var clock: TvClock = .live
     /// The live status level, so a critical hub with a decision waiting still reads critical.
     var level: StatusLevel = .amber
     var outcome: String? = nil
@@ -249,7 +275,7 @@ struct AskScreen: View {
                 HStack(alignment: .center) {
                     HStack(spacing: 24) { KittMark(size: 72); KittName(level: level) }
                     Spacer()
-                    Text(timeString(clock)).font(Tv.mono(104, .semibold)).monospacedDigit().tracking(-3)
+                    ClockBlock(clock: clock)
                 }
                 Spacer(minLength: 0)
                 VStack(alignment: .leading, spacing: 0) {
@@ -347,11 +373,11 @@ struct ConnectScreen: View {
                         Text("Connect to your KITT hub").font(Tv.sys(76, .semibold)).tracking(-1.1).padding(.top, 20).padding(.bottom, 42)
                         VStack(alignment: .leading, spacing: 24) {
                             step("1", "Select a field. A nearby iPhone offers its keyboard.")
-                            step("2", "Enter the hub address (https) and the app token.")
+                            step("2", "Enter the hub address and the app token.")
                             step("3", "Select Connect.")
                         }
                         .padding(.bottom, 44)
-                        Text("The address must start with https://, for example your Tailscale name. The token is the Kitt app token from the hub.")
+                        Text("Use an https:// address (for example your Tailscale name), or an http:// address on your own home network. The token is the Kitt app token from the hub.")
                             .font(Tv.sys(29)).foregroundStyle(Tv.fog).lineSpacing(6)
                     }
                     .frame(maxWidth: 880, alignment: .leading)

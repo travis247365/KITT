@@ -1,0 +1,6 @@
+// Signing for the KITT, KITTMac and KITTtv targets.
+// Your Apple Developer team id is yours, so it does not live in this file or in git: create Config/Signing.local.xcconfig (ignored by git) with
+//   DEVELOPMENT_TEAM = ABCDE12345
+// (Xcode > Settings > Accounts > your team > the 10-character Team ID, or developer.apple.com > Membership).
+// It survives `xcodegen generate`, which would otherwise reset a team picked in the Xcode UI.
+#include? "Signing.local.xcconfig"

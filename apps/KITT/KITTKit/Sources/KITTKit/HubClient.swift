@@ -13,7 +13,7 @@ public enum HubClientError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .invalidServerURL:
-            return "Enter a secure HTTPS address for the Kitt hub."
+            return "Use an https:// address, or http:// only for this device (127.0.0.1) or your own home network."
         case .invalidToken:
             return "Enter a valid Kitt app token."
         case .invalidCommand:
@@ -41,13 +41,7 @@ public actor HubClient {
 
     /// `source` names the device in the hub's audit trail and continuation store ("app" for iPhone/iPad/Mac, "tv" for Apple TV).
     public init(baseURL: URL, token: String, source: String = "app", session: URLSession = .shared) throws {
-        guard let components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false),
-              components.scheme?.lowercased() == "https",
-              components.host?.isEmpty == false,
-              components.user == nil,
-              components.password == nil,
-              components.query == nil,
-              components.fragment == nil else {
+        guard HubEndpoint.classify(baseURL) != .rejected else {
             throw HubClientError.invalidServerURL
         }
         guard token.trimmingCharacters(in: .whitespacesAndNewlines).count >= 16 else {

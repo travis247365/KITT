@@ -53,14 +53,14 @@ let critical = state(#"{"version":"0.2.0","skills":{"security":{"name":"Security
 let pending = state(#"{"version":"0.2.0",\#(skills),"pending":[{"code":"42","source":"siri","skill":"receptionist","summary":"Draft reply to the insurance broker","created_at":"2026-11-01T07:00:00.000Z","expires_at":"2099-01-01T00:00:00.000Z"}],\#(cov)}"#)
 
 MainActor.assumeIsolated {
-    render(NowScreen(glance: green.glance(), clock: fixed).environment(\.tvPreviewFocus, "chief"), to: out.appendingPathComponent("now-green.png"))
-    render(NowScreen(glance: amber.glance(), clock: fixed).environment(\.tvPreviewFocus, "whatsapp"), to: out.appendingPathComponent("now-amber.png"))
-    render(NowScreen(glance: critical.glance(), clock: fixed).environment(\.tvPreviewFocus, "security"), to: out.appendingPathComponent("now-critical.png"))
-    render(NowScreen(glance: green.glance(offline: true), clock: fixed, offline: true, lastUpdated: fixed.addingTimeInterval(-1800)).environment(\.tvPreviewFocus, "chief"), to: out.appendingPathComponent("now-offline.png"))
-    render(NowScreen(glance: pending.glance(), clock: fixed).environment(\.tvPreviewFocus, "review"), to: out.appendingPathComponent("now-pending.png"))
-    render(AskScreen(summary: pending.glance().pendingSummary ?? "", expiresAt: nil, clock: fixed, level: .amber).environment(\.tvPreviewFocus, "cancel"), to: out.appendingPathComponent("ask.png"))
-    render(AskScreen(summary: pending.glance().pendingSummary ?? "", expiresAt: nil, clock: fixed, level: .critical, outcome: "Draft saved in Gmail, not sent.").environment(\.tvPreviewFocus, "done"), to: out.appendingPathComponent("ask-done-critical.png"))
-    render(DetailScreen(tile: amber.glance().tiles.last!, level: .amber, clock: fixed), to: out.appendingPathComponent("detail.png"))
+    render(NowScreen(glance: green.glance(), clock: .fixed(fixed)).environment(\.tvPreviewFocus, "chief"), to: out.appendingPathComponent("now-green.png"))
+    render(NowScreen(glance: amber.glance(), clock: .fixed(fixed)).environment(\.tvPreviewFocus, "whatsapp"), to: out.appendingPathComponent("now-amber.png"))
+    render(NowScreen(glance: critical.glance(), clock: .fixed(fixed)).environment(\.tvPreviewFocus, "security"), to: out.appendingPathComponent("now-critical.png"))
+    render(NowScreen(glance: green.glance(offline: true), clock: .fixed(fixed), offline: true, lastUpdated: fixed.addingTimeInterval(-1800)).environment(\.tvPreviewFocus, "chief"), to: out.appendingPathComponent("now-offline.png"))
+    render(NowScreen(glance: pending.glance(), clock: .fixed(fixed)).environment(\.tvPreviewFocus, "review"), to: out.appendingPathComponent("now-pending.png"))
+    render(AskScreen(summary: pending.glance().pendingSummary ?? "", expiresAt: nil, clock: .fixed(fixed), level: .amber).environment(\.tvPreviewFocus, "cancel"), to: out.appendingPathComponent("ask.png"))
+    render(AskScreen(summary: pending.glance().pendingSummary ?? "", expiresAt: nil, clock: .fixed(fixed), level: .critical, outcome: "Draft saved in Gmail, not sent.").environment(\.tvPreviewFocus, "done"), to: out.appendingPathComponent("ask-done-critical.png"))
+    render(DetailScreen(tile: amber.glance().tiles.last!, level: .amber, clock: .fixed(fixed)), to: out.appendingPathComponent("detail.png"))
     var address = "https://kitt-mac.example.ts.net", token = "0123456789abcdef"
     render(ConnectScreen(address: Binding(get: { address }, set: { address = $0 }), token: Binding(get: { token }, set: { token = $0 })).environment(\.tvPreviewFocus, "connect"), to: out.appendingPathComponent("connect.png"))
 }

@@ -65,4 +65,26 @@ final class HubClientTests: XCTestCase {
         XCTAssertEqual(reply.speak, "What should I ask?")
         XCTAssertEqual(reply.needsConfirm, true)
     }
+
+    func testHubEndpointPolicy() throws {
+        func v(_ s: String) -> HubEndpoint.Verdict { HubEndpoint.classify(URL(string: s)!) }
+        XCTAssertEqual(v("https://kitt.example.ts.net"), .secure)
+        XCTAssertEqual(v("http://127.0.0.1:2000"), .thisDevice)
+        XCTAssertEqual(v("http://localhost:2000"), .thisDevice)
+        XCTAssertEqual(v("http://[::1]:2000"), .thisDevice)
+        XCTAssertEqual(v("http://192.168.1.20:2000"), .privateNetwork)
+        XCTAssertEqual(v("http://10.0.0.5:2000"), .privateNetwork)
+        XCTAssertEqual(v("http://172.20.1.1:2000"), .privateNetwork)
+        XCTAssertEqual(v("http://100.101.102.103:2000"), .privateNetwork, "Tailscale")
+        XCTAssertEqual(v("http://my-mac.local:2000"), .privateNetwork)
+        XCTAssertEqual(v("http://172.32.0.1:2000"), .rejected, "outside 172.16-31")
+        XCTAssertEqual(v("http://example.com"), .rejected)
+        XCTAssertEqual(v("http://8.8.8.8"), .rejected)
+        XCTAssertEqual(v("ftp://127.0.0.1"), .rejected)
+        XCTAssertEqual(v("https://user:pw@kitt.example.ts.net"), .rejected)
+        XCTAssertNil(HubEndpoint.note(for: URL(string: "https://kitt.example.ts.net")!))
+        XCTAssertNotNil(HubEndpoint.note(for: URL(string: "http://192.168.1.20:2000")!))
+        XCTAssertNoThrow(try HubClient(baseURL: URL(string: "http://127.0.0.1:2000")!, token: String(repeating: "a", count: 32)))
+        XCTAssertThrowsError(try HubClient(baseURL: URL(string: "http://example.com")!, token: String(repeating: "a", count: 32)))
+    }
 }

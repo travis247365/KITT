@@ -291,7 +291,7 @@ private struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                TextField("https://your-mac.tailnet.ts.net", text: $serverAddress)
+                TextField("https://your-mac.tailnet.ts.net  or  http://127.0.0.1:2000", text: $serverAddress)
                     .hubURLEntry()
                 SecureField(model.hasSavedToken ? "Replace saved app token (optional)" : "Kitt app token", text: $token)
                     .secretEntry()
@@ -316,7 +316,7 @@ private struct SettingsView: View {
             } header: {
                 Text("Hub connection")
             } footer: {
-                Text("Use the hub’s HTTPS address. The app token is sent only in the Authorization header and stored in the Keychain.")
+                Text("Use the hub’s https:// address. http:// is accepted only for this device (127.0.0.1) or your own home network, and the app says when it is not encrypted. The app token is sent only in the Authorization header and stored in the Keychain.")
             }
             if let error = model.errorMessage {
                 Section("Connection error") {
