@@ -300,42 +300,92 @@ private struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
     @State private var serverAddress = ""
     @State private var token = ""
+    @FocusState private var focus: Field?
+    private enum Field { case address, token }
+
+    private var addressURL: URL? { URL(string: serverAddress.trimmingCharacters(in: .whitespacesAndNewlines)) }
+    private var canConnect: Bool {
+        !serverAddress.trimmingCharacters(in: .whitespaces).isEmpty && !model.isBusy && (!token.trimmingCharacters(in: .whitespaces).isEmpty || model.hasSavedToken)
+    }
+
+    /// What is missing, in plain words, so a greyed button is never a mystery.
+    private var missing: String? {
+        if serverAddress.trimmingCharacters(in: .whitespaces).isEmpty { return "Enter the hub address first." }
+        if token.trimmingCharacters(in: .whitespaces).isEmpty && !model.hasSavedToken { return "Paste the app token." }
+        return nil
+    }
+
+    private func connect() {
+        focus = nil
+        Task {
+            await model.connect(serverAddress: serverAddress, appToken: token)
+            if model.isConnected && model.errorMessage == nil { token = "" }   // keep what you typed when it fails, so you can fix and retry
+        }
+    }
 
     var body: some View {
         Form {
             Section {
-                TextField("https://your-mac.tailnet.ts.net  or  http://127.0.0.1:2000", text: $serverAddress)
+                TextField("http://your-mac-name.local:2000", text: $serverAddress)
                     .hubURLEntry()
-                SecureField(model.hasSavedToken ? "Replace saved app token (optional)" : "Kitt app token", text: $token)
-                    .secretEntry()
+                    .focused($focus, equals: .address)
+                    .submitLabel(.next)
+                    .onSubmit { focus = .token }
+                if let url = addressURL, let note = HubEndpoint.note(for: url) {
+                    Label(note, systemImage: HubEndpoint.classify(url) == .thisDevice ? "checkmark.shield" : "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(HubEndpoint.classify(url) == .thisDevice ? Color.secondary : Color.orange)
+                } else if let url = addressURL, HubEndpoint.classify(url) == .rejected, !serverAddress.isEmpty {
+                    Label("Start with https://, or http:// for this device or your home network.", systemImage: "xmark.circle")
+                        .font(.caption).foregroundStyle(.red)
+                }
+                HStack {
+                    SecureField(model.hasSavedToken ? "Replace saved app token (optional)" : "Kitt app token", text: $token)
+                        .secretEntry()
+                        .focused($focus, equals: .token)
+                        .submitLabel(.go)
+                        .onSubmit { if canConnect { connect() } }
+                    // PasteButton reads the clipboard without iOS's "Allow Paste" prompt
+                    PasteButton(payloadType: String.self) { strings in
+                        if let pasted = strings.first { token = pasted.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    }
+                    .labelStyle(.titleOnly)
+                    .buttonBorderShape(.capsule)
+                }
                 if model.hasSavedToken {
                     Label("App token stored in this device’s Keychain", systemImage: "key.fill")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Button {
-                    Task {
-                        await model.connect(serverAddress: serverAddress, appToken: token)
-                        token = ""
-                    }
-                } label: {
-                    if model.isBusy {
-                        ProgressView()
-                    } else {
-                        Text("Connect and verify")
-                    }
-                }
-                .disabled(serverAddress.isEmpty || model.isBusy)
             } header: {
                 Text("Hub connection")
             } footer: {
                 Text("Use the hub’s https:// address. http:// is accepted only for this device (127.0.0.1) or your own home network, and the app says when it is not encrypted. The app token is sent only in the Authorization header and stored in the Keychain.")
             }
-            if let error = model.errorMessage {
-                Section("Connection error") {
-                    Text(error).foregroundStyle(.red)
+
+            Section {
+                Button(action: connect) {
+                    HStack(spacing: 10) {
+                        if model.isBusy { ProgressView() }
+                        Text(model.isBusy ? "Connecting…" : (model.isConnected ? "Reconnect" : "Connect")).font(.headline)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(!canConnect)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                .listRowBackground(Color.clear)
+
+                if let missing, !model.isBusy {
+                    Label(missing, systemImage: "info.circle").font(.footnote).foregroundStyle(.secondary)
+                } else if let error = model.errorMessage {
+                    Label(error, systemImage: "exclamationmark.triangle.fill").font(.footnote).foregroundStyle(.red)
+                } else if model.isConnected, let state = model.state {
+                    Label("Connected to the hub · version \(state.version)", systemImage: "checkmark.circle.fill").font(.footnote).foregroundStyle(.green)
                 }
             }
+
             if model.isConnected {
                 Section {
                     Button("Disconnect this device", role: .destructive) {
@@ -350,7 +400,7 @@ private struct SettingsView: View {
             Section("About") {
                 LabeledContent("App", value: "KITT")
                 LabeledContent("Hub version", value: model.state?.version ?? "Not connected")
-                Text("This iPhone/iPad preview does not include Apple Watch, widgets, background sync, or QR pairing yet.")
+                Text("This preview does not include Apple Watch, widgets or background sync yet.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

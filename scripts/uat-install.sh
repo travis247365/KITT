@@ -57,7 +57,7 @@ done
 echo "$LIST" | while IFS='|' read -r udid name type state dev; do
   [ -z "$udid" ] && continue
   case "${ONLY:-}" in ipad) [[ "$type" == iPad* ]] || continue;; iphone) [[ "$type" == iPhone* ]] || continue;; esac
-  if [ "$dev" != "enabled" ]; then echo "skip $name: Developer Mode is not on"; continue; fi
+  if [ "$dev" != "enabled" ] && [ "${FORCE:-0}" != "1" ]; then echo "skip $name: Developer Mode is not on (FORCE=1 tries anyway: the attempt makes the device show its Developer Mode switch)"; continue; fi
   echo "== building for $name"
   ( cd "$APPDIR" && xcodebuild -project KITT.xcodeproj -scheme KITT -configuration Release -destination "id=$udid" -derivedDataPath "$ROOT/build/DerivedData-device" \
       -allowProvisioningUpdates DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic build 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" )
