@@ -56,15 +56,13 @@ public struct FeedItem: Identifiable, Hashable, Sendable {
     public let input: String?
     public let detail: String?
     public let intent: String?
-    /// Routine plumbing that succeeded (heartbeats, queue flushes): hidden unless asked for.
+    /// A routine run that succeeded (heartbeats, syncs, queue flushes): hidden unless asked for. A failed run is never noise.
     public let isNoise: Bool
 
     public var isProblem: Bool { outcome == "error" }
 }
 
 public extension FeedItem {
-    static let noiseRoutines = ["heartbeat", "spool_flush", "retention", "uptime"]
-
     /// Build a row from a log event. `skillNames` maps a skill id to its display name (from the hub state).
     init(_ e: FeedEvent, skillNames: [String: String] = [:]) {
         let intent = e.intent ?? ""
@@ -95,7 +93,7 @@ public extension FeedItem {
             skillID: skillID, skillName: skillName, source: e.source, sourceName: Self.sourceName(e.source),
             outcome: e.outcome, outcomeName: Self.outcomeName(e.outcome), latencyMs: e.latencyMs,
             input: e.input, detail: e.detail.map { String($0.prefix(1200)) }, intent: e.intent,
-            isNoise: kind == .routine && e.outcome == "ok" && Self.noiseRoutines.contains { routineName.contains($0) }
+            isNoise: kind == .routine && e.outcome == "ok"
         )
     }
 

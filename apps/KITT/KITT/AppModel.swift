@@ -48,9 +48,7 @@ final class AppModel: ObservableObject {
             self.client = client
             hasSavedToken = true
         }
-        #if DEBUG
         connectFromDevelopmentEnvironment()
-        #endif
     }
 
     var isConnected: Bool { client != nil }
@@ -71,8 +69,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    #if DEBUG
-    /// Debug builds only: launch with KITT_DEV_URL and KITT_DEV_TOKEN in the environment to connect without typing (simulator runs and UI tests).
+    /// Launch with KITT_DEV_URL and KITT_DEV_TOKEN in the environment to connect without typing (simulator runs, UI tests, review snapshots).
     private func connectFromDevelopmentEnvironment() {
         let env = ProcessInfo.processInfo.environment
         guard client == nil, let address = env["KITT_DEV_URL"], let token = env["KITT_DEV_TOKEN"],
@@ -81,7 +78,6 @@ final class AppModel: ObservableObject {
         baseURL = address
         hasSavedToken = true
     }
-    #endif
 
     func connect(serverAddress: String, appToken: String) async {
         errorMessage = nil

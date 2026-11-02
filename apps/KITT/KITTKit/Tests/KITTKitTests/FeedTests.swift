@@ -27,7 +27,7 @@ final class FeedTests: XCTestCase {
     func testKindsTitlesAndNoise() throws {
         let i = try items()
         XCTAssertEqual(i.map(\.kind), [.routine, .routine, .decision, .decision, .brief, .ask])
-        XCTAssertEqual(i[0].isNoise, true, "a successful heartbeat is plumbing")
+        XCTAssertEqual(i[0].isNoise, true, "a successful routine run is plumbing")
         XCTAssertEqual(i[1].isNoise, false, "a failed routine is never hidden")
         XCTAssertEqual(i[1].title, "Inbox sync")
         XCTAssertEqual(i[3].title, "log cash 50 parking")

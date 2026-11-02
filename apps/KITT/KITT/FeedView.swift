@@ -12,6 +12,8 @@ struct FeedView: View {
         let filter = model.feedFilter
         let shown = filter.apply(all)
         VStack(spacing: 0) {
+            AppHeader(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: "Feed · \(shown.count) of \(all.count)")
+                .padding(.horizontal, 16).padding(.top, 14 + ScreenScaffold<EmptyView>.toolbarClearance)
             FilterBar(items: all)
             ActiveFilters()
             Divider()
@@ -23,7 +25,7 @@ struct FeedView: View {
             } else {
                 List {
                     if let pending = model.state?.pendingActions, !pending.isEmpty, !filter.isActive {
-                        Section("Needs your decision") { ForEach(pending) { PendingCard(action: $0) } }
+                        Section("Needs your decision") { ForEach(pending) { DecisionPanel(action: $0).listRowBackground(Color.clear) } }
                     }
                     if shown.isEmpty {
                         Text("No items match these filters.").foregroundStyle(.secondary)
@@ -69,9 +71,9 @@ private struct FilterBar: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(FeedDimension.allCases) { FacetMenu(dimension: $0, items: items) }
-                Toggle(isOn: $model.feedFilter.showNoise) { Label("Routine noise", systemImage: "waveform.path") }
+                Toggle(isOn: $model.feedFilter.showNoise) { Label("Routine runs", systemImage: "waveform.path") }
                     .toggleStyle(.button)
-                    .help("Show heartbeats and queue flushes that succeeded")
+                    .help("Also show routine runs that succeeded (failed ones always show)")
                 if model.feedFilter.isActive {
                     Button("Clear") { model.feedFilter = FeedFilter() }.buttonStyle(.borderless)
                 }
@@ -182,25 +184,6 @@ private struct FeedRow: View {
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
-    }
-}
-
-private struct PendingCard: View {
-    @EnvironmentObject private var model: AppModel
-    let action: PendingAction
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(action.summary).font(.headline)
-            Text("From \(action.source) · \(action.skill)").font(.subheadline).foregroundStyle(.secondary)
-            HStack {
-                Button("Confirm") { Task { await model.resolvePending(confirm: true, code: action.code) } }
-                    .buttonStyle(.borderedProminent).disabled(model.isBusy)
-                Button("Cancel", role: .destructive) { Task { await model.resolvePending(confirm: false, code: action.code) } }
-                    .buttonStyle(.bordered).disabled(model.isBusy)
-            }
-        }
-        .padding(.vertical, 6)
     }
 }
 

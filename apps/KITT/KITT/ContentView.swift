@@ -28,23 +28,36 @@ private enum AppSection: String, CaseIterable, Identifiable, Hashable {
 
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel
-    @State private var selection: AppSection? = .overview
+    @State private var selection: AppSection? = {
+        // review aid (see KITTApp.swift): open a given screen at launch
+        AppSection(rawValue: ProcessInfo.processInfo.environment["KITT_DEV_SECTION"] ?? "") ?? .overview
+    }()
+
+    private var level: StatusLevel { model.state?.statusLevel(offline: model.isOffline) ?? .green }
 
     var body: some View {
         NavigationSplitView {
             List(AppSection.allCases, selection: $selection) { section in
                 Label(section.title, systemImage: section.symbol)
+                    .font(Tv.sys(15, .medium))
                     .tag(section)
             }
+            .scrollContentBackground(.hidden)
+            .background(Tv.cockpit)
+            .safeAreaInset(edge: .top, spacing: 0) { SidebarHeader(level: level) }
             .navigationTitle("KITT")
+            .navigationSplitViewColumnWidth(min: 190, ideal: 220)
         } detail: {
             Group {
                 switch selection ?? .overview {
                 case .overview:
-                    OverviewView(openFeed: { filter in
-                        model.feedFilter = filter
-                        selection = .feed
-                    })
+                    OverviewView(
+                        openFeed: { filter in
+                            model.feedFilter = filter
+                            selection = .feed
+                        },
+                        openSettings: { selection = .settings }
+                    )
                 case .feed:
                     FeedView()
                 case .ask:
@@ -53,50 +66,53 @@ struct ContentView: View {
                     SettingsView()
                 }
             }
+            .background(Tv.void)
         }
         .task {
             if model.isConnected { await model.refresh() }
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("com.tpcl.kitt.go"))) { note in
+            if let raw = note.object as? String, let section = AppSection(rawValue: raw) { selection = section }
+        }
     }
 }
+
+// MARK: Overview
 
 private struct OverviewView: View {
     @EnvironmentObject private var model: AppModel
     /// Opens the Feed, already filtered (a card, a skill or a routine on this screen is a shortcut to its items in the feed).
     let openFeed: (FeedFilter) -> Void
+    let openSettings: () -> Void
 
-    private let columns = [GridItem(.adaptive(minimum: 190), spacing: 12)]
+    private let columns = [GridItem(.adaptive(minimum: 200), spacing: 12)]
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                }
-                if !model.isConnected {
-                    ContentUnavailableView {
-                        Label("Connect Kitt", systemImage: "point.3.connected.trianglepath.dotted")
-                    } description: {
-                        Text("Add the secure hub address and app token in Settings.")
-                    }
-                } else if let state = model.state {
-                    summaryCards(state)
-                    if !state.pendingActions.isEmpty {
-                        pendingSection(state.pendingActions)
-                    }
-                    skillsSection(state.skillList)
-                    routinesSection(state.routineList)
-                } else {
-                    ProgressView("Loading Kitt status…")
-                        .frame(maxWidth: .infinity, minHeight: 180)
-                }
+        ScreenScaffold(
+            level: model.state?.statusLevel(offline: model.isOffline) ?? .green,
+            subtitle: model.isConnected ? "Personal assistant" : "Not connected"
+        ) {
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
             }
-            .padding(20)
-            .frame(maxWidth: 1050, alignment: .leading)
-            .frame(maxWidth: .infinity)
+            if !model.isConnected {
+                VStack(alignment: .leading, spacing: 14) {
+                    Label("CONNECT KITT", systemImage: "point.3.connected.trianglepath.dotted")
+                        .font(Tv.mono(12, .medium)).tracking(1.6).foregroundStyle(Tv.cyan)
+                    Text("Add the hub address and the app token in Settings.").font(.title3).foregroundStyle(Tv.ice)
+                    Button("Open Settings", action: openSettings).buttonStyle(CyanButtonStyle()).frame(maxWidth: 240)
+                }
+                .cockpitPanel()
+            } else if let state = model.state {
+                summaryCards(state)
+                ForEach(state.pendingActions) { DecisionPanel(action: $0) }
+                skillsSection(state.skillList)
+                routinesSection(state.routineList)
+            } else {
+                HStack(spacing: 12) { ProgressView(); Text("Loading Kitt status…").foregroundStyle(Tv.fog) }
+                    .frame(maxWidth: .infinity, minHeight: 120)
+            }
         }
-        .refreshable { await model.refresh() }
         .navigationTitle("Overview")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -111,170 +127,134 @@ private struct OverviewView: View {
         }
     }
 
-    private var header: some View {
-        AppHeader(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: model.isConnected ? "Personal assistant" : "Not connected")
-    }
-
     private func summaryCards(_ state: KITTState) -> some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-            Button { openFeed(FeedFilter()) } label: { SummaryCard(
-                title: "Hub",
-                value: "Connected",
-                detail: "Version \(state.version) · open the feed",
-                symbol: "checkmark.circle.fill",
-                color: .green
-            ) }.buttonStyle(.plain)
-            Button { openFeed(FeedFilter(kinds: [FeedKind.decision.rawValue])) } label: { SummaryCard(
-                title: "Pending",
-                value: "\(state.pendingActions.count)",
-                detail: state.pendingActions.isEmpty ? "No action needs approval" : "Review before confirming",
-                symbol: "hand.raised.fill",
-                color: state.pendingActions.isEmpty ? .secondary : .orange
-            ) }.buttonStyle(.plain)
-            Button { openFeed(FeedFilter(showNoise: false)) } label: { SummaryCard(
-                title: "Skills",
-                value: "\(state.skillList.count)",
-                detail: state.brain?.ok == false ? "Assistant brain needs attention" : "Available from your hub",
-                symbol: "square.grid.2x2.fill",
-                color: state.brain?.ok == false ? .orange : .accentColor
-            ) }.buttonStyle(.plain)
-        }
-    }
-
-    private func pendingSection(_ actions: [PendingAction]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Needs your decision").font(.title2.bold())
-            ForEach(actions) { action in
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(action.summary).font(.headline)
-                    Text("From \(action.source) · \(action.skill)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    HStack {
-                        Button("Confirm") {
-                            Task { await model.resolvePending(confirm: true, code: action.code) }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(model.isBusy)
-                        Button("Cancel", role: .destructive) {
-                            Task { await model.resolvePending(confirm: false, code: action.code) }
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(model.isBusy)
-                    }
-                }
-                .cockpitPanel(accent: Tv.cyan)
-            }
+            Button { openFeed(FeedFilter()) } label: {
+                SummaryCard(title: "Hub", value: "Online", detail: "Version \(state.version) · open the feed", symbol: "checkmark.circle.fill", highlight: false)
+            }.buttonStyle(.plain)
+            Button { openFeed(FeedFilter(kinds: [FeedKind.decision.rawValue])) } label: {
+                SummaryCard(
+                    title: "Decisions",
+                    value: "\(state.pendingActions.count)",
+                    detail: state.pendingActions.isEmpty ? "Nothing waits on you" : "Review before confirming",
+                    symbol: "hand.raised.fill",
+                    highlight: !state.pendingActions.isEmpty
+                )
+            }.buttonStyle(.plain)
+            Button { openFeed(FeedFilter()) } label: {
+                SummaryCard(
+                    title: "Skills",
+                    value: "\(state.skillList.count)",
+                    detail: state.brain?.ok == false ? "Assistant brain needs attention" : "Available from your hub",
+                    symbol: "square.grid.2x2.fill",
+                    highlight: state.brain?.ok == false
+                )
+            }.buttonStyle(.plain)
         }
     }
 
     private func skillsSection(_ skills: [String: SkillState]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Skills").font(.title2.bold())
-            ForEach(skills.keys.sorted(), id: \.self) { key in
-                if let skill = skills[key] {
-                    Button { openFeed(FeedFilter(skills: [key])) } label: { HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: skill.ok == true ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                            .foregroundStyle(skill.ok == true ? .green : .orange)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(skill.name).font(.headline)
-                            if let detail = skill.detail, !detail.isEmpty {
-                                Text(detail).font(.subheadline).foregroundStyle(.secondary)
+        PanelSection(title: "Skills") {
+            VStack(spacing: 8) {
+                ForEach(skills.keys.sorted(), id: \.self) { key in
+                    if let skill = skills[key] {
+                        Button { openFeed(FeedFilter(skills: [key])) } label: {
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: skill.ok == true ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                                    .foregroundStyle(skill.ok == true ? Tv.cyan : Tv.signal)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(skill.name).font(.headline).foregroundStyle(Tv.ice)
+                                    if skill.ok != true, let detail = skill.detail, !detail.isEmpty {
+                                        Text(detail).font(.caption).foregroundStyle(Tv.fog).lineLimit(2)
+                                    }
+                                }
+                                Spacer()
+                                Text(skill.ok == true ? "READY" : "ATTENTION")
+                                    .font(Tv.mono(11, .semibold)).tracking(1.2)
+                                    .foregroundStyle(skill.ok == true ? Tv.fog : Tv.cyan)
+                                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Tv.fog)
                             }
+                            .cockpitPanel(accent: skill.ok == true ? Tv.cyan : Tv.signal)
+                            .contentShape(Rectangle())
                         }
-                        Spacer()
-                        Text(skill.ok == true ? "Ready" : "Attention")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(skill.ok == true ? .green : .orange)
-                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                        .buttonStyle(.plain)
                     }
-                    .padding(.vertical, 8)
-                    .contentShape(Rectangle()) }.buttonStyle(.plain)
                 }
             }
         }
     }
 
     private func routinesSection(_ routines: [RoutineState]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Recent routines").font(.title2.bold())
+        PanelSection(title: "Recent routines") {
             if routines.isEmpty {
-                Text("No routines reported.")
-                    .foregroundStyle(.secondary)
+                Text("No routines reported.").foregroundStyle(Tv.fog)
             } else {
-                ForEach(routines.prefix(8)) { routine in
-                    Button { openFeed(FeedFilter(skills: routine.skill.map { [$0] } ?? [], kinds: [FeedKind.routine.rawValue], showNoise: true)) } label: { HStack {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(routine.name).font(.subheadline.weight(.medium))
-                            Text(routine.lastRunAt ?? "Not run yet")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                VStack(spacing: 6) {
+                    ForEach(routines.prefix(8)) { routine in
+                        Button { openFeed(FeedFilter(skills: routine.skill.map { [$0] } ?? [], kinds: [FeedKind.routine.rawValue], showNoise: true)) } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(routine.name).font(Tv.mono(13, .medium)).foregroundStyle(Tv.ice)
+                                    Text(routine.lastRunAt ?? "Not run yet").font(.caption).foregroundStyle(Tv.fog)
+                                }
+                                Spacer()
+                                Text((routine.lastStatus ?? "—").uppercased())
+                                    .font(Tv.mono(11, .semibold)).tracking(1.2)
+                                    .foregroundStyle(routine.lastStatus == "error" ? Tv.signal : Tv.fog)
+                            }
+                            .cockpitPanel()
+                            .contentShape(Rectangle())
                         }
-                        Spacer()
-                        Text(routine.lastStatus ?? "—")
-                            .font(.caption)
-                            .foregroundStyle(routine.lastStatus == "error" ? .red : .secondary)
+                        .buttonStyle(.plain)
                     }
-                    .padding(.vertical, 5)
-                    .contentShape(Rectangle()) }.buttonStyle(.plain)
                 }
             }
         }
     }
 }
 
+// MARK: Ask
+
 private struct AskView: View {
     @EnvironmentObject private var model: AppModel
     @State private var command = ""
 
     var body: some View {
-        Form {
-            Section("Ask Kitt") {
-                TextField("Type a command or question", text: $command, axis: .vertical)
-                    .lineLimit(2...5)
-                    .submitLabel(.send)
-                    .onSubmit { send() }
-                HStack {
-                    Text("\(command.count)/2000")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Button {
-                        send()
-                    } label: {
-                        if model.isBusy {
-                            ProgressView()
-                        } else {
-                            Label("Ask", systemImage: "arrow.up.circle.fill")
-                        }
+        ScreenScaffold(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: "Ask Kitt") {
+            PanelSection(title: "Ask Kitt") {
+                VStack(alignment: .leading, spacing: 12) {
+                    LabeledPanel(label: "Type a command or question") {
+                        TextField("What's on my plate?", text: $command, axis: .vertical)
+                            .lineLimit(2...5)
+                            .submitLabel(.send)
+                            .onSubmit { send() }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || command.count > 2_000 || model.isBusy || !model.isConnected)
+                    HStack(spacing: 14) {
+                        Text("\(command.count)/2000").font(Tv.mono(12)).foregroundStyle(Tv.fog)
+                        Spacer()
+                        Button(action: send) {
+                            if model.isBusy { ProgressView().controlSize(.small).tint(.black) } else { Label("Ask", systemImage: "arrow.up.circle.fill") }
+                        }
+                        .buttonStyle(CyanButtonStyle())
+                        .frame(maxWidth: 180)
+                        .disabled(command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || command.count > 2_000 || model.isBusy || !model.isConnected)
+                    }
                 }
+                .cockpitPanel()
             }
             if let reply = model.reply {
-                Section("Kitt says") {
-                    Text(reply).textSelection(.enabled)
+                PanelSection(title: "Kitt says") {
+                    Text(reply).foregroundStyle(Tv.ice).textSelection(.enabled).cockpitPanel()
                 }
             }
             if let error = model.errorMessage {
-                Section("Couldn’t complete that") {
-                    Text(error).foregroundStyle(.red)
+                PanelSection(title: "Couldn’t complete that") {
+                    Text(error).foregroundStyle(Tv.signal).cockpitPanel(accent: Tv.signal)
                 }
             }
             if let pending = model.state?.pendingActions, !pending.isEmpty {
-                Section("Confirmation required") {
-                    ForEach(pending) { action in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(action.summary).font(.headline)
-                            HStack {
-                                Button("Confirm") { Task { await model.resolvePending(confirm: true, code: action.code) } }
-                                    .buttonStyle(.borderedProminent)
-                                Button("Cancel", role: .destructive) { Task { await model.resolvePending(confirm: false, code: action.code) } }
-                                    .buttonStyle(.bordered)
-                            }
-                        }
-                    }
+                PanelSection(title: "Confirmation required") {
+                    ForEach(pending) { DecisionPanel(action: $0) }
                 }
             }
         }
@@ -289,6 +269,8 @@ private struct AskView: View {
     }
 }
 
+// MARK: Settings
+
 private struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
     @State private var serverAddress = ""
@@ -296,9 +278,10 @@ private struct SettingsView: View {
     @FocusState private var focus: Field?
     /// Shown as an alert after a failed connect, so a refusal can never go unnoticed.
     @State private var failure: String?
-    private enum Field: Hashable { case address, token, connect, disconnect }
+    private enum Field: Hashable { case address, token }
 
     private var addressURL: URL? { URL(string: serverAddress.trimmingCharacters(in: .whitespacesAndNewlines)) }
+    private var hasToken: Bool { model.hasSavedToken || model.isConnected }
     private var canConnect: Bool {
         !serverAddress.trimmingCharacters(in: .whitespaces).isEmpty && !model.isBusy && (!token.trimmingCharacters(in: .whitespaces).isEmpty || model.hasSavedToken)
     }
@@ -310,9 +293,7 @@ private struct SettingsView: View {
         return nil
     }
 
-    private var hasToken: Bool { model.hasSavedToken || model.isConnected }
-
-    /// Tab / Shift-Tab move between the two fields (address, token). Buttons are reached with Return (Connect) or, with Full Keyboard Access, Tab.
+    /// Tab / Shift-Tab move between the two fields (address, token). Return connects.
     private func tab(from field: Field, back: Bool) -> KeyPress.Result {
         let order: [Field] = [.address, .token]
         guard let i = order.firstIndex(of: field) else { return .ignored }
@@ -340,85 +321,88 @@ private struct SettingsView: View {
     }
 
     var body: some View {
-        Form {
-            Section {
-                TextField("http://your-mac-name.local:2000", text: $serverAddress)
-                    .hubURLEntry()
-                    .focused($focus, equals: .address)
-                    .submitLabel(.next)
-                    .onSubmit { focus = .token }
-                    .onKeyPress(keys: [.tab]) { press in tab(from: .address, back: press.modifiers.contains(.shift)) }
-                if let url = addressURL, let note = HubEndpoint.note(for: url) {
-                    Label(note, systemImage: HubEndpoint.classify(url) == .thisDevice ? "checkmark.shield" : "exclamationmark.triangle")
-                        .font(.caption)
-                        .foregroundStyle(HubEndpoint.classify(url) == .thisDevice ? Color.secondary : Color.orange)
-                } else if let url = addressURL, HubEndpoint.classify(url) == .rejected, !serverAddress.isEmpty {
-                    Label("Start with https://, or http:// for this device or your home network.", systemImage: "xmark.circle")
-                        .font(.caption).foregroundStyle(.red)
-                }
-                HStack {
-                    SecureField(model.hasSavedToken ? "Replace saved app token (optional)" : "Kitt app token", text: $token)
-                        .secretEntry()
-                        .focused($focus, equals: .token)
-                        .submitLabel(.go)
-                        .onSubmit { if canConnect { connect() } }
-                        .onKeyPress(keys: [.tab]) { press in tab(from: .token, back: press.modifiers.contains(.shift)) }
-                    // PasteButton reads the clipboard without iOS's "Allow Paste" prompt
-                    PasteButton(payloadType: String.self) { strings in
-                        if let pasted = strings.first { token = pasted.trimmingCharacters(in: .whitespacesAndNewlines) }
+        ScreenScaffold(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: "Settings") {
+            PanelSection(title: "Hub connection") {
+                VStack(alignment: .leading, spacing: 16) {
+                    LabeledPanel(label: "Hub address") {
+                        TextField("http://your-mac-name.local:2000", text: $serverAddress)
+                            .hubURLEntry()
+                            .focused($focus, equals: .address)
+                            .submitLabel(.next)
+                            .onSubmit { focus = .token }
+                            .onKeyPress(keys: [.tab]) { press in tab(from: .address, back: press.modifiers.contains(.shift)) }
                     }
-                    .labelStyle(.titleOnly)
-                    .buttonBorderShape(.capsule)
-                }
-                if !token.isEmpty {
-                    Text("\(token.trimmingCharacters(in: .whitespacesAndNewlines).count) characters pasted")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-                if model.hasSavedToken {
-                    Label("App token stored in this device’s Keychain", systemImage: "key.fill")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } header: {
-                Text("Hub connection")
-            } footer: {
-                Text("Use the hub’s https:// address. http:// is accepted only for this device (127.0.0.1) or your own home network, and the app says when it is not encrypted. The app token is sent only in the Authorization header and stored in the Keychain.")
-            }
-
-            Section {
-                Button(action: connect) {
-                    HStack(spacing: 10) {
-                        if model.isBusy { ProgressView().controlSize(.small).tint(.black) }
-                        Text(model.isBusy ? "Connecting…" : (model.isConnected ? "Reconnect" : "Connect"))
-                            .font(.headline)
+                    if let url = addressURL, let note = HubEndpoint.note(for: url) {
+                        Label(note, systemImage: HubEndpoint.classify(url) == .thisDevice ? "checkmark.shield" : "exclamationmark.triangle")
+                            .font(.caption)
+                            .foregroundStyle(HubEndpoint.classify(url) == .thisDevice ? Tv.fog : Color.orange)
+                    } else if let url = addressURL, HubEndpoint.classify(url) == .rejected, !serverAddress.isEmpty {
+                        Label("Start with https://, or http:// for this device or your home network.", systemImage: "xmark.circle")
+                            .font(.caption).foregroundStyle(Tv.signal)
                     }
-                    .foregroundStyle(Color.black)
-                    .frame(maxWidth: .infinity, minHeight: 48)
-                    .background(Tv.cyan.opacity(canConnect || model.isBusy ? 1 : 0.28))
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .disabled(!canConnect)
-                .keyboardShortcut(.defaultAction)    // Return connects from anywhere in the form
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .listRowBackground(Color.clear)
 
-                ConnectStatus(missing: missing, onRetry: connect)
+                    LabeledPanel(label: model.hasSavedToken ? "App token (saved; paste to replace)" : "App token") {
+                        HStack {
+                            SecureField("Paste the app token", text: $token)
+                                .secretEntry()
+                                .focused($focus, equals: .token)
+                                .submitLabel(.go)
+                                .onSubmit { if canConnect { connect() } }
+                                .onKeyPress(keys: [.tab]) { press in tab(from: .token, back: press.modifiers.contains(.shift)) }
+                            // PasteButton reads the clipboard without iOS's "Allow Paste" prompt
+                            PasteButton(payloadType: String.self) { strings in
+                                if let pasted = strings.first { token = pasted.trimmingCharacters(in: .whitespacesAndNewlines) }
+                            }
+                            .labelStyle(.titleOnly)
+                            .buttonBorderShape(.capsule)
+                        }
+                    }
+                    if !token.isEmpty {
+                        Text("\(token.trimmingCharacters(in: .whitespacesAndNewlines).count) characters pasted")
+                            .font(Tv.mono(12)).foregroundStyle(Tv.fog)
+                    }
+                    if model.hasSavedToken {
+                        Label("App token stored in this device’s Keychain", systemImage: "key.fill")
+                            .font(.caption).foregroundStyle(Tv.fog)
+                    }
+
+                    Button(action: connect) {
+                        HStack(spacing: 10) {
+                            if model.isBusy { ProgressView().controlSize(.small).tint(.black) }
+                            Text(model.isBusy ? "Connecting…" : (model.isConnected ? "Reconnect" : "Connect"))
+                        }
+                    }
+                    .buttonStyle(CyanButtonStyle())
+                    .disabled(!canConnect)
+                    .keyboardShortcut(.defaultAction)    // Return connects from anywhere
+                    ConnectStatus(missing: missing, onRetry: connect)
+
+                    Text("Use the hub’s https:// address. http:// is accepted only for this device (127.0.0.1) or your own home network, and the app says when it is not encrypted. The app token is sent only in the Authorization header and stored in the Keychain.")
+                        .font(.caption).foregroundStyle(Tv.fog)
+                }
+                .cockpitPanel()
             }
 
             if hasToken {
-                Section {
-                    Button("Disconnect and remove saved token", role: .destructive) { disconnect() }
-                } footer: {
-                    Text("This removes the saved token and hub address from this device. It does not revoke the token on the hub.")
+                PanelSection(title: "This device") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Button("Disconnect and remove saved token") { disconnect() }
+                            .buttonStyle(GhostButtonStyle(danger: true))
+                            .frame(maxWidth: 360)
+                        Text("This removes the saved token and hub address from this device. It does not revoke the token on the hub.")
+                            .font(.caption).foregroundStyle(Tv.fog)
+                    }
+                    .cockpitPanel()
                 }
             }
-            Section("About") {
-                LabeledContent("App", value: "KITT")
-                LabeledContent("Hub version", value: model.state?.version ?? "Not connected")
-                Text("This preview does not include Apple Watch, widgets or background sync yet.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+
+            PanelSection(title: "About") {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack { Text("App").foregroundStyle(Tv.fog); Spacer(); Text("KITT").foregroundStyle(Tv.ice) }
+                    HStack { Text("Hub version").foregroundStyle(Tv.fog); Spacer(); Text(model.state?.version ?? "Not connected").font(Tv.mono(14)).foregroundStyle(Tv.ice) }
+                    Text("This preview does not include Apple Watch, widgets or background sync yet.").font(.caption).foregroundStyle(Tv.fog)
+                }
+                .cockpitPanel()
             }
         }
         .navigationTitle("Settings")
@@ -439,23 +423,28 @@ private struct SettingsView: View {
     }
 }
 
+// MARK: pieces
+
 private struct SummaryCard: View {
     let title: String
     let value: String
     let detail: String
     let symbol: String
-    let color: Color
+    let highlight: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title.uppercased(), systemImage: symbol)
                 .font(Tv.mono(12, .medium)).tracking(1.4)
                 .foregroundStyle(Tv.fog)
-            Text(value).font(Tv.mono(30, .semibold)).monospacedDigit().foregroundStyle(color == .orange ? Tv.cyan : Tv.ice)
+            Text(value)
+                .font(Tv.mono(34, .semibold)).monospacedDigit()
+                .foregroundStyle(highlight ? Tv.cyan : Tv.ice)
+                .shadow(color: highlight ? Tv.cyan.opacity(0.4) : .clear, radius: 14)
             Text(detail).font(.caption).foregroundStyle(Tv.fog)
         }
-        .frame(maxWidth: .infinity, minHeight: 96, alignment: .leading)
-        .cockpitPanel(accent: color == .orange ? Tv.cyan : Tv.cyan)
+        .frame(maxWidth: .infinity, minHeight: 100, alignment: .leading)
+        .cockpitPanel()
     }
 }
 
@@ -465,15 +454,15 @@ private struct ErrorBanner: View {
     var body: some View {
         Label(message, systemImage: "exclamationmark.triangle.fill")
             .font(.callout)
-            .foregroundStyle(.red)
+            .foregroundStyle(Tv.signal)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
-            .background(.red.opacity(0.08))
+            .overlay(Rectangle().strokeBorder(Tv.signal.opacity(0.6), lineWidth: 1))
     }
 }
 
-/// The answer to "did my click do anything?": a spinner with the current step and the seconds so far while connecting, then a green
-/// "connected and verified" card or a red card with the exact refusal and a Retry button.
+/// The answer to "did my click do anything?": a spinner with the current step while connecting, then a green "connected and verified"
+/// card or a red card with the exact refusal and a Try again button.
 private struct ConnectStatus: View {
     @EnvironmentObject private var model: AppModel
     let missing: String?
@@ -482,31 +471,29 @@ private struct ConnectStatus: View {
     var body: some View {
         Group {
             if model.isBusy {
-                TimelineView(.periodic(from: .now, by: 1)) { context in
-                    HStack(spacing: 12) {
-                        ProgressView()
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(model.connectStep ?? "Working…").font(.subheadline.weight(.semibold))
-                            Text("Waiting for the hub… up to 20 seconds").font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                HStack(spacing: 12) {
+                    ProgressView()
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.connectStep ?? "Working…").font(.subheadline.weight(.semibold)).foregroundStyle(Tv.ice)
+                        Text("Waiting for the hub… up to 20 seconds").font(.caption).foregroundStyle(Tv.fog)
                     }
+                    Spacer()
                 }
             } else if let error = model.errorMessage {
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("Not connected", systemImage: "xmark.octagon.fill").font(.subheadline.weight(.semibold)).foregroundStyle(.red)
-                    Text(error).font(.callout)
-                    Button("Try again", action: onRetry)
+                    Label("Not connected", systemImage: "xmark.octagon.fill").font(.subheadline.weight(.semibold)).foregroundStyle(Tv.signal)
+                    Text(error).font(.callout).foregroundStyle(Tv.ice)
+                    Button("Try again", action: onRetry).buttonStyle(GhostButtonStyle()).frame(maxWidth: 200)
                 }
             } else if model.isConnected, let state = model.state {
                 VStack(alignment: .leading, spacing: 4) {
-                    Label("Connected and verified", systemImage: "checkmark.circle.fill").font(.subheadline.weight(.semibold)).foregroundStyle(.green)
-                    Text(model.connectSummary ?? "Hub \(state.version)").font(.caption).foregroundStyle(.secondary)
+                    Label("Connected and verified", systemImage: "checkmark.circle.fill").font(.subheadline.weight(.semibold)).foregroundStyle(Tv.cyan)
+                    Text(model.connectSummary ?? "Hub \(state.version)").font(.caption).foregroundStyle(Tv.fog)
                 }
             } else if let missing {
-                Label(missing, systemImage: "info.circle").font(.footnote).foregroundStyle(.secondary)
+                Label(missing, systemImage: "info.circle").font(.footnote).foregroundStyle(Tv.fog)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 }
