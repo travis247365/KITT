@@ -294,6 +294,8 @@ private struct SettingsView: View {
     @State private var serverAddress = ""
     @State private var token = ""
     @FocusState private var focus: Field?
+    /// Shown as an alert after a failed connect, so a refusal can never go unnoticed.
+    @State private var failure: String?
     private enum Field: Hashable { case address, token, connect, disconnect }
 
     private var addressURL: URL? { URL(string: serverAddress.trimmingCharacters(in: .whitespacesAndNewlines)) }
@@ -331,6 +333,10 @@ private struct SettingsView: View {
         Task {
             await model.connect(serverAddress: serverAddress, appToken: token)
             if model.isConnected && model.errorMessage == nil { token = "" }   // keep what you typed when it fails, so you can fix and retry
+            else if let error = model.errorMessage {
+                let pasted = token.trimmingCharacters(in: .whitespacesAndNewlines).count
+                failure = pasted > 0 ? "\(error)\n\nYou pasted \(pasted) characters. An app token from the hub is 43. Copy it again from the hub and paste it here." : error
+            }
         }
     }
 
@@ -364,6 +370,10 @@ private struct SettingsView: View {
                     }
                     .labelStyle(.titleOnly)
                     .buttonBorderShape(.capsule)
+                }
+                if !token.isEmpty {
+                    Text("\(token.trimmingCharacters(in: .whitespacesAndNewlines).count) characters pasted")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 if model.hasSavedToken {
                     Label("App token stored in this device’s Keychain", systemImage: "key.fill")
@@ -425,8 +435,19 @@ private struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .alert("Couldn’t connect", isPresented: Binding(get: { failure != nil }, set: { if !$0 { failure = nil } })) {
+            Button("OK") { failure = nil }
+        } message: {
+            Text(failure ?? "")
+        }
         .onAppear {
-            if serverAddress.isEmpty { serverAddress = model.baseURL }
+            if serverAddress.isEmpty {
+                serverAddress = model.baseURL
+                #if os(macOS)
+                // the hub normally runs on this Mac
+                if serverAddress.isEmpty { serverAddress = "http://127.0.0.1:2000" }
+                #endif
+            }
         }
     }
 }
