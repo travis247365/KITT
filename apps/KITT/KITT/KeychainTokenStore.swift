@@ -40,7 +40,12 @@ enum KeychainTokenStore {
             let addStatus = SecItemAdd(insert as CFDictionary, nil)
             guard addStatus == errSecSuccess else { throw KeychainError(status: addStatus) }
         } else if status != errSecSuccess {
-            throw KeychainError(status: status)
+            // An item written by an earlier build of the app (a different signature) can refuse an update: replace it instead.
+            SecItemDelete(query as CFDictionary)
+            var insert = query
+            attributes.forEach { insert[$0.key] = $0.value }
+            let addStatus = SecItemAdd(insert as CFDictionary, nil)
+            guard addStatus == errSecSuccess else { throw KeychainError(status: status) }
         }
     }
 
@@ -59,5 +64,5 @@ enum KeychainTokenStore {
 
 private struct KeychainError: LocalizedError {
     let status: OSStatus
-    var errorDescription: String? { "Could not access the app token in iOS Keychain (status \(status))." }
+    var errorDescription: String? { "Could not save the app token in the Keychain (status \(status)). Use “Disconnect and remove saved token”, then connect again." }
 }

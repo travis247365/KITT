@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00E4AC526AEA40ED8B9A5968 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037A286D5F5540EFE2EA7DC /* Theme.swift */; };
 		017AC5AA9D34FBE3CAE3F838 /* KITTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3A27A8E6B97A8C5603C19B44 /* KITTKit */; };
 		07245EB9CB7194EC34ADA8FE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A435266A09733306EAC70436 /* ContentView.swift */; };
 		074F6A4DE2A008D170292BE3 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD59147D757287AE048A48D /* AppModel.swift */; };
@@ -17,21 +18,26 @@
 		21B15E2A4602CEE7C75EDFA7 /* TvScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1900FDE426BAB50590F20A /* TvScreens.swift */; };
 		2EF5544DFDCC35597ED1FB49 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */; };
 		33E8C4DCE0E2A264A746104F /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD59147D757287AE048A48D /* AppModel.swift */; };
-		4429303086363113774464D4 /* Orbitron-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2EFA84D2B8BEDA6937924C3B /* Orbitron-OFL.txt */; };
+		395393D9E937A0F2821E897C /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */; };
 		488CF1E1FB69F80E8B46D0F2 /* PlatformModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */; };
 		4EDF7295BE6109F5EABC38B4 /* KITTApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF258CAF248CE06A240486D /* KITTApp.swift */; };
+		515E836AE9D0B2C3031038EB /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037A286D5F5540EFE2EA7DC /* Theme.swift */; };
 		51E457CD748A2371798EBB9F /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
 		520A051DC20120B2F64E66C0 /* BriefVoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635667888B703C1FD500CC69 /* BriefVoice.swift */; };
+		5C6883799526E10A7F032934 /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */; };
+		61446B30F22EA6B4D41C1524 /* Orbitron-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6796135B5A3D59D5667B2E77 /* Orbitron-OFL.txt */; };
+		6BD561E9E0A0D0093B262DCD /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
 		6D1E4E370E3690595EC4FFB0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF6635F5CE8B268F69956490 /* main.swift */; };
 		6FBE551908FD2347314D40B4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A435266A09733306EAC70436 /* ContentView.swift */; };
 		75E28244F0CDF919DD6C9F19 /* TvMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */; };
 		7D6FB73D78FBDB9049AE58A5 /* PlatformModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */; };
+		81153AF922C11E56276B45AB /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */; };
 		8B03CB834DB27158F466880F /* KITTtvUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F1DBC2F111D69F35EA16EC /* KITTtvUITests.swift */; };
 		8C6F8EEEFE6FFA0D2EB83AD9 /* TvScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1900FDE426BAB50590F20A /* TvScreens.swift */; };
 		8F77C69296F61705FE5BFF6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13172FB21B9E878B0AA87D7D /* Assets.xcassets */; };
 		9151DEEE4D622CA34BE157D4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC0CD1C07CD10E4E7F7932DD /* Assets.xcassets */; };
 		9D9BEFEA56741FF059FE62B7 /* KITTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9801819C0E28E1981D92C152 /* KITTKit */; };
-		A098E7CFD095D00FBEC970C8 /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9EAA9CF98C32921B71B9997D /* Orbitron-Bold.ttf */; };
+		A6750FF9650B1D13C2ADA26B /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
 		B172EBC1B43E3A9AA5259EDF /* TvMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */; };
 		B8322ED02A26648D76DCEF00 /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
 		B94E515560C86D2C04BC6CAC /* KITTtvApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DF52363554673152630F66 /* KITTtvApp.swift */; };
@@ -39,6 +45,8 @@
 		CAC4A3D56C33D13556BADB46 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */; };
 		E4C5A1F1700BEF96D5DC3E47 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7604678120145546CC8423 /* FeedView.swift */; };
 		E4C97122A6D6713C012FFC68 /* TvRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E0D9A844178647ED9DAFB6 /* TvRootView.swift */; };
+		E601890E45AAE73491C46DBB /* TvMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */; };
+		EC7D47C549583DA199DE9B63 /* TvMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */; };
 		F135E17457112541F6C4B5D9 /* KITTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 430606AC68A38DC067C9E91E /* KITTKit */; };
 		FEC2275D4D066AA33F1F0223 /* KITTKit in Frameworks */ = {isa = PBXBuildFile; productRef = F19730FE76FC21F6F6A54114 /* KITTKit */; };
 /* End PBXBuildFile section */
@@ -58,21 +66,22 @@
 		0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformModifiers.swift; sourceTree = "<group>"; };
 		13172FB21B9E878B0AA87D7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1D1900FDE426BAB50590F20A /* TvScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvScreens.swift; sourceTree = "<group>"; };
-		2EFA84D2B8BEDA6937924C3B /* Orbitron-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Orbitron-OFL.txt"; sourceTree = "<group>"; };
 		423B74DD20AACBCF932933B0 /* KITTMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KITTMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44E0D9A844178647ED9DAFB6 /* TvRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvRootView.swift; sourceTree = "<group>"; };
 		50E9F330C13383268A4695CF /* KITT.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KITT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStore.swift; sourceTree = "<group>"; };
 		635667888B703C1FD500CC69 /* BriefVoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefVoice.swift; sourceTree = "<group>"; };
+		6796135B5A3D59D5667B2E77 /* Orbitron-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Orbitron-OFL.txt"; sourceTree = "<group>"; };
+		6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Orbitron-Bold.ttf"; sourceTree = "<group>"; };
 		74E33A863BE646664084C520 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		80F1DBC2F111D69F35EA16EC /* KITTtvUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KITTtvUITests.swift; sourceTree = "<group>"; };
 		89818F750EF93527D9C5F337 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8FF258CAF248CE06A240486D /* KITTApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KITTApp.swift; sourceTree = "<group>"; };
 		9CD59147D757287AE048A48D /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		9EAA9CF98C32921B71B9997D /* Orbitron-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Orbitron-Bold.ttf"; sourceTree = "<group>"; };
 		A435266A09733306EAC70436 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvMotion.swift; sourceTree = "<group>"; };
 		C8C8856D14B4DF08AC5E3F7A /* KITTtvUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KITTtvUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D037A286D5F5540EFE2EA7DC /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvTheme.swift; sourceTree = "<group>"; };
 		D3B7C1FE66B49BABC03AFC52 /* KITTKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KITTKit; path = KITTKit; sourceTree = SOURCE_ROOT; };
 		D49A51B86C14A57558DCCC30 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -119,19 +128,11 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		217582F7EDB0DA4F95BC6EF6 /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				9EAA9CF98C32921B71B9997D /* Orbitron-Bold.ttf */,
-				2EFA84D2B8BEDA6937924C3B /* Orbitron-OFL.txt */,
-			);
-			path = Fonts;
-			sourceTree = "<group>";
-		};
 		253116614605CE2549CF15EA = {
 			isa = PBXGroup;
 			children = (
 				BE52B3D3500631AB652A9C2B /* Config */,
+				48BCD906349A8BE0B2B37E5E /* Fonts */,
 				A4A306C621C9B8CB1B93E393 /* KITT */,
 				FC5B84E3EEEF4383300491C8 /* KITTtv */,
 				F8BA6C0F56213D3FF5FCB4BD /* KITTtvUITests */,
@@ -152,6 +153,16 @@
 				C8C8856D14B4DF08AC5E3F7A /* KITTtvUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		48BCD906349A8BE0B2B37E5E /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */,
+				6796135B5A3D59D5667B2E77 /* Orbitron-OFL.txt */,
+			);
+			name = Fonts;
+			path = KITTtv/Fonts;
 			sourceTree = "<group>";
 		};
 		908BCA96A8A978AA5AC8477A /* TvPreview */ = {
@@ -183,6 +194,7 @@
 				5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */,
 				8FF258CAF248CE06A240486D /* KITTApp.swift */,
 				0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */,
+				D037A286D5F5540EFE2EA7DC /* Theme.swift */,
 			);
 			path = KITT;
 			sourceTree = "<group>";
@@ -219,7 +231,7 @@
 				89818F750EF93527D9C5F337 /* Info.plist */,
 				00DF52363554673152630F66 /* KITTtvApp.swift */,
 				44E0D9A844178647ED9DAFB6 /* TvRootView.swift */,
-				217582F7EDB0DA4F95BC6EF6 /* Fonts */,
+				48BCD906349A8BE0B2B37E5E /* Fonts */,
 			);
 			path = KITTtv;
 			sourceTree = "<group>";
@@ -379,8 +391,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9151DEEE4D622CA34BE157D4 /* Assets.xcassets in Resources */,
-				A098E7CFD095D00FBEC970C8 /* Orbitron-Bold.ttf in Resources */,
-				4429303086363113774464D4 /* Orbitron-OFL.txt in Resources */,
+				395393D9E937A0F2821E897C /* Orbitron-Bold.ttf in Resources */,
+				61446B30F22EA6B4D41C1524 /* Orbitron-OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -389,6 +401,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BDBAECD2784D1155D33BF8F2 /* Assets.xcassets in Resources */,
+				81153AF922C11E56276B45AB /* Orbitron-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +410,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F77C69296F61705FE5BFF6F /* Assets.xcassets in Resources */,
+				5C6883799526E10A7F032934 /* Orbitron-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,6 +450,9 @@
 				4EDF7295BE6109F5EABC38B4 /* KITTApp.swift in Sources */,
 				0B44B9F374D6407DDB6DE9B4 /* KeychainTokenStore.swift in Sources */,
 				488CF1E1FB69F80E8B46D0F2 /* PlatformModifiers.swift in Sources */,
+				00E4AC526AEA40ED8B9A5968 /* Theme.swift in Sources */,
+				E601890E45AAE73491C46DBB /* TvMotion.swift in Sources */,
+				6BD561E9E0A0D0093B262DCD /* TvTheme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,6 +477,9 @@
 				15021FF5CCBE0E07BE393D15 /* KITTApp.swift in Sources */,
 				CAC4A3D56C33D13556BADB46 /* KeychainTokenStore.swift in Sources */,
 				7D6FB73D78FBDB9049AE58A5 /* PlatformModifiers.swift in Sources */,
+				515E836AE9D0B2C3031038EB /* Theme.swift in Sources */,
+				EC7D47C549583DA199DE9B63 /* TvMotion.swift in Sources */,
+				A6750FF9650B1D13C2ADA26B /* TvTheme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

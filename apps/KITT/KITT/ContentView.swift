@@ -112,11 +112,7 @@ private struct OverviewView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("KITT").font(.system(size: 30, weight: .bold, design: .rounded))
-            Text("Personal assistant · iPhone and iPad")
-                .foregroundStyle(.secondary)
-        }
+        AppHeader(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: model.isConnected ? "Personal assistant" : "Not connected")
     }
 
     private func summaryCards(_ state: KITTState) -> some View {
@@ -167,10 +163,7 @@ private struct OverviewView: View {
                         .disabled(model.isBusy)
                     }
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial)
-                .overlay(alignment: .leading) { Rectangle().fill(.orange).frame(width: 4) }
+                .cockpitPanel(accent: Tv.cyan)
             }
         }
     }
@@ -301,7 +294,7 @@ private struct SettingsView: View {
     @State private var serverAddress = ""
     @State private var token = ""
     @FocusState private var focus: Field?
-    private enum Field { case address, token }
+    private enum Field: Hashable { case address, token, connect, disconnect }
 
     private var addressURL: URL? { URL(string: serverAddress.trimmingCharacters(in: .whitespacesAndNewlines)) }
     private var canConnect: Bool {
@@ -313,6 +306,24 @@ private struct SettingsView: View {
         if serverAddress.trimmingCharacters(in: .whitespaces).isEmpty { return "Enter the hub address first." }
         if token.trimmingCharacters(in: .whitespaces).isEmpty && !model.hasSavedToken { return "Paste the app token." }
         return nil
+    }
+
+    private var hasToken: Bool { model.hasSavedToken || model.isConnected }
+
+    /// Tab / Shift-Tab walk the controls in order: address, token, Connect, then Disconnect when it is shown.
+    private func tab(from field: Field, back: Bool) -> KeyPress.Result {
+        var order: [Field] = [.address, .token, .connect]
+        if hasToken { order.append(.disconnect) }
+        guard let i = order.firstIndex(of: field) else { return .ignored }
+        focus = order[(i + (back ? order.count - 1 : 1)) % order.count]
+        return .handled
+    }
+
+    private func disconnect() {
+        model.disconnect()
+        serverAddress = ""
+        token = ""
+        focus = .address
     }
 
     private func connect() {
@@ -331,6 +342,7 @@ private struct SettingsView: View {
                     .focused($focus, equals: .address)
                     .submitLabel(.next)
                     .onSubmit { focus = .token }
+                    .onKeyPress(keys: [.tab]) { press in tab(from: .address, back: press.modifiers.contains(.shift)) }
                 if let url = addressURL, let note = HubEndpoint.note(for: url) {
                     Label(note, systemImage: HubEndpoint.classify(url) == .thisDevice ? "checkmark.shield" : "exclamationmark.triangle")
                         .font(.caption)
@@ -345,6 +357,7 @@ private struct SettingsView: View {
                         .focused($focus, equals: .token)
                         .submitLabel(.go)
                         .onSubmit { if canConnect { connect() } }
+                        .onKeyPress(keys: [.tab]) { press in tab(from: .token, back: press.modifiers.contains(.shift)) }
                     // PasteButton reads the clipboard without iOS's "Allow Paste" prompt
                     PasteButton(payloadType: String.self) { strings in
                         if let pasted = strings.first { token = pasted.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -374,6 +387,11 @@ private struct SettingsView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(!canConnect)
+                .focusable(canConnect)
+                .focused($focus, equals: .connect)
+                .onKeyPress(keys: [.tab]) { press in tab(from: .connect, back: press.modifiers.contains(.shift)) }
+                .onKeyPress(.return) { if canConnect { connect() }; return .handled }
+                .onKeyPress(.space) { if canConnect { connect() }; return .handled }
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 .listRowBackground(Color.clear)
 
@@ -386,15 +404,16 @@ private struct SettingsView: View {
                 }
             }
 
-            if model.isConnected {
+            if hasToken {
                 Section {
-                    Button("Disconnect this device", role: .destructive) {
-                        model.disconnect()
-                        serverAddress = ""
-                        token = ""
-                    }
+                    Button("Disconnect and remove saved token", role: .destructive) { disconnect() }
+                        .focusable()
+                        .focused($focus, equals: .disconnect)
+                        .onKeyPress(keys: [.tab]) { press in tab(from: .disconnect, back: press.modifiers.contains(.shift)) }
+                        .onKeyPress(.return) { disconnect(); return .handled }
+                        .onKeyPress(.space) { disconnect(); return .handled }
                 } footer: {
-                    Text("This removes the saved token from this device. It does not revoke the token on the hub.")
+                    Text("This removes the saved token and hub address from this device. It does not revoke the token on the hub.")
                 }
             }
             Section("About") {
@@ -421,15 +440,14 @@ private struct SummaryCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label(title, systemImage: symbol)
-                .font(.subheadline)
-                .foregroundStyle(color)
-            Text(value).font(.title2.bold())
-            Text(detail).font(.caption).foregroundStyle(.secondary)
+            Label(title.uppercased(), systemImage: symbol)
+                .font(Tv.mono(12, .medium)).tracking(1.4)
+                .foregroundStyle(Tv.fog)
+            Text(value).font(Tv.mono(30, .semibold)).monospacedDigit().foregroundStyle(color == .orange ? Tv.cyan : Tv.ice)
+            Text(detail).font(.caption).foregroundStyle(Tv.fog)
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
-        .background(.thinMaterial)
+        .frame(maxWidth: .infinity, minHeight: 96, alignment: .leading)
+        .cockpitPanel(accent: color == .orange ? Tv.cyan : Tv.cyan)
     }
 }
 

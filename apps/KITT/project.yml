@@ -17,6 +17,11 @@ targets:
       Release: Config/Signing.xcconfig
     sources:
       - path: KITT
+      - path: TvShared
+        includes:
+          - TvTheme.swift
+          - TvMotion.swift
+      - path: KITTtv/Fonts/Orbitron-Bold.ttf
     dependencies:
       - package: KITTKit
     settings:
@@ -37,6 +42,8 @@ targets:
         LSApplicationCategoryType: public.app-category.productivity
         UIApplicationSupportsIndirectInputEvents: true
         UILaunchScreen: {}
+        UIAppFonts:
+          - Orbitron-Bold.ttf
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
@@ -64,6 +71,11 @@ targets:
       - path: KITT
         excludes:
           - Info.plist
+      - path: TvShared
+        includes:
+          - TvTheme.swift
+          - TvMotion.swift
+      - path: KITTtv/Fonts/Orbitron-Bold.ttf
     dependencies:
       - package: KITTKit
     info:
@@ -71,6 +83,7 @@ targets:
       properties:
         CFBundleDisplayName: Kitt
         LSApplicationCategoryType: public.app-category.productivity
+        ATSApplicationFontsPath: .
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
           NSAllowsLocalNetworking: true

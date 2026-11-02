@@ -35,13 +35,16 @@ struct FeedView: View {
                                 FeedRow(item: item)
                                     .contentShape(Rectangle())
                                     .onTapGesture { selected = item }
+                                    .listRowBackground(Tv.cockpit)
                             }
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
                 .refreshable { await model.refreshFeed() }
             }
         }
+        .background(Tv.void)
         .navigationTitle("Feed")
         .searchable(text: $model.feedFilter.query, prompt: "Search the feed")
         .toolbar {
