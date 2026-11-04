@@ -11,7 +11,10 @@ final class SpeechInput: ObservableObject {
     @Published var transcript = ""
     @Published var deniedMessage: String?
 
-    private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en_GB"))
+    // No locale pinned: a hardcoded one (en_GB) may not be installed on this device, which silently
+    // disables recognition with no error on screen - exactly what looked like "the button does nothing".
+    // The device's own current locale is far more likely to already be downloaded.
+    private let recognizer = SFSpeechRecognizer()
     private let engine = AVAudioEngine()
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?

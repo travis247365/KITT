@@ -61,7 +61,10 @@ struct ContentView: View {
                 case .feed:
                     FeedView()
                 case .ask:
-                    AskView()
+                    AskView(openFeed: { filter in
+                        model.feedFilter = filter
+                        selection = .feed
+                    })
                 case .settings:
                     SettingsView()
                 }
@@ -215,10 +218,15 @@ private struct OverviewView: View {
 
 // MARK: Ask
 
+/// The exact phrases from the approved mockup (mockups/src/engine.ts SUGGESTIONS) - real commands the grammar knows,
+/// not placeholder copy.
+private let askSuggestions = ["What's on my plate", "Cash position", "Anything past due", "Security status", "Log cash 200 fuel", "Idea: voice briefs for the car"]
+
 private struct AskView: View {
     @EnvironmentObject private var model: AppModel
     @StateObject private var speech = SpeechInput()
     @State private var command = ""
+    let openFeed: (FeedFilter) -> Void
 
     var body: some View {
         ScreenScaffold(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: "Ask Kitt") {
@@ -241,6 +249,10 @@ private struct AskView: View {
                         Spacer()
                     }
                     Rectangle().fill(Tv.cyan.opacity(0.18)).frame(height: 1)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("TRY SAYING").font(Tv.mono(11, .medium)).tracking(1.4).foregroundStyle(Tv.fog)
+                        FlowChips(items: askSuggestions) { phrase in command = phrase; send() }
+                    }
                     LabeledPanel(label: "Or type a command or question") {
                         TextField("What's on my plate?", text: $command, axis: .vertical)
                             .lineLimit(2...5)
@@ -262,7 +274,24 @@ private struct AskView: View {
             }
             if let reply = model.reply {
                 PanelSection(title: "Kitt says") {
-                    Text(reply).foregroundStyle(Tv.ice).textSelection(.enabled).cockpitPanel()
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(reply).foregroundStyle(Tv.ice).textSelection(.enabled)
+                        if let answer = model.lastAnswer {
+                            HStack(spacing: 10) {
+                                Label(answer.ruleMatched ? "Matched by rule" : answer.via == "llm" ? "Answered by the language brain" : "No rule matched",
+                                      systemImage: answer.ruleMatched ? "checkmark.seal.fill" : answer.via == "llm" ? "sparkles" : "questionmark.circle")
+                                    .font(Tv.mono(11, .medium))
+                                    .foregroundStyle(answer.ruleMatched ? Tv.cyan : answer.via == "llm" ? Tv.ice : Tv.fog)
+                                Spacer()
+                                Button("Speak aloud") { Speech.say(reply) }.buttonStyle(.plain).font(Tv.mono(12)).foregroundStyle(Tv.cyan)
+                                if let skillID = answer.skillID, let skill = model.state?.skillList[skillID] {
+                                    Button("Open \(skill.name)") { openFeed(FeedFilter(skills: [skillID])) }
+                                        .buttonStyle(.plain).font(Tv.mono(12)).foregroundStyle(Tv.cyan)
+                                }
+                            }
+                        }
+                    }
+                    .cockpitPanel()
                 }
             }
             if let error = model.errorMessage {

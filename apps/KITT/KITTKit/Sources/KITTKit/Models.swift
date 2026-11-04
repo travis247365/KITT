@@ -128,9 +128,26 @@ public struct SkillState: Decodable, Equatable, Sendable, Identifiable {
 public struct KITTReply: Decodable, Equatable, Sendable {
     public let speak: String
     public let needsConfirm: Bool?
+    /// "skill.intent", e.g. "subscriptions.monthly_total"; nil for a global reply (confirm/cancel/help/...).
+    public let intent: String?
+    /// How the hub matched this: "global"/"pattern" (deterministic grammar, no model call), "llm" (the Haiku
+    /// classifier), "none"/"llm-error" (nothing matched). Computed server-side in src/intents/router.js.
+    public let via: String?
 
-    public init(speak: String, needsConfirm: Bool? = nil) {
+    public init(speak: String, needsConfirm: Bool? = nil, intent: String? = nil, via: String? = nil) {
         self.speak = speak
         self.needsConfirm = needsConfirm
+        self.intent = intent
+        self.via = via
     }
+
+    /// The skill the reply came from (the part before the dot in `intent`), when there is one.
+    public var skillID: String? {
+        guard let intent, let dot = intent.firstIndex(of: ".") else { return nil }
+        let id = String(intent[..<dot])
+        return id == "kitt" ? nil : id
+    }
+
+    /// Whether the hub answered this from its own deterministic grammar rather than a guess from the language model.
+    public var ruleMatched: Bool { via == "global" || via == "pattern" }
 }

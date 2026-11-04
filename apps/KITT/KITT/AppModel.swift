@@ -7,6 +7,9 @@ final class AppModel: ObservableObject {
     @Published private(set) var state: KITTState?
     @Published private(set) var isBusy = false
     @Published private(set) var reply: String?
+    /// The full reply from the last `ask`, including `via`/`intent` - who answered (a rule, the language model, or
+    /// no match) and which skill. `reply` above stays the plain spoken text for anything still reading only that.
+    @Published private(set) var lastAnswer: KITTReply?
     @Published var errorMessage: String?
     @Published private(set) var baseURL: String
     @Published private(set) var hasSavedToken = false
@@ -180,6 +183,7 @@ final class AppModel: ObservableObject {
         do {
             let result = try await client.ask(command)
             reply = result.speak
+            lastAnswer = result
             state = try await client.state()
             errorMessage = nil
         } catch {
