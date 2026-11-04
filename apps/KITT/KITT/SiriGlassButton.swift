@@ -6,29 +6,39 @@ import SwiftUI
 struct SiriGlassButton: View {
     let isListening: Bool
     let isAvailable: Bool
+    var size: CGFloat = 88
     let action: () -> Void
 
     @State private var pulse = false
 
+    private var iconSize: CGFloat { size * 0.38 }
+
     var body: some View {
         Button(action: action) {
             ZStack {
-                if isListening {
+                // two rings at different phases so the pulse reads as continuous, not a single flash
+                ForEach(0..<2, id: \.self) { i in
                     Circle()
-                        .stroke(Tv.cyan.opacity(pulse ? 0.05 : 0.55), lineWidth: pulse ? 14 : 2)
-                        .scaleEffect(pulse ? 1.55 : 1.0)
-                        .animation(.easeOut(duration: 1.1).repeatForever(autoreverses: false), value: pulse)
+                        .stroke(Tv.cyan.opacity(isListening ? (pulse ? 0.0 : 0.6) : 0), lineWidth: pulse ? size * 0.22 : 2)
+                        .scaleEffect(pulse ? 1.7 : 1.0)
+                        .animation(
+                            isListening
+                                ? .easeOut(duration: 1.3).repeatForever(autoreverses: false).delay(Double(i) * 0.65)
+                                : .default,
+                            value: pulse
+                        )
                 }
                 Circle()
                     .fill(Tv.cockpit)
-                    .kittGlass(tint: isListening ? Tv.cyan : Tv.fog)
-                    .overlay(Circle().stroke(isListening ? Tv.cyan : Tv.cyan.opacity(0.35), lineWidth: 1.5))
+                    .kittGlass(tint: isListening ? Tv.cyan : Tv.cyan.opacity(0.6))
+                    .overlay(Circle().stroke(isListening ? Tv.cyan : Tv.cyan.opacity(0.55), lineWidth: 2))
+                    .shadow(color: Tv.cyan.opacity(isListening ? 0.55 : 0.22), radius: isListening ? 18 : 8)
                 Image(systemName: isListening ? "waveform" : "mic.fill")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: iconSize, weight: .semibold))
                     .foregroundStyle(isListening ? Tv.cyan : Tv.ice)
                     .symbolEffect(.variableColor.iterative, isActive: isListening)
             }
-            .frame(width: 52, height: 52)
+            .frame(width: size, height: size)
         }
         .buttonStyle(.plain)
         .disabled(!isAvailable)

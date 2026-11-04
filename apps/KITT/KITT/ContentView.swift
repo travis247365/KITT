@@ -223,20 +223,31 @@ private struct AskView: View {
     var body: some View {
         ScreenScaffold(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: "Ask Kitt") {
             PanelSection(title: "Ask Kitt") {
-                VStack(alignment: .leading, spacing: 12) {
-                    LabeledPanel(label: "Type a command or question, or tap the mic") {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack(spacing: 20) {
+                        SiriGlassButton(isListening: speech.isListening, isAvailable: speech.isAvailable) { speech.toggle() }
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(speech.isListening ? "Listening…" : "Talk to Kitt")
+                                .font(Tv.sys(20, .semibold))
+                                .foregroundStyle(speech.isListening ? Tv.cyan : Tv.ice)
+                            if let denied = speech.deniedMessage {
+                                Text(denied).font(Tv.mono(12)).foregroundStyle(Tv.signal)
+                            } else {
+                                Text(speech.isAvailable ? "Tap the mic and ask, the way you'd ask Siri." : "Voice isn't available on this device; type below instead.")
+                                    .font(Tv.mono(12))
+                                    .foregroundStyle(Tv.fog)
+                            }
+                        }
+                        Spacer()
+                    }
+                    Rectangle().fill(Tv.cyan.opacity(0.18)).frame(height: 1)
+                    LabeledPanel(label: "Or type a command or question") {
                         TextField("What's on my plate?", text: $command, axis: .vertical)
                             .lineLimit(2...5)
                             .submitLabel(.send)
                             .onSubmit { send() }
                     }
-                    if let denied = speech.deniedMessage {
-                        Text(denied).font(Tv.mono(12)).foregroundStyle(Tv.signal)
-                    } else if speech.isListening {
-                        Label("Listening…", systemImage: "waveform").font(Tv.mono(12)).foregroundStyle(Tv.cyan)
-                    }
                     HStack(spacing: 14) {
-                        SiriGlassButton(isListening: speech.isListening, isAvailable: speech.isAvailable) { speech.toggle() }
                         Text("\(command.count)/2000").font(Tv.mono(12)).foregroundStyle(Tv.fog)
                         Spacer()
                         Button(action: send) {
