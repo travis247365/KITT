@@ -61,6 +61,19 @@ public actor HubClient {
         try await request(path: "v1/state", method: "GET", body: Optional<EmptyBody>.none)
     }
 
+    /// The brief episodes, newest first.
+    public func episodes() async throws -> [Episode] {
+        let response: EpisodesResponse = try await request(path: "v1/episodes", method: "GET", body: Optional<EmptyBody>.none)
+        return response.episodes
+    }
+
+    /// Where to fetch one episode's audio and the header that authorises it (a player cannot use the app's own session).
+    public func audioAsset(file: String) throws -> (url: URL, headers: [String: String]) {
+        guard file.range(of: #"^[\w.-]+\.(m4a|mp3)$"#, options: .regularExpression) != nil,
+              let url = URL(string: "v1/audio/\(file)", relativeTo: baseURL)?.absoluteURL else { throw HubClientError.invalidResponse }
+        return (url, ["Authorization": "Bearer \(token)"])
+    }
+
     /// The newest `latest` rows of the hub's activity log, oldest first within them.
     public func events(latest: Int = 300) async throws -> EventsResponse {
         try await request(path: "v1/events?latest=\(min(max(latest, 1), 500))", method: "GET", body: Optional<EmptyBody>.none)

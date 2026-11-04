@@ -31,12 +31,39 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Kitt talks to the hub on your own network.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ask Kitt by voice.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Kitt turns what you say into the command it asks the hub.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Orbitron-Bold.ttf</string>
 	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>CPTemplateApplicationScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>KITT CarPlay</string>
+					<key>UISceneDelegateClassName</key>
+					<string>KITTCarSceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

@@ -22,10 +22,15 @@ targets:
           - TvTheme.swift
           - TvMotion.swift
       - path: KITTtv/Fonts/Orbitron-Bold.ttf
+      - path: KITTCar
     dependencies:
       - package: KITTKit
     settings:
       base:
+        # CarPlay audio needs Apple to approve the entitlement for this App ID. Until then it is applied to simulator builds only
+        # (a device build with an unapproved entitlement cannot be signed). After approval, set KITT_CARPLAY_ENTITLEMENTS=Config/KITTCar.entitlements in Config/Signing.local.xcconfig.
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/KITTCar.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": $(KITT_CARPLAY_ENTITLEMENTS)
         PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt
         PRODUCT_NAME: KITT
         SWIFT_VERSION: "6.0"
@@ -44,6 +49,15 @@ targets:
         UILaunchScreen: {}
         UIAppFonts:
           - Orbitron-Bold.ttf
+        UIBackgroundModes:
+          - audio
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations:
+            CPTemplateApplicationSceneSessionRoleApplication:
+              - UISceneClassName: CPTemplateApplicationScene
+                UISceneConfigurationName: KITT CarPlay
+                UISceneDelegateClassName: KITTCarSceneDelegate
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
@@ -55,6 +69,8 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSLocalNetworkUsageDescription: Kitt talks to the hub on your own network.
+        NSMicrophoneUsageDescription: Ask Kitt by voice.
+        NSSpeechRecognitionUsageDescription: Kitt turns what you say into the command it asks the hub.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
           NSAllowsLocalNetworking: true
@@ -84,6 +100,8 @@ targets:
         CFBundleDisplayName: Kitt
         LSApplicationCategoryType: public.app-category.productivity
         ATSApplicationFontsPath: .
+        NSMicrophoneUsageDescription: Ask Kitt by voice.
+        NSSpeechRecognitionUsageDescription: Kitt turns what you say into the command it asks the hub.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
           NSAllowsLocalNetworking: true
@@ -92,6 +110,7 @@ targets:
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
+        com.apple.security.device.microphone: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt.mac

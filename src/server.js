@@ -41,9 +41,9 @@ export async function startServer({ port, host } = {}) {
 
   // Podcast feed: Apple Podcasts cannot send headers, so the feed token lives in the path.
   router.get('/feed/:token/kitt.xml', (c) => { const id = identify(tokens, c.params.token); if (!id || !id.scopes.includes('feed')) throw new HttpError(404, 'not found'); send(c.res, 200, podcast.rss(`${publicBase(c)}/feed/${c.params.token}`), 'application/rss+xml; charset=utf-8'); });
-  router.get('/feed/:token/audio/:file', (c) => {
-    const id = identify(tokens, c.params.token); if (!id || !id.scopes.includes('feed')) throw new HttpError(404, 'not found');
-    const safe = path.basename(c.params.file); const file = path.join(paths.audioDir, safe);
+  // One audio server for both doors: the podcast feed (token in the path) and the apps (bearer token): seekable, with Range support.
+  function serveAudio(c, name) {
+    const safe = path.basename(name); const file = path.join(paths.audioDir, safe);
     if (!/^[\w.-]+\.(m4a|mp3)$/.test(safe) || !fs.existsSync(file)) throw new HttpError(404, 'not found');
     const stat = fs.statSync(file); const type = safe.endsWith('.mp3') ? 'audio/mpeg' : 'audio/mp4';
     const range = /^bytes=(\d*)-(\d*)$/.exec(c.req.headers.range || '');
@@ -56,7 +56,14 @@ export async function startServer({ port, host } = {}) {
     }
     c.res.writeHead(200, { 'content-type': type, 'content-length': stat.size, 'accept-ranges': 'bytes', 'cache-control': 'private, max-age=86400' });
     fs.createReadStream(file).pipe(c.res);
+  }
+  router.get('/feed/:token/audio/:file', (c) => {
+    const id = identify(tokens, c.params.token); if (!id || !id.scopes.includes('feed')) throw new HttpError(404, 'not found');
+    serveAudio(c, c.params.file);
   });
+  // For the apps (CarPlay audio, the phone): the brief episodes and their audio under the app token.
+  router.get('/v1/episodes', (c) => { requireScope(c.identity, 'read'); return { episodes: podcast.list() }; });
+  router.get('/v1/audio/:file', (c) => { requireScope(c.identity, 'read'); serveAudio(c, c.params.file); });
 
   router.get('/dashboard', async (c) => { requireScope(c.identity, 'read'); const html = await renderDashboard(app); const headers = {}; const q = c.url.searchParams.get('token'); if (q && !isForwarded(c.req)) headers['set-cookie'] = `kitt_token=${encodeURIComponent(q)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000${c.req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : ''}`; send(c.res, 200, html, 'text/html; charset=utf-8', headers); });
   // Always-on big-screen view: a TV (via the lgtv-vibehack /kitt proxy) or a propped-up laptop in Chrome.

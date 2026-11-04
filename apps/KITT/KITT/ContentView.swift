@@ -217,19 +217,26 @@ private struct OverviewView: View {
 
 private struct AskView: View {
     @EnvironmentObject private var model: AppModel
+    @StateObject private var speech = SpeechInput()
     @State private var command = ""
 
     var body: some View {
         ScreenScaffold(level: model.state?.statusLevel(offline: model.isOffline) ?? .green, subtitle: "Ask Kitt") {
             PanelSection(title: "Ask Kitt") {
                 VStack(alignment: .leading, spacing: 12) {
-                    LabeledPanel(label: "Type a command or question") {
+                    LabeledPanel(label: "Type a command or question, or tap the mic") {
                         TextField("What's on my plate?", text: $command, axis: .vertical)
                             .lineLimit(2...5)
                             .submitLabel(.send)
                             .onSubmit { send() }
                     }
+                    if let denied = speech.deniedMessage {
+                        Text(denied).font(Tv.mono(12)).foregroundStyle(Tv.signal)
+                    } else if speech.isListening {
+                        Label("Listening…", systemImage: "waveform").font(Tv.mono(12)).foregroundStyle(Tv.cyan)
+                    }
                     HStack(spacing: 14) {
+                        SiriGlassButton(isListening: speech.isListening, isAvailable: speech.isAvailable) { speech.toggle() }
                         Text("\(command.count)/2000").font(Tv.mono(12)).foregroundStyle(Tv.fog)
                         Spacer()
                         Button(action: send) {
@@ -259,11 +266,14 @@ private struct AskView: View {
             }
         }
         .navigationTitle("Ask Kitt")
+        .onChange(of: speech.transcript) { _, new in command = new }
+        .onDisappear { speech.stop() }
     }
 
     private func send() {
         let text = command
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        speech.stop()
         command = ""
         Task { await model.ask(text) }
     }

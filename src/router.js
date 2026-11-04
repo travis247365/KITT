@@ -77,14 +77,14 @@ export async function dispatch(router, req, res, ctxFactory) {
   try {
     const ctx = await ctxFactory({ req, res, url, params: found.params, route: found.route });
     const out = await found.route.handler(ctx);
-    if (res.writableEnded) return;
+    if (res.writableEnded || res.headersSent) return;   // a streamed answer (audio) has already started
     if (out === undefined) return sendJson(res, 204, {});
     return sendJson(res, 200, out);
   } catch (e) {
     const status = e instanceof HttpError ? e.status : 500;
     if (status >= 500) log.error('route error', { path: url.pathname, err: e.message, stack: e.stack?.split('\n').slice(0, 4).join(' | ') });
     else log.warn('route rejected', { path: url.pathname, status, err: e.message });
-    if (!res.writableEnded) sendJson(res, status, { error: e.message, ...(e.extra || {}) });
+    if (!res.writableEnded && !res.headersSent) sendJson(res, status, { error: e.message, ...(e.extra || {}) });
   } finally {
     log.debug('http', { m: req.method, p: url.pathname, ms: Date.now() - started, status: res.statusCode });
   }

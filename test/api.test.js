@@ -44,6 +44,17 @@ test('hub HTTP contract: auth, ask, confirm, sms, state, events, view, feed', as
     // the feed asks for the newest rows, oldest first within them
     const newest = await (await fetch(`${base}/v1/events?latest=2`, { headers: H })).json();
     assert.equal(newest.audit.length, 2); assert.ok(newest.audit[0].id < newest.audit[1].id); assert.equal(newest.audit[1].id, ev.next);
+    // the apps list the brief episodes and stream their audio (with Range) under the app token
+    fs.mkdirSync(path.join(process.env.KITT_DATA_DIR, 'audio'), { recursive: true });
+    fs.writeFileSync(path.join(process.env.KITT_DATA_DIR, 'audio', 'morning-test.m4a'), Buffer.alloc(2048, 7));
+    srv.app.db.prepare("INSERT INTO episodes(slug, title, description, file, bytes, duration_s) VALUES ('morning', 'Morning brief test', 'x', 'morning-test.m4a', 2048, 47)").run();
+    const eps = await (await fetch(`${base}/v1/episodes`, { headers: H })).json();
+    assert.equal(eps.episodes[0].file, 'morning-test.m4a'); assert.equal(eps.episodes[0].duration_s, 47);
+    assert.equal((await fetch(`${base}/v1/episodes`)).status, 401);
+    const part = await fetch(`${base}/v1/audio/morning-test.m4a`, { headers: { ...H, Range: 'bytes=0-9' } });
+    assert.equal(part.status, 206); assert.equal((await part.arrayBuffer()).byteLength, 10);
+    assert.equal((await fetch(`${base}/v1/audio/morning-test.m4a`)).status, 401);
+    assert.equal((await fetch(`${base}/v1/audio/..%2Fkitt.sqlite`, { headers: H })).status, 404);
     const view = await (await fetch(`${base}/v1/skills/money/view`, { headers: H })).json();
     assert.equal(view.id, 'money'); assert.equal(view.view.balances[0].wallet, 'MTN MoMo'); assert.equal(view.view.recent.length, 3);
     assert.equal((await fetch(`${base}/v1/skills/nope/view`, { headers: H })).status, 404);

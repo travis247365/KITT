@@ -103,9 +103,12 @@ export default function define(ctx) {
       if (recentKinds.includes('paused')) { status = 'paused'; flags.push('paused'); }
       if (recentKinds.includes('cancelled')) status = 'cancelled';
       if (recentKinds.includes('expiring')) flags.push('expiring soon');
-      // next renewal: explicit date from mail > last receipt + cadence
+      // next renewal: the latest explicit date stated in any mail > last receipt + cadence.
+      // (a staleness filter used to sit here, requiring the date to be < 1 day old; a date-only string compared
+      // against a time-of-day "now" fails that check almost as soon as the date arrives, so it was discarding the
+      // most trustworthy figure we have — the merchant's own stated renewal date — in favour of a guess.)
       let nextRenewal = null; let nrProv = 'INFERRED';
-      const explicit = list.map((c) => c.renewal_date).filter(Boolean).sort().filter((d) => new Date(d) > new Date(now - 86400000)).pop();
+      const explicit = list.map((c) => c.renewal_date).filter(Boolean).sort().pop();
       if (explicit) { nextRenewal = explicit; nrProv = 'EXTRACTED'; }
       else if (lastReceipt && CADENCE_MONTHS[cadence]) { const d = new Date(lastReceipt.charged_at); const months = CADENCE_MONTHS[cadence]; if (months >= 1) d.setMonth(d.getMonth() + months); else d.setDate(d.getDate() + 7); while (d.getTime() < now - 86400000 && status === 'active') { if (months >= 1) d.setMonth(d.getMonth() + months); else d.setDate(d.getDate() + 7); } nextRenewal = d.toISOString().slice(0, 10); }
       if (lastReceipt && now - new Date(lastReceipt.charged_at).getTime() > (CADENCE_MONTHS[cadence] >= 12 ? 400 : 75) * 86400000 && status === 'active') { status = 'stale'; flags.push('no receipt recently'); }
