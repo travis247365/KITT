@@ -27,6 +27,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var lastUpdated: Date?
 
     private var client: HubClient?
+    private var lastBriefSync: Date?
 
     /// Names this device in the hub's audit trail and per-channel continuation store.
     private static var deviceSource: String {
@@ -164,6 +165,7 @@ final class AppModel: ObservableObject {
             authFailed = false
             lastUpdated = Date()
             await refreshFeed()
+            syncBriefsForTheCar(client)
         } catch {
             if error is CancellationError || (error as? URLError)?.code == .cancelled { return }
             errorMessage = error.localizedDescription
@@ -174,6 +176,16 @@ final class AppModel: ObservableObject {
                 isOffline = state != nil
             }
         }
+    }
+
+    /// Keeps the newest briefs on the phone while the hub is reachable (home network), so CarPlay can play them on the road.
+    /// iPhone only, and at most every 10 minutes: the car scene does its own sync when it connects.
+    private func syncBriefsForTheCar(_ client: HubClient) {
+        #if os(iOS)
+        if let last = lastBriefSync, Date().timeIntervalSince(last) < 600 { return }
+        lastBriefSync = Date()
+        Task.detached { _ = try? await BriefSync.sync(client: client) }
+        #endif
     }
 
     func ask(_ command: String) async {

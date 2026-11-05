@@ -3,6 +3,7 @@
 // waiting. It never touches ~/.config/kitt or ~/.local/share/kitt and stops on Ctrl-C or SIGTERM.
 //   node scripts/dev-hub.mjs        then run an app with KITT_DEV_URL=http://127.0.0.1:2998 KITT_DEV_TOKEN=dev-app-token-0123456789abcdef
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -20,6 +21,18 @@ const srv = await startServer({ port: DEV_PORT });
 const H = { Authorization: `Bearer ${DEV_TOKEN}`, 'content-type': 'application/json' };
 const base = `http://127.0.0.1:${DEV_PORT}`;
 await fetch(`${base}/v1/ask`, { method: 'POST', headers: H, body: JSON.stringify({ text: 'Kit, log cash 50 parking', source: 'dev' }) });
+// Two short spoken briefs so the CarPlay and Now Playing screens have something to list and play (macOS: `say` writes the audio).
+if (process.platform === 'darwin') {
+  const clips = [['morning', 'Good morning. Nothing needs your attention today.'], ['evening', 'Evening recap. One decision is waiting for you.']];
+  for (const [slug, text] of clips) {
+    const file = `${slug}-dev.m4a`;
+    try {
+      execFileSync('say', ['-o', path.join(process.env.KITT_DATA_DIR, 'audio', file), '--data-format=aac', text]);
+      srv.app.db.prepare("INSERT INTO episodes(slug, title, description, file, bytes, duration_s) VALUES (?, ?, 'dev', ?, ?, 5)")
+        .run(slug, `${slug[0].toUpperCase()}${slug.slice(1)} brief (dev)`, file, fs.statSync(path.join(process.env.KITT_DATA_DIR, 'audio', file)).size);
+    } catch { /* no speech voice installed: the lists stay empty */ }
+  }
+}
 console.log(`dev hub ready on ${base} (token ${DEV_TOKEN}); one decision is waiting`);
 const stop = () => { try { srv.close?.(); } catch { /* already closed */ } fs.rmSync(tmp, { recursive: true, force: true }); process.exit(0); };
 process.on('SIGINT', stop); process.on('SIGTERM', stop);

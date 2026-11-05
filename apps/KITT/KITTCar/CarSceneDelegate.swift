@@ -60,7 +60,11 @@ final class CarController {
     }
 
     /// Same address and Keychain token the phone app uses; nil until the user has connected the app once.
+    /// KITT_DEV_URL and KITT_DEV_TOKEN in the environment win, as in the phone app (simulator runs).
     private static func makeClient() -> HubClient? {
+        let env = ProcessInfo.processInfo.environment
+        if let address = env["KITT_DEV_URL"], let token = env["KITT_DEV_TOKEN"], let url = URL(string: address),
+           let dev = try? HubClient(baseURL: url, token: token, source: "app") { return dev }
         guard let address = UserDefaults.standard.string(forKey: "hubBaseURL"), let url = URL(string: address),
               let token = try? KeychainTokenStore.load() else { return nil }
         return try? HubClient(baseURL: url, token: token, source: "app")
