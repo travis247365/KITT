@@ -32,6 +32,9 @@ export function parseAirtelMoney(text) {
   const ref = pick(t, [/(?:txn ?id|trans(?:action)? id|ref(?:erence)?)\s*[:#]?\s*([A-Za-z0-9.-]{5,}?[A-Za-z0-9])(?=[.,;\s]|$)/i]);
   let direction = null; let amount = null; let counterparty = null; let kind = 'other'; let m;
   if ((m = pick(t, [new RegExp(`(?:received|credited)\\s*${AMT}\\s*(?:from)?\\s*([^.]+?)(?=\\.|\\s(?:on|your|ref|txn|fee|bal)|$)`, 'i')]))) { direction = 'in'; amount = num(m[1]); counterparty = (m[2] || '').trim(); kind = 'transfer_in'; }
+  // merchant/till payment: "Payment of ZMW 3000.00 Till Number BANKWALLET NFS SETTLEMENT ACCOUNT." - a noun ("Payment of"), not the
+  // verb the next branch looks for ("paid"), so it needs its own branch or it falls through to the balance-only line below.
+  else if ((m = pick(t, [new RegExp(`payment of\\s*${AMT}\\s*(?:till number\\s*)?([^.]+?)(?=\\.|\\s(?:on|your|ref|txn|fee|bal|tid)|$)`, 'i')]))) { direction = 'out'; amount = num(m[1]); counterparty = (m[2] || '').trim(); kind = 'payment'; }
   else if ((m = pick(t, [new RegExp(`(?:money sent to|sent|transferred|paid)\\s*(?:to)?\\s*([^.]*?)\\s*${AMT}`, 'i'), new RegExp(`(?:sent|transferred|paid)\\s*${AMT}\\s*(?:to)?\\s*([^.]+?)(?=\\.|\\s(?:on|your|ref|txn|fee|bal)|$)`, 'i')]))) {
     direction = 'out'; const a = m[1] && /^[\d,.]+$/.test(m[1]) ? m[1] : m[2]; const cp = a === m[1] ? m[2] : m[1]; amount = num(a); counterparty = String(cp || '').trim(); kind = /paid/i.test(m[0]) ? 'payment' : 'transfer_out';
   }

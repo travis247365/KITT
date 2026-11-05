@@ -15,6 +15,8 @@ test('MTN MoMo samples', () => {
 test('Airtel Money, FNB and Stanbic samples', () => {
   const a = parseSms({ sender: 'AirtelMoney', body: 'Trans ID: PP240731.1412.A12345. Money Sent to Jane Mwila K1,000.00. Fee K0.00. Bal K250.00' });
   assert.equal(a.provider, 'airtel_money'); assert.equal(a.direction, 'out'); assert.equal(a.amount, 1000); assert.equal(a.balance_after, 250); assert.match(a.counterparty, /Jane Mwila/);
+  const d = parseSms({ sender: 'AirtelMoney', body: 'Payment of ZMW 450.00 Till Number SAMPLE MERCHANT LTD. Airtel Money bal is ZMW 84.93. TID : MP240731.1412.A99999.' });
+  assert.equal(d.direction, 'out'); assert.equal(d.amount, 450); assert.equal(d.kind, 'payment'); assert.match(d.counterparty, /SAMPLE MERCHANT/); assert.equal(d.balance_after, 84.93);
   const b = parseSms({ sender: 'FNB', body: 'FNB :-) K1,200.00 paid to SHOPRITE from a/c..*0001 using card..*0002 on 26Oct. Avail K9,999.99' });
   assert.equal(b.provider, 'fnb'); assert.equal(b.direction, 'out'); assert.equal(b.amount, 1200); assert.match(b.counterparty, /SHOPRITE/); assert.equal(b.balance_after, 9999.99); assert.equal(b.wallet, 'FNB *0001');
   const c = parseSms({ sender: 'Stanbic', body: 'Dear Customer, your account ****0003 has been debited with ZMW 5,000.00 for loan instalment on 26/10/2026. Available balance ZMW 2,000.00' });
