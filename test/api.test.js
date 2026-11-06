@@ -13,6 +13,7 @@ fs.writeFileSync(path.join(process.env.KITT_CONFIG_DIR, 'kitt.json'), JSON.strin
 
 test('hub HTTP contract: auth, ask, confirm, sms, state, events, view, feed', async () => {
   const { startServer } = await import('../src/server.js');
+  const { VERSION } = await import('../src/config.js');   // the hub reports package.json's version; the test must not pin a number
   const srv = await startServer({ port: 2999 });
   const H = { Authorization: 'Bearer testtoken-testtoken-testtoken-0001', 'content-type': 'application/json' };
   const base = 'http://127.0.0.1:2999';
@@ -38,7 +39,7 @@ test('hub HTTP contract: auth, ask, confirm, sms, state, events, view, feed', as
     const pos = await (await fetch(`${base}/v1/ask`, { method: 'POST', headers: H, body: JSON.stringify({ text: "what's my cash position" }) })).json();
     assert.match(pos.speak, /3,235 kwacha/);
     const state = await (await fetch(`${base}/v1/state`, { headers: H })).json();
-    assert.equal(state.version, '0.1.0'); assert.ok(state.skills.money); assert.ok(Array.isArray(state.routines));
+    assert.equal(state.version, VERSION); assert.ok(state.skills.money); assert.ok(Array.isArray(state.routines));
     const ev = await (await fetch(`${base}/v1/events?since=0`, { headers: H })).json();
     assert.ok(ev.audit.length >= 3); assert.ok(ev.next > 0);
     // the feed asks for the newest rows, oldest first within them

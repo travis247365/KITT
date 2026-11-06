@@ -54,24 +54,25 @@ public enum CarContent {
         guard let state else { return ("Not connected", ["Open Kitt on your iPhone and connect to the hub."]) }
         let g = state.glance(offline: offline, now: now)
         if g.hasPending {
-            return ("Waiting for your OK", [g.headline, "Say “Kit, confirm” or “Kit, cancel”."])
+            return ("Waiting for your OK", [g.headline, "Say “Hey Siri, confirm with Kitt” or “cancel with Kitt”."])
         }
         switch g.level {
         case .critical:
-            return ("Needs attention now", [g.headline, g.sub, "Say “Kit, security status”."].filter { !$0.isEmpty })
+            return ("Needs attention now", [g.headline, g.sub, "Say “Hey Siri, ask Kitt” then “security status”."].filter { !$0.isEmpty })
         case .amber:
             return (offline ? "Reading from the cached copy" : "Needs attention", [g.headline, g.sub].filter { !$0.isEmpty })
         case .green:
-            return ("Nothing is waiting for you", ["Say “Hey Siri, ask Kit”."])
+            return ("Nothing is waiting for you", ["Say “Hey Siri, play my brief in Kitt”."])
         }
     }
 
-    /// The "Ask" tab: what the driver can say. CarPlay has no keyboard; Siri is the input.
+    /// The "Ask" tab: what the driver can say. CarPlay has no keyboard; Siri is the input. These are the app's own App Shortcuts
+    /// (KittIntents.swift), so every phrase names the app; the open-ended question is a second turn.
     public static let siriPhrases: [Row] = [
-        Row(id: "brief", title: "Good morning", detail: "“Hey Siri, ask Kit good morning”"),
-        Row(id: "plate", title: "What’s on my plate", detail: "“Hey Siri, ask Kit what’s on my plate”"),
-        Row(id: "confirm", title: "Confirm", detail: "“Hey Siri, ask Kit to confirm”"),
-        Row(id: "cancel", title: "Cancel", detail: "“Hey Siri, ask Kit to cancel”"),
-        Row(id: "cash", title: "Cash position", detail: "“Hey Siri, ask Kit what’s my cash position”"),
+        Row(id: "brief", title: "Play my brief", detail: "“Hey Siri, play my brief in Kitt” (or the morning brief, the evening recap)"),
+        Row(id: "ask", title: "Ask anything", detail: "“Hey Siri, ask Kitt”, then say the question when asked"),
+        Row(id: "plate", title: "What’s on my plate", detail: "“Hey Siri, ask Kitt what’s on my plate”"),
+        Row(id: "confirm", title: "Confirm", detail: "“Hey Siri, confirm with Kitt”"),
+        Row(id: "cancel", title: "Cancel", detail: "“Hey Siri, cancel with Kitt”"),
     ]
 }

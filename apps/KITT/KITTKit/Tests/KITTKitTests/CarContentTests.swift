@@ -37,7 +37,9 @@ final class CarContentTests: XCTestCase {
         """) as KITTState
         let n = CarContent.now(waiting, offline: false, now: now)
         XCTAssertEqual(n.title, "Waiting for your OK")
-        XCTAssertEqual(n.lines, ["log cash 50 parking", "Say “Kit, confirm” or “Kit, cancel”."], "decisions are voice-only in the car")
+        XCTAssertEqual(n.lines, ["log cash 50 parking", "Say “Hey Siri, confirm with Kitt” or “cancel with Kitt”."], "decisions are voice-only in the car")
+        XCTAssertEqual(CarContent.siriPhrases.map(\.id), ["brief", "ask", "plate", "confirm", "cancel"])
+        XCTAssertTrue(CarContent.siriPhrases.allSatisfy { $0.detail.contains("Kitt") }, "every App Shortcut phrase names the app")
         let critical = try decode(#"{"version":"1","skills":{"security":{"name":"Security","ok":false,"detail":"gh is missing"}}}"#) as KITTState
         XCTAssertEqual(CarContent.now(critical, offline: false, now: now).title, "Needs attention now")
         XCTAssertEqual(CarContent.now(green, offline: true, now: now).title, "Reading from the cached copy")

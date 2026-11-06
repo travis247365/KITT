@@ -22,3 +22,15 @@ Log every finding in `docs/UAT_LOG.md` (one line each: where, what you did, what
 | 8 | Quit the hub (`kitt` stop), look at the app | It says the hub is unreachable and shows the cached copy; it recovers when the hub is back |
 | 9 | Enter a wrong token | It says the hub rejected the token, not "offline" |
 | 10 | Rotate/resize (iPad), dark/light mode, large text | Nothing is cut off; text stays readable |
+
+## In the car (iPhone, 0.2.0)
+| # | Do this | Expected |
+|---|---|---|
+| 11 | On home Wi-Fi open **Briefs** | The newest briefs list with "Today HH:MM · m:ss"; none says "needs the hub" after a few seconds |
+| 12 | Press play on one, lock the phone | It keeps playing; the lock screen shows "Morning brief · Kitt" with the artwork, play/pause and the 15 s skips work |
+| 13 | Plug into CarPlay (or Bluetooth) with it playing | CarPlay's Now Playing shows the brief; steering-wheel play/pause and skip work |
+| 14 | Away from home, Airplane mode on: "Hey Siri, play my brief in Kitt" | The newest brief plays from the phone's copy; Siri says "Playing your morning brief" |
+| 15 | "Hey Siri, play my evening recap in Kitt" | The evening one |
+| 16 | On home Wi-Fi: "Hey Siri, ask Kitt" → "what's my cash position" | Siri reads the hub's answer |
+| 17 | Ask "log cash 50 parking" in the app, then "Hey Siri, confirm with Kitt" | Siri says "Logged 50 kwacha cash for parking"; the decision disappears |
+| 18 | Away from home: "Hey Siri, ask Kitt what's on my plate" | Siri says the hub is not reachable (not a raw error, not silence) |

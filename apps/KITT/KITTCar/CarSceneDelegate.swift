@@ -41,7 +41,7 @@ final class CarController {
     }
 
     func start() {
-        client = Self.makeClient()
+        client = HubAccess.makeClient()
         render()
         interface.setRootTemplate(CPTabBarTemplate(templates: [briefsTab, nowTab, askTab]), animated: false, completion: nil)
         CarPlayer.shared.onChange = { [weak self] in self?.render() }
@@ -59,19 +59,8 @@ final class CarController {
         CarPlayer.shared.onChange = nil
     }
 
-    /// Same address and Keychain token the phone app uses; nil until the user has connected the app once.
-    /// KITT_DEV_URL and KITT_DEV_TOKEN in the environment win, as in the phone app (simulator runs).
-    private static func makeClient() -> HubClient? {
-        let env = ProcessInfo.processInfo.environment
-        if let address = env["KITT_DEV_URL"], let token = env["KITT_DEV_TOKEN"], let url = URL(string: address),
-           let dev = try? HubClient(baseURL: url, token: token, source: "app") { return dev }
-        guard let address = UserDefaults.standard.string(forKey: "hubBaseURL"), let url = URL(string: address),
-              let token = try? KeychainTokenStore.load() else { return nil }
-        return try? HubClient(baseURL: url, token: token, source: "app")
-    }
-
     private func refresh() async {
-        if client == nil { client = Self.makeClient() }
+        if client == nil { client = HubAccess.makeClient() }
         guard let client else { render(); return }
         do {
             state = try await client.state()
@@ -131,15 +120,12 @@ final class CarController {
     }
 
     private func play(_ episode: Episode, title: String) async {
-        if let local = store.localAudio(for: episode) {
-            CarPlayer.shared.play(episode, title: title, source: .local(local))
-        } else if let client, let asset = try? await client.audioAsset(file: episode.file) {
-            CarPlayer.shared.play(episode, title: title, source: .stream(asset.url, headers: asset.headers))
-        } else {
+        guard let source = await HubAccess.source(for: episode, store: store) else {
             let ok = CPAlertAction(title: "OK", style: .default) { [weak self] _ in self?.interface.dismissTemplate(animated: true, completion: nil) }
             interface.presentTemplate(CPAlertTemplate(titleVariants: ["This brief is not on the phone and the hub is not reachable."], actions: [ok]), animated: true, completion: nil)
             return
         }
+        CarPlayer.shared.play(episode, title: title, source: source)
         if !(interface.topTemplate is CPNowPlayingTemplate) {
             interface.pushTemplate(CPNowPlayingTemplate.shared, animated: true, completion: nil)
         }

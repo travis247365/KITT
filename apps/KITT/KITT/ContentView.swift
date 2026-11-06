@@ -4,6 +4,7 @@ import KITTKit
 private enum AppSection: String, CaseIterable, Identifiable, Hashable {
     case overview
     case feed
+    case briefs
     case ask
     case settings
 
@@ -12,6 +13,7 @@ private enum AppSection: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .overview: "Overview"
         case .feed: "Feed"
+        case .briefs: "Briefs"
         case .ask: "Ask Kitt"
         case .settings: "Settings"
         }
@@ -20,9 +22,19 @@ private enum AppSection: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .overview: "rectangle.grid.1x2"
         case .feed: "list.bullet.rectangle"
+        case .briefs: "play.circle"
         case .ask: "waveform"
         case .settings: "gearshape"
         }
+    }
+
+    /// The briefs player lives on the iPhone and iPad (it is the car's player); the Mac has the hub's feed instead.
+    static var visible: [AppSection] {
+        #if os(iOS)
+        return allCases
+        #else
+        return allCases.filter { $0 != .briefs }
+        #endif
     }
 }
 
@@ -37,7 +49,7 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(AppSection.allCases, selection: $selection) { section in
+            List(AppSection.visible, selection: $selection) { section in
                 Label(section.title, systemImage: section.symbol)
                     .font(Tv.sys(15, .medium))
                     .tag(section)
@@ -60,6 +72,12 @@ struct ContentView: View {
                     )
                 case .feed:
                     FeedView()
+                case .briefs:
+                    #if os(iOS)
+                    BriefsView()
+                    #else
+                    EmptyView()
+                    #endif
                 case .ask:
                     AskView(openFeed: { filter in
                         model.feedFilter = filter

@@ -188,6 +188,18 @@ final class AppModel: ObservableObject {
         #endif
     }
 
+    /// The Briefs screen asks for a sync right away. nil when not connected or the hub did not answer.
+    @discardableResult
+    func syncBriefsNow() async -> BriefSync.Outcome? {
+        #if os(iOS)
+        guard let client else { return nil }
+        lastBriefSync = Date()
+        return try? await BriefSync.sync(client: client)
+        #else
+        return nil
+        #endif
+    }
+
     func ask(_ command: String) async {
         guard let client else { return }
         isBusy = true
