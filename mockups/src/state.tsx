@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
 import { answer, resolveLayout, type Answer, type Layout, type LayoutPref } from './engine';
-import { buildWorld, type CashLog, type Device, type IdeaAdd, type Pending, type ScenarioId, type World } from './data';
+import { buildWorld, SKILLS, type CashLog, type Device, type IdeaAdd, type Pending, type ScenarioId, type SkillId, type World } from './data';
+import { HubError, type AskReply } from './hub';
+import { useLive, type Live } from './live';
+import { buildLiveWorld } from './liveWorld';
 
 export type Appearance = 'system' | 'light' | 'dark';
 export interface Talk { phase: 'idle' | 'listening' | 'thinking' | 'answer'; device: Device | null; transcript: string; answer: Answer | null }
@@ -66,15 +69,40 @@ interface Ctx {
   say: (text: string, device: Device) => void; act: (what: 'confirm' | 'cancel', device: Device) => void; dismissTalk: () => void;
   moveLink: (id: string, dir: -1 | 1) => void; setLinkOrder: (ids: string[]) => void; toggleLink: (id: string) => void; reset: () => void;
   layoutFor: (device: Device) => Layout; themeFor: (device: Device) => 'light' | 'dark'; systemDark: boolean;
+  /** True when the screens show the hub's data (the live app); false on the design prototype's routes. */
+  isLive: boolean; live: Live;
 }
 const C = createContext<Ctx | null>(null);
 
+/** The prototype's routes keep the synthetic world even while a hub is connected; everything else is live when it is. */
+const DEMO_ROUTE = /^(demo|lab|iphone|ipad|watch|car|surfaces|appletv|appletv-v1|frame)(\/|$)/;
+function useDemoRoute(): boolean {
+  const read = () => DEMO_ROUTE.test(window.location.hash.replace(/^#\/?/, '').split('?')[0]);
+  const [demo, setDemo] = useState(read);
+  useEffect(() => { const f = () => setDemo(read()); window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f); }, []);
+  return demo;
+}
+
+/** The hub's answer in the shape the talk panels draw. */
+function liveAnswer(r: AskReply, device: Device): Answer {
+  const skill = typeof r.skill === 'string' && SKILLS.some((s) => s.id === r.skill) ? (r.skill as SkillId) : undefined;
+  const known = Boolean(r.intent && r.intent !== 'none');
+  return {
+    speak: r.speak, via: known || r.needs_confirm ? 'pattern' : 'unknown', intent: r.intent || (r.needs_confirm ? 'confirm' : 'none'), open: skill,
+    needsConfirm: r.needs_confirm ? { id: String(r.code ?? 'pending'), kind: skill === 'money' ? 'log_cash' : 'draft', skill: skill ?? 'receptionist', summary: r.speak, speak: r.speak, source: device, createdAt: Date.now(), ttlSec: 600 } : undefined,
+  };
+}
+const failAnswer = (e: unknown): Answer => ({ speak: e instanceof HubError ? e.message : 'The hub did not answer.', via: 'unknown', intent: 'error' });
+
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const live = useLive();
+  const demoRoute = useDemoRoute();
+  const isLive = Boolean(live.conn) && !demoRoute;
   const [state, dispatch] = useReducer(reduce, undefined, () => init(load()));
   const [systemDark, setSystemDark] = useState(() => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false));
-  const world = useMemo(() => buildWorld(state), [state]);
-  const ref = useRef({ world, state });
-  useEffect(() => { ref.current = { world, state }; });
+  const world = useMemo(() => (isLive ? buildLiveWorld(live) : buildWorld(state)), [isLive, live, state]);
+  const ref = useRef({ world, state, live, isLive });
+  useEffect(() => { ref.current = { world, state, live, isLive }; });
   const timers = useRef<number[]>([]);
   const clear = () => { timers.current.forEach((t) => window.clearTimeout(t)); timers.current = []; };
   useEffect(() => () => clear(), []);
@@ -83,6 +111,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const say = useCallback((text: string, device: Device) => {
     clear();
+    const { isLive: lv, live: l } = ref.current;
+    if (lv && l.client) {
+      if (!text.trim()) return;                 // the phone's talk bar opens its sheet with an empty say
+      const client = l.client;
+      dispatch({ t: 'talk', talk: { phase: 'thinking', device, transcript: text, answer: null } });
+      void (async () => {
+        let a: Answer;
+        try { a = liveAnswer(await client.ask(text, 'web'), device); } catch (e) { a = failAnswer(e); }
+        dispatch({ t: 'talk', talk: { phase: 'answer', device, transcript: text, answer: a } });
+        void l.refresh();
+      })();
+      return;
+    }
     dispatch({ t: 'talk', talk: { phase: 'listening', device, transcript: '', answer: null } });
     timers.current.push(window.setTimeout(() => dispatch({ t: 'talk', talk: { phase: 'listening', device, transcript: text, answer: null } }), 500));
     timers.current.push(window.setTimeout(() => dispatch({ t: 'talk', talk: { phase: 'thinking', device, transcript: text, answer: null } }), 1100));
@@ -94,20 +135,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const act = useCallback((what: 'confirm' | 'cancel', device: Device) => {
+    const { isLive: lv, live: l, world: w } = ref.current;
+    if (lv && l.client) {
+      const client = l.client; const code = w.pending?.id;
+      const transcript = what === 'confirm' ? 'Kit, confirm' : 'Kit, cancel';
+      dispatch({ t: 'talk', talk: { phase: 'thinking', device, transcript, answer: null } });
+      void (async () => {
+        let a: Answer;
+        try {
+          const r = await (what === 'confirm' ? client.confirm(code, 'web') : client.cancel(code, 'web'));
+          a = { speak: r.speak, via: 'confirm', intent: what, effect: { type: what } };
+        } catch (e) { a = e instanceof HubError && e.status === 409 ? { speak: 'That request changed on the hub. Review the new one first.', via: 'confirm', intent: what } : failAnswer(e); }
+        dispatch({ t: 'talk', talk: { phase: 'answer', device, transcript, answer: a } });
+        void l.refresh();
+      })();
+      return;
+    }
     const a = answer(what, ref.current.world, device, Date.now());
     dispatch({ t: 'apply', a, device, text: what });
     dispatch({ t: 'talk', talk: { phase: 'answer', device, transcript: what === 'confirm' ? 'Kit, confirm' : 'Kit, cancel', answer: a } });
   }, []);
 
   const value: Ctx = useMemo(() => ({
-    state, world, systemDark,
+    state, world, systemDark, isLive, live,
     set: (patch) => dispatch({ t: 'set', patch }), scenario: (id) => dispatch({ t: 'scenario', id }),
     say, act, dismissTalk: () => { clear(); dispatch({ t: 'talk', talk: IDLE }); },
     moveLink: (id, dir) => dispatch({ t: 'moveLink', id, dir, ids: ref.current.world.links.map((l) => l.id) }),
     setLinkOrder: (ids) => dispatch({ t: 'order', ids }), toggleLink: (id) => dispatch({ t: 'toggleLink', id }), reset: () => dispatch({ t: 'reset' }),
     layoutFor: (d) => resolveLayout(d, state.layout),
     themeFor: (d) => (d === 'car' || d === 'watch' ? (state.appearance === 'light' ? 'light' : 'dark') : state.appearance === 'system' ? (systemDark ? 'dark' : 'light') : state.appearance),
-  }), [state, world, systemDark, say, act]);
+  }), [state, world, systemDark, isLive, live, say, act]);
 
   return <C.Provider value={value}>{children}</C.Provider>;
 }

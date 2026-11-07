@@ -15,6 +15,7 @@ import './tv.css';
 import './v2.css';
 import './tv2.css';
 import './lab.css';
+import './app.css';
 import { App } from './App';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

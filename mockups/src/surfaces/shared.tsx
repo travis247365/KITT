@@ -77,8 +77,8 @@ export function TalkPanel({ device, onClose, onOpen }: { device: Device; onClose
         <>
           <p className="tp-answer">{a.speak}</p>
           <div className="tp-meta">
-            <span className={`prov ${a.via === 'unknown' ? 'prov--assumed' : 'prov--measured'}`}>{a.via === 'unknown' ? 'No rule matched' : 'Matched by rule'}</span>
-            <span className="t-micro muted">{a.via === 'unknown' ? 'the language brain would try next' : 'no model call'} · {a.intent}</span>
+            <span className={`prov ${a.via === 'unknown' ? 'prov--assumed' : 'prov--measured'}`}>{world.live ? (a.via === 'unknown' ? 'Not understood' : a.needsConfirm ? 'Waiting for your OK' : 'Answered by the hub') : a.via === 'unknown' ? 'No rule matched' : 'Matched by rule'}</span>
+            <span className="t-micro muted">{world.live ? a.intent : `${a.via === 'unknown' ? 'the language brain would try next' : 'no model call'} · ${a.intent}`}</span>
           </div>
           {world.pending && a.needsConfirm && (
             <div className="actions" style={{ marginTop: 12 }}>
@@ -108,6 +108,16 @@ export function TalkPanel({ device, onClose, onOpen }: { device: Device; onClose
 
 export function HubHealth() {
   const { world } = useStore(); const h = world.hub;
+  if (world.live) {
+    return (
+      <Kpis cols={2} items={[
+        { label: 'Hub coverage, 7 days', value: `${h.coverage}%`, prov: 'measured', sub: 'gate: 80% or more' },
+        { label: 'Routines ok', value: `${h.routinesOk}/${h.routinesTotal}`, prov: 'measured', sub: 'last run of each' },
+        { label: 'Assistant brain', value: h.brainOk ? 'ready' : 'down', sub: h.brainDetail || undefined },
+        { label: 'Hub version', value: h.version ?? '–' },
+      ]} />
+    );
+  }
   return (
     <div>
       <Kpis cols={2} items={[

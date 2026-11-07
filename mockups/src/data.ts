@@ -60,8 +60,12 @@ export interface World {
   concerts: { who: string; date: string; venue: string; city: string }[]; trip: { title: string; dates: string; flight: number; hotel: number; nights: number; perDiem: number; days: number; total: number; visa: string };
   comments: { user: string; text: string; needs: boolean }[]; collab: { name: string; where: string; platform: string; fit: number; why: string }[];
   links: LinkItem[]; shoplog: { kind: string; title: string; status: 'public' | 'private'; when: string }[]; ideas: Idea[];
-  hub: { coverage: number; onAc: number; siri: number; brainSec: number; routinesOk: number; routinesTotal: number; spark: number[] };
+  hub: { coverage: number; onAc: number; siri: number; brainSec: number; routinesOk: number; routinesTotal: number; spark: number[]; version?: string; brainOk?: boolean; brainDetail?: string };
   pending: Pending | null; audit: { ts: string; source: string; intent: string; outcome: string }[];
+  /** True when the world is the hub's own data (src/liveWorld.ts), not the synthetic scenario. */
+  live?: boolean;
+  /** Live only: each skill's health as the hub reports it; a red skill outranks its own quiet data. */
+  health?: Record<string, { ok: boolean; detail?: string }>;
 }
 
 // ---- deterministic series (mulberry32) so screenshots and totals are stable ----

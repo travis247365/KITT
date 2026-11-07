@@ -10,6 +10,8 @@ import { listPending } from './confirm.js';
 import { log } from './log.js';
 import { renderDashboard } from './web/dashboard.js';
 import { renderTV } from './web/tv.js';
+import { createWebApp, createCors } from './web/app.js';
+import { REPO_DIR } from './config.js';
 
 export async function startServer({ port, host } = {}) {
   const app = await createApp();
@@ -20,6 +22,10 @@ export async function startServer({ port, host } = {}) {
   const podcast = app.podcast;
   const router = createRouter();
   const started = Date.now();
+  // The web app (mockups/, built with Vite) is served by the hub itself at /app, so every device on the LAN gets it over plain http;
+  // the copy hosted on Vercel talks to the hub cross-origin, hence CORS for the origins in server.web_origins.
+  const web = createWebApp({ dir: config.server?.web_dir || path.join(REPO_DIR, 'mockups', 'dist') });
+  const cors = createCors(config.server?.web_origins || ['https://kitt-mockups-tpcl.vercel.app', 'https://kitt-mockups-*-tpcl.vercel.app']);
 
   router.get('/healthz', () => ({ ok: true, version: app.version, uptime_s: Math.round((Date.now() - started) / 1000) }));
   router.get('/v1/health', async (c) => { requireScope(c.identity, 'read'); return app.health(); });
@@ -80,6 +86,8 @@ export async function startServer({ port, host } = {}) {
 
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://kitt.local');
+    if (cors.apply(req, res)) return;        // a preflight from the hosted app
+    if (web.handle(req, res, url)) return;   // the app's own files: no token, not rate limited
     const presented = extractToken(req, url);
     const identity = identify(tokens, presented);
     const key = identity ? `t:${identity.name}` : `ip:${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`;

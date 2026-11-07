@@ -1,0 +1,35 @@
+/* The live app's few own pieces: the connect gate and form, the routine tags. The screens themselves are the designed surfaces
+   (phone.css, pad.css, tv2.css); v2 tokens come from v2.css. */
+.kw-connect { position: fixed; inset: 0; overflow: auto; display: grid; place-items: center; padding: 24px; background: var(--void); color: var(--ice); }
+.kw-connect-box { width: min(560px, 100%); display: grid; gap: 18px; padding: 28px; background: var(--cockpit); border-top: 1px solid rgba(25, 230, 255, 0.4); box-shadow: 0 0 64px var(--glow8); }
+.kw-connect a { color: var(--cyan); }
+.kw-connect code { font: 12px/1.4 var(--mono); background: var(--panel); padding: 1px 5px; }
+.kw-connect .muted { color: var(--fog); }
+.kw-connect .t-title { font: 600 28px/1.1 var(--sys); letter-spacing: -0.01em; text-transform: none; }
+/* v2.css resets every button inside .ds2 (font: inherit, no padding) and loads after styles.css; the shared .btn needs its shape back here */
+.kw-connect .btn { font: 500 15px/1 var(--sys); padding: 0 20px; min-height: 44px; letter-spacing: 0.02em; border: 2px solid transparent; }
+.kw-connect .btn--ghost { border-color: var(--fog); color: var(--ice); }
+.kw-connect .icon-btn { width: 44px; height: 44px; border: 1px solid rgba(25, 230, 255, 0.28); }
+.kw-connect .eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+.kw-connect .t-body { font-size: 15px; line-height: 1.5; }
+.kw-connect .t-small { font-size: 13px; line-height: 1.45; }
+.kw-connect .t-micro { font-size: 12px; line-height: 1.45; }
+.kw-brand { display: flex; align-items: center; gap: 12px; }
+.kw-word { font: 700 22px/1 var(--display); letter-spacing: 0.3em; }
+.kw-sub { font: 500 10px/1.2 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--fog); margin-top: 6px; }
+
+.kw-form { display: grid; gap: 12px; max-width: 560px; }
+.kw-form label { display: grid; gap: 6px; }
+.kw-form input { min-height: 44px; padding: 0 12px; background: var(--card, #161b22); border: 1px solid var(--rule, rgba(25, 230, 255, 0.28)); color: var(--ink, #eaf6ff); font: inherit; font-size: 16px; width: 100%; }
+.kw-form input:focus { outline: 2px solid var(--accent, #19e6ff); outline-offset: -1px; }
+.kw-form .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.kw-connect .kw-form input { background: var(--panel); color: var(--ice); border-color: rgba(25, 230, 255, 0.28); }
+.kw-connect .kw-form input:focus { outline-color: var(--cyan); }
+.kw-connect .btn--primary { background: var(--cyan); color: #041014; }
+.kw-connect .icon-btn { color: var(--fog); }
+.kw-bad { color: var(--signal, #ff6b6b); }
+.kw-ok { color: var(--accent, #19e6ff); }
+
+.kw-tag { font: 500 11px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 8px; background: var(--card); color: var(--muted); white-space: nowrap; }
+.kw-tag--bad { color: var(--bad); }
+.kw-tag--ok { color: var(--accent); }

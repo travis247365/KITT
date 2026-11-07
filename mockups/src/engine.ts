@@ -17,8 +17,14 @@ export function buildCards(w: World): CardModel[] {
   const stale = w.offline ? `as of ${w.asOf}` : undefined;
   const push = (c: Omit<CardModel, 'icon' | 'eyebrow' | 'stale' | 'score' | 'why'> & { skill: SkillId; base: number; bumps: [string, number][] }) => {
     const m = skillMeta(c.skill);
-    const score = c.base + c.bumps.reduce((a, [, n]) => a + n, 0);
-    cards.push({ ...c, icon: m.icon, eyebrow: m.name, stale, score, why: [`${c.base} base`, ...c.bumps.map(([t, n]) => `${n >= 0 ? '+' : ''}${n} ${t}`)] });
+    // live only: a skill the hub reports as unhealthy outranks its own (possibly stale) numbers
+    const h = w.health?.[c.skill];
+    const bumps = h && !h.ok ? [...c.bumps, ['skill health is red', 40] as [string, number]] : c.bumps;
+    const level = h && !h.ok ? (Math.max(c.level, 2) as CardModel['level']) : c.level;
+    const detail = (h?.detail || 'the skill reported a problem').replace(/\s+/g, ' ');
+    const sub = h && !h.ok ? `Needs attention: ${detail.length > 140 ? `${detail.slice(0, 140)}…` : detail}` : c.sub;
+    const score = c.base + bumps.reduce((a, [, n]) => a + n, 0);
+    cards.push({ ...c, level, sub, icon: m.icon, eyebrow: m.name, stale, score, why: [`${c.base} base`, ...bumps.map(([t, n]) => `${n >= 0 ? '+' : ''}${n} ${t}`)] });
   };
 
   if (w.pending) {
@@ -28,7 +34,7 @@ export function buildCards(w: World): CardModel[] {
   const crit = w.critical;
   push({ id: 'security', skill: 'security', level: crit ? 4 : w.actionable ? 2 : 0, prov: 'measured',
     headline: crit ? 'Critical: a repository became public' : w.actionable ? `${plural(w.actionable, 'finding')} ${w.actionable === 1 ? 'needs' : 'need'} attention` : 'Security is clear',
-    sub: crit ? crit.detail : w.actionable ? w.findings.find((f) => f.level === 'medium')!.title : 'Last sweep 07:00 · four providers checked',
+    sub: crit ? crit.detail : w.actionable ? (w.findings.find((f) => f.level === 'high' || f.level === 'medium') ?? w.findings[0])?.title ?? 'Findings open' : w.live ? 'No findings open' : 'Last sweep 07:00 · four providers checked',
     speak: crit ? `Security: critical. ${crit.title}.` : w.actionable ? `Security: ${plural(w.actionable, 'finding')} ${w.actionable === 1 ? 'needs' : 'need'} attention.` : 'Security is clear.',
     base: 5, bumps: crit ? [['critical finding', 945]] : w.actionable ? [['medium finding', 50]] : [] });
 
@@ -41,29 +47,33 @@ export function buildCards(w: World): CardModel[] {
 
   push({ id: 'subscriptions', skill: 'subscriptions', level: w.pastDue ? 2 : 0, prov: 'modelled',
     headline: w.pastDue ? `${w.pastDue} past due · ${zmw(w.subsMonthly)} a month` : `${zmw(w.subsMonthly)} a month`,
-    sub: `Converted at K${w.fx} per US dollar (assumed rate)`,
+    sub: w.live ? `${plural(w.subs.length, 'merchant')} from receipt e-mails · foreign charges converted at an assumed rate` : `Converted at K${w.fx} per US dollar (assumed rate)`,
     speak: w.pastDue ? `Subscriptions: ${w.pastDue} past due, about ${zmw(w.subsMonthly)} a month.` : `Subscriptions steady at about ${zmw(w.subsMonthly)} a month.`,
     base: 6, bumps: w.pastDue ? [[`past due ×${w.pastDue}`, w.pastDue * 22]] : [] });
 
-  push({ id: 'money', skill: 'money', level: 1, prov: 'measured', headline: `Cash position ${zmw(w.cashTotal)}`, sub: `Spent ${zmw(w.spend7)} in 7 days · ${plural(w.unparsed, 'alert')} not parsed`,
-    delta: { text: '+12% vs last week', good: false }, speak: `Money: cash position about ${zmw(w.cashTotal)}. Spent ${zmw(w.spend7)} this week.`, base: 14, bumps: [['spend watch', 6]] });
+  push({ id: 'money', skill: 'money', level: 1, prov: 'measured', headline: w.wallets.length ? `Cash position ${zmw(w.cashTotal)}` : 'No balances yet', sub: `Spent ${zmw(w.spend7)} in 7 days · ${plural(w.unparsed, 'alert')} not parsed`,
+    delta: w.live ? undefined : { text: '+12% vs last week', good: false }, speak: `Money: cash position about ${zmw(w.cashTotal)}. Spent ${zmw(w.spend7)} this week.`, base: 14, bumps: [['spend watch', 6]] });
 
   const unread = w.wa.unread.reduce((a, u) => a + u.n, 0); const vip = w.wa.unread.some((u) => u.vip);
-  push({ id: 'whatsapp', skill: 'whatsapp', level: vip ? 1 : 0, prov: 'measured', headline: unread ? `${unread} unread in ${plural(w.wa.unread.length, 'chat')}` : 'No unread messages', sub: unread ? 'CEO (VIP) first, then groups' : 'Linked device online',
-    speak: unread ? `WhatsApp: ${unread} unread in ${plural(w.wa.unread.length, 'chat')}${vip ? ', one from a VIP' : ''}.` : 'WhatsApp is quiet.', base: 8, bumps: unread ? [['unread', unread * 2], ...(vip ? [['VIP sender', 12] as [string, number]] : [])] : [] });
+  const topChats = w.wa.unread.slice(0, 2).map((u) => `${u.name} ${u.n}`).join(' · ');
+  push({ id: 'whatsapp', skill: 'whatsapp', level: vip ? 1 : 0, prov: 'measured', headline: unread ? `${unread} unread in ${plural(w.wa.unread.length, 'chat')}` : w.wa.online ? 'No unread messages' : 'Listener not running',
+    sub: unread ? (w.live ? topChats : 'CEO (VIP) first, then groups') : w.wa.online ? 'Linked device online' : 'Start the listener on the Mac',
+    speak: unread ? `WhatsApp: ${unread} unread in ${plural(w.wa.unread.length, 'chat')}${vip ? ', one from a VIP' : ''}.` : 'WhatsApp is quiet.', base: 8, bumps: unread ? [['unread', Math.min(60, unread * 2)], ...(vip ? [['VIP sender', 12] as [string, number]] : [])] : [] });
 
   push({ id: 'receptionist', skill: 'receptionist', level: w.inbox.drafts ? 1 : 0, prov: 'measured', headline: w.inbox.needsReply ? `${w.inbox.needsReply} ${needVerb(w.inbox.needsReply)} a reply` : 'Nothing needs a reply',
-    sub: `${w.inbox.fyi} for information · ${w.inbox.receipts} receipts${w.inbox.drafts ? ' · 1 draft waiting' : ''}`, speak: w.inbox.needsReply ? `Inbox: ${w.inbox.needsReply} ${needVerb(w.inbox.needsReply)} a reply.` : `Inbox is quiet; ${w.inbox.fyi} for information.`, base: 6, bumps: w.inbox.drafts ? [['draft waiting', 30]] : [] });
+    sub: `${w.inbox.fyi} for information · ${plural(w.inbox.receipts, 'receipt')}${w.inbox.drafts ? ` · ${plural(w.inbox.drafts, 'draft')} waiting` : ''}`, speak: w.inbox.needsReply ? `Inbox: ${w.inbox.needsReply} ${needVerb(w.inbox.needsReply)} a reply.` : `Inbox is quiet; ${w.inbox.fyi} for information.`, base: 6, bumps: w.inbox.drafts ? [['draft waiting', 30]] : [] });
 
   const needs = w.comments.filter((c) => c.needs).length;
-  push({ id: 'comments', skill: 'comments', level: needs ? 1 : 0, prov: 'measured', headline: w.comments.length ? `${w.comments.length} new · ${needs} ${needVerb(needs)} a reply` : 'No new comments', sub: w.comments.length ? 'One question about booking' : 'Checked 07:10',
+  push({ id: 'comments', skill: 'comments', level: needs ? 1 : 0, prov: 'measured', headline: w.comments.length ? `${w.comments.length} new · ${needs} ${needVerb(needs)} a reply` : 'No new comments', sub: w.comments.length ? (w.live ? (needs ? `${plural(needs, 'question')} to answer` : 'Nothing flagged for a reply') : 'One question about booking') : w.live ? 'Nothing new' : 'Checked 07:10',
     speak: w.comments.length ? `${plural(w.comments.length, 'new comment')}, ${needs} ${needVerb(needs)} a reply.` : 'No new comments.', base: 4, bumps: needs ? [['question to answer', 10]] : [] });
 
-  push({ id: 'trips', skill: 'trips', level: 0, prov: 'assumed', headline: `${plural(w.concerts.length, 'concert')} · next ${w.concerts[0].date}`, sub: `Pretoria plan drafted: ${zmw(w.trip.total)} (assumed budget)`,
-    speak: `Trips: ${plural(w.concerts.length, 'concert')}. Next is ${w.concerts[0].who} on ${w.concerts[0].date}.`, base: 4, bumps: [] });
-  push({ id: 'ideas', skill: 'ideas', level: 0, headline: `${plural(w.ideas.length, 'idea')} this month`, sub: w.ideas[0].title, speak: `Ideas: ${w.ideas.length} this month. Latest: ${w.ideas[0].title}.`, base: 3, bumps: [] });
-  push({ id: 'collab', skill: 'collab', level: 0, prov: 'modelled', headline: `${w.collab.length} creators matched`, sub: `Top fit ${w.collab[0].fit} · weekly list on Monday`, speak: `${w.collab.length} creator matches ready.`, base: 2, bumps: [] });
-  push({ id: 'linktree', skill: 'linktree', level: 0, prov: 'measured', headline: `${w.links.filter((l) => !l.hidden).length} links live`, sub: `Top link: ${w.links[0].title}`, speak: `Link page has ${w.links.length} links.`, base: 2, bumps: [] });
+  const next = w.concerts[0];
+  push({ id: 'trips', skill: 'trips', level: 0, prov: 'assumed', headline: next ? `${plural(w.concerts.length, 'event')} · next ${next.date}` : 'No events on file',
+    sub: w.trip.total ? `${w.trip.title}: ${zmw(w.trip.total)} (assumed budget)` : 'Concerts and away events turn into trip plans',
+    speak: next ? `Trips: ${plural(w.concerts.length, 'event')}. Next is ${next.who} on ${next.date}.` : 'No trips on file.', base: 4, bumps: [] });
+  push({ id: 'ideas', skill: 'ideas', level: 0, headline: `${plural(w.ideas.length, 'idea')} this month`, sub: w.ideas[0]?.title ?? 'Say “idea:” and what you thought of.', speak: w.ideas[0] ? `Ideas: ${w.ideas.length} this month. Latest: ${w.ideas[0].title}.` : 'No ideas captured this month.', base: 3, bumps: [] });
+  push({ id: 'collab', skill: 'collab', level: 0, prov: 'modelled', headline: w.collab.length ? `${w.collab.length} creators matched` : 'No matches yet', sub: w.collab[0] ? `Top fit ${w.collab[0].fit} · weekly list on Monday` : 'The weekly list runs on Monday', speak: `${w.collab.length} creator matches ready.`, base: 2, bumps: [] });
+  push({ id: 'linktree', skill: 'linktree', level: 0, prov: 'measured', headline: `${w.links.filter((l) => !l.hidden).length} links live`, sub: w.links[0] ? `Top link: ${w.links[0].title}` : 'Link page not synced yet', speak: `Link page has ${w.links.length} links.`, base: 2, bumps: [] });
   push({ id: 'shoplog', skill: 'shoplog', level: 0, headline: `${w.shoplog.length} entries this week`, sub: `${w.shoplog.filter((e) => e.status === 'private').length} still private`, speak: 'Shop log has entries waiting to be published.', base: 1, bumps: [] });
 
   return cards.sort((a, b) => b.score - a.score);
@@ -105,9 +115,9 @@ function answerInner(raw: string, w: World, device: Device, now: number): Answer
   if (/(on my plate|priorities|what needs (my )?attention)/.test(t)) return { speak: `Board: ${plate()}`, via: 'pattern', intent: 'chief.plate', open: 'chief' };
   if (/(cash position|balance|how much (money|cash))/.test(t)) return { speak: `Cash position about ${zmw(w.cashTotal)} across ${w.wallets.length} wallets. Spent ${zmw(w.spend7)} in the last seven days.`, via: 'pattern', intent: 'money.position', open: 'money' };
   if (/(past due|renew|subscription)/.test(t)) return { speak: w.pastDue ? `${plural(w.pastDue, 'subscription')} past due: ${w.subs.filter((s) => s.status === 'past_due').map((s) => s.name).join(' and ')}. About ${zmw(w.subsMonthly)} a month in total.` : `No subscriptions past due. About ${zmw(w.subsMonthly)} a month.`, via: 'pattern', intent: 'subscriptions.past_due', open: 'subscriptions' };
-  if (/security/.test(t)) return { speak: w.critical ? `Critical: ${w.critical.title}.` : w.actionable ? `Security: ${plural(w.actionable, 'finding')} ${w.actionable === 1 ? 'needs' : 'need'} attention. ${w.findings.find((f) => f.level === 'medium')!.title}.` : 'Security is clear.', via: 'pattern', intent: 'security.brief', open: 'security' };
+  if (/security/.test(t)) return { speak: w.critical ? `Critical: ${w.critical.title}.` : w.actionable ? `Security: ${plural(w.actionable, 'finding')} ${w.actionable === 1 ? 'needs' : 'need'} attention. ${(w.findings.find((f) => f.level === 'high' || f.level === 'medium') ?? w.findings[0])?.title ?? ''}`.trim() : 'Security is clear.', via: 'pattern', intent: 'security.brief', open: 'security' };
   if (/(inbox|email|mail)/.test(t)) return { speak: `Nothing needs a reply; ${w.inbox.fyi} for information and ${w.inbox.receipts} receipts.${w.inbox.drafts ? ' One draft is waiting for your confirmation.' : ''}`, via: 'pattern', intent: 'receptionist.brief', open: 'receptionist' };
-  if (/(concert|trip|travel)/.test(t)) return { speak: `${plural(w.concerts.length, 'concert')} on file. Next: ${w.concerts[0].who} on ${w.concerts[0].date}, ${w.concerts[0].city}. A Pretoria plan is drafted, about ${zmw(w.trip.total)}, assumed.`, via: 'pattern', intent: 'trips.concerts', open: 'trips' };
+  if (/(concert|trip|travel)/.test(t)) return { speak: w.concerts[0] ? `${plural(w.concerts.length, 'event')} on file. Next: ${w.concerts[0].who} on ${w.concerts[0].date}, ${w.concerts[0].city}.${w.trip.total ? ` ${w.trip.title} is drafted, about ${zmw(w.trip.total)}, assumed.` : ''}` : 'No trips or concerts on file.', via: 'pattern', intent: 'trips.concerts', open: 'trips' };
   if (/(whatsapp)/.test(t)) return { speak: w.wa.unread.length ? `${w.wa.unread.reduce((a, u) => a + u.n, 0)} unread. ${w.wa.unread.map((u) => `${u.name} ${u.n}`).join(', ')}.` : 'WhatsApp is quiet.', via: 'pattern', intent: 'whatsapp.new', open: 'whatsapp' };
   if (/(good morning|morning brief|brief me)/.test(t)) return { speak: `Good morning, Travis. ${cards.filter((c) => c.skill !== 'confirm').slice(0, 4).map((c) => c.speak).join(' ')}`, via: 'pattern', intent: 'kitt.morning' };
   if (/^(help|what can you do)$/.test(t)) return { speak: `I can help with ${SKILLS.slice(0, 6).map((s) => s.name).join(', ')} and more. Try: what's on my plate, cash position, anything past due, log cash 200 fuel.`, via: 'pattern', intent: 'kitt.help' };

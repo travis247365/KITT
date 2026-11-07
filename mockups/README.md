@@ -1,9 +1,10 @@
-# KITT mockups
+# KITT web
 
-Interactive mockups of the KITT apps: iPhone, iPad, Apple Watch and the car. Synthetic data only; nothing leaves the page.
+KITT's web client (since 0.3.0): the live app for a phone, tablet, laptop, Mac or television browser, talking to your own hub with the
+app token. See `../docs/WEB.md`. The design prototype it grew out of, with synthetic data, is still here under `#/demo`.
 
 Same stack and deployment pattern as the Moments app: Vite + React + TypeScript, hand-styled tokens (no UI framework),
-relative asset paths and hash routing so the bundle runs from Vercel, a Capacitor WebView or a plain folder.
+relative asset paths and hash routing so the bundle runs from the hub's own `/app` route, from Vercel, a Capacitor WebView or a plain folder.
 
 ```bash
 npm install
@@ -14,11 +15,12 @@ npm run build      # -> dist/
 ## Routes (hash)
 | Route | What |
 |---|---|
-| `#/lab` | all devices side by side with prototype controls (default on wide screens) |
-| `#/iphone` | the phone app, full-bleed on a real phone (default on phones; "Add to Home Screen" works) |
-| `#/ipad` | the iPad command centre (default on tablets) |
-| `#/watch`, `#/car`, `#/surfaces` | Watch, CarPlay (display only), Lock Screen / widgets / StandBy |
-| `#/frame/<id>` | bare exact-size screens for QA (see `src/frames.tsx`) |
+| `#/app` (default) | the live app: Now, Skills, Feed, Briefs, Ask, Settings; phone / tablet / desktop layout by width |
+| `#/tv` | the live glance board for a television (`?hub=…&token=…` connects it once from the address bar) |
+| `#/demo` | the design prototype: all devices side by side with prototype controls (phone or iPad layout on small screens) |
+| `#/demo/iphone`, `#/demo/ipad` | the prototype's phone app and iPad command centre (the bare old routes still work) |
+| `#/demo/watch`, `#/demo/car`, `#/demo/surfaces`, `#/demo/appletv` | Watch, CarPlay (display only), Lock Screen / widgets / StandBy, Apple TV |
+| `#/frame/<id>` | bare exact-size prototype screens for QA (see `src/frames.tsx`) |
 
 Deep links set the demo state: `#/iphone?scenario=critical&appearance=dark&layout=drive&large=1`
 (scenarios: `morning`, `pending`, `critical`, `offline`, `quiet`).

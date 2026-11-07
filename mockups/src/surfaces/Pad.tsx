@@ -7,8 +7,9 @@ import { SkillScreen } from '../renderer';
 import { skillView } from '../views';
 import { useStore } from '../state';
 import { HubHealth, StackCard, TalkPanel } from './shared';
+import { LiveSettings } from '../app/connect';
 
-type Sel = 'now' | SkillId;
+type Sel = 'now' | 'hub' | SkillId;
 
 export function Pad({ initialSel = 'now' }: { initialSel?: Sel }) {
   const { state, world, themeFor, layoutFor, set, say, act, dismissTalk } = useStore();
@@ -44,6 +45,12 @@ export function Pad({ initialSel = 'now' }: { initialSel?: Sel }) {
               <Icon name={c.icon} size={18} />{c.eyebrow}{flagged(c.level) && <span className="flag" aria-label="needs attention" />}{i < 9 && <span className="kbd">⌘{i + 1}</span>}
             </button>
           ))}
+          {world.live && (
+            <>
+              <p className="eyebrow muted side-label">Hub</p>
+              <button type="button" className="side-item" aria-current={sel === 'hub' ? 'page' : undefined} onClick={() => setSel('hub')}><Icon name="sliders" size={18} />Connection{world.offline && <span className="flag" aria-label="hub unreachable" />}</button>
+            </>
+          )}
         </nav>
         <p className="t-micro muted side-foot">⌘K talk · ⌘↩ confirm · ⌘⌫ cancel</p>
       </aside>
@@ -53,14 +60,14 @@ export function Pad({ initialSel = 'now' }: { initialSel?: Sel }) {
           <div style={{ display: 'grid', gap: 12 }}>
             <span className="accent-block" />
             <div>
-              <p className="eyebrow muted">{sel === 'now' ? `${world.date} · ${world.clock}` : skillMeta(sel).name}</p>
-              <h1 className="t-title" style={{ marginTop: 8 }}>{sel === 'now' ? <>Priority <b>board</b></> : <b>{skillView(sel, world).headline}</b>}</h1>
+              <p className="eyebrow muted">{sel === 'now' ? `${world.date} · ${world.clock}` : sel === 'hub' ? 'Hub' : skillMeta(sel).name}</p>
+              <h1 className="t-title" style={{ marginTop: 8 }}>{sel === 'now' ? <>Priority <b>board</b></> : sel === 'hub' ? <b>Connection</b> : <b>{skillView(sel, world).headline}</b>}</h1>
             </div>
           </div>
           <Seg<'desk' | 'glance'> label="Density" value={glance ? 'glance' : 'desk'} onChange={(v) => set({ layout: v })} options={[{ value: 'desk', label: 'Desk' }, { value: 'glance', label: 'Glance' }]} />
         </header>
         {world.offline && <div className="notice" style={{ marginBottom: 16 }}><Icon name="off" size={18} /><span>Hub unreachable since {world.asOf}. Reads come from the cached copy; writes are disabled.</span></div>}
-        {sel === 'now' ? <NowBoard cards={cards} glance={glance} open={(s) => setSel(s)} /> : <SkillScreen view={skillView(sel, world)} density={glance ? 'glance' : 'desk'} onSay={(t) => say(t, 'pad')} />}
+        {sel === 'now' ? <NowBoard cards={cards} glance={glance} open={(s) => setSel(s)} /> : sel === 'hub' ? <div style={{ maxWidth: 640 }}><LiveSettings /></div> : <SkillScreen view={skillView(sel, world)} density={glance ? 'glance' : 'desk'} onSay={(t) => say(t, 'pad')} />}
       </main>
 
       <aside className="pd-inspect">
@@ -92,7 +99,7 @@ function NowBoard({ cards, glance, open }: { cards: ReturnType<typeof buildCards
       <div className={`pd-grid${glance ? ' pd-grid--glance' : ''}`}>
         {rest.map((c, i) => <StackCard key={c.id} card={c} index={i + (pending ? 1 : 0)} density={glance ? 'glance' : 'comfort'} device="pad" onOpen={open} />)}
       </div>
-      <p className="t-micro muted" style={{ marginTop: 18 }}>Ranking is recomputed from live data every time; tap a number to see the points behind it. Demo data, synthetic.</p>
+      <p className="t-micro muted" style={{ marginTop: 18 }}>Ranking is recomputed from live data every time; tap a number to see the points behind it. {world.live ? 'Live from your hub, refreshed every 20 seconds.' : 'Demo data, synthetic.'}</p>
     </>
   );
 }

@@ -1,12 +1,12 @@
 {
-  "name": "KITT mockups",
+  "name": "KITT",
   "short_name": "KITT",
-  "description": "KITT interactive mockups. Synthetic demo data.",
-  "start_url": "./#/iphone",
+  "description": "Your personal assistant hub on every screen.",
+  "start_url": "./#/app",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#3A3A3A",
-  "theme_color": "#3A3A3A",
+  "background_color": "#050507",
+  "theme_color": "#050507",
   "orientation": "any",
   "icons": [
     { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },

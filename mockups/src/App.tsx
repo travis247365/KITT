@@ -15,6 +15,8 @@ import { TV2_SCREENS, TV2_VARIANTS, type Tv2Screen, type TvVariant } from './sur
 import { TvFullV1, TvFullV2, TvGalleryV1, TvGalleryV2 } from './surfaces/AppleTvPages';
 import { Lab, ProtoBar, WATCH_FRAME } from './lab/Lab';
 import { Seg } from './kit';
+import { LiveProvider, useLive } from './live';
+import { ConnectScreen } from './app/connect';
 
 function useHash(): string {
   const [h, setH] = useState(() => window.location.hash.replace(/^#\/?/, ''));
@@ -47,8 +49,12 @@ function Routes() {
   const [watchPage, setWatchPage] = useState<WatchPage>('face');
   useOverrides(hash);
   const route = hash.split('?')[0].replace(/\/$/, '');
-  const r = route || (w <= 520 ? 'iphone' : w < 1100 ? 'ipad' : 'lab');
+  // The live app is the front door; the design prototype (synthetic data) lives under #/demo and its old routes still work.
+  const r0 = route || 'app';
+  const r = r0 === 'demo' ? (w <= 520 ? 'iphone' : w < 1100 ? 'ipad' : 'lab') : r0.startsWith('demo/') ? r0.slice(5) : r0;
 
+  if (r === 'app' || r.startsWith('app/')) return <LiveGate><LiveDevice w={w} /></LiveGate>;
+  if (r === 'tv') return <LiveGate tv><TvFullV2 screen="now" variant="hybrid" /></LiveGate>;
   if (r.startsWith('frame/')) {
     const f = FRAMES[r.slice(6)];
     return f ? <div id="frame" data-ready="1" style={{ width: f.w, height: f.h, position: 'relative', overflow: 'hidden' }}>{f.el}</div> : <p style={{ color: '#fff', padding: 24 }}>Unknown frame. Try: {Object.keys(FRAMES).join(', ')}</p>;
@@ -81,4 +87,34 @@ function Routes() {
   }
 }
 
-export function App() { return <StoreProvider><Routes /></StoreProvider>; }
+/** The designed surfaces on the hub's data: the phone layout up to 760 px, the iPad command centre above it (a laptop, the Mac). */
+function LiveDevice({ w }: { w: number }) {
+  return <div style={{ position: 'fixed', inset: 0, background: '#050507' }}>{w <= 760 ? <Phone bleed /> : <Pad />}</div>;
+}
+
+/** Nothing shows until a hub is connected; the prototype stays reachable from the gate. */
+function LiveGate({ tv, children }: { tv?: boolean; children: ReactNode }) {
+  const live = useLive();
+  if (!live.conn) return <ConnectScreen tv={tv} />;
+  return <>{children}</>;
+}
+
+/** `#/tv?hub=http://mac:2000&token=…` (or any route): connect once from the address, then drop the secret from the URL. */
+function AutoConnect() {
+  const live = useLive();
+  useEffect(() => {
+    const [path, q] = window.location.hash.replace(/^#\/?/, '').split('?');
+    const p = new URLSearchParams(q ?? '');
+    const hub = p.get('hub'); const token = p.get('token');
+    if (!hub || !token) return;
+    p.delete('hub'); p.delete('token');
+    const rest = p.toString();
+    live.connect({ url: hub, token }).catch(() => { /* the Connect screen shows the error on the next attempt */ }).finally(() => {
+      window.history.replaceState(null, '', `${window.location.pathname}#/${path}${rest ? `?${rest}` : ''}`);
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+  }, []); // eslint-disable-line
+  return null;
+}
+
+export function App() { return <LiveProvider><StoreProvider><AutoConnect /><Routes /></StoreProvider></LiveProvider>; }

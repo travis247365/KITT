@@ -6,6 +6,7 @@ import { Icon, type IconName } from '../icons';
 import { buildCards, type CardModel } from '../engine';
 import { useStore } from '../state';
 import type { World } from '../data';
+import { useBriefPlayer } from '../app/connect';
 
 export type TvVariant = 'hybrid' | 'scanner' | 'grid';
 export type Tv2Screen = 'now' | 'ok' | 'pair' | 'shelf';
@@ -79,13 +80,15 @@ function Top({ hideClock, level }: { hideClock?: boolean; level: Level }) {
 }
 
 function Now({ interactive, variant }: { interactive: boolean; variant: TvVariant }) {
-  const { world } = useStore();
+  const { world, act, state } = useStore();
+  const brief = useBriefPlayer();
   const cards = useMemo(() => buildCards(world), [world]);
   const top = cards[0];
   const tiles = TILE_SKILLS.map((id) => pick(cards, id));
   const [focus, setFocus] = useState(1);
   const [detail, setDetail] = useState<number | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const [demoPlaying, setDemoPlaying] = useState(false);
+  const playing = world.live ? brief.playing : demoPlaying;   // live: the hub's newest brief through the shared player
   useEffect(() => {
     if (!interactive) return;
     const f = (e: KeyboardEvent) => {
@@ -93,12 +96,15 @@ function Now({ interactive, variant }: { interactive: boolean; variant: TvVarian
       if (e.key === 'ArrowRight') { e.preventDefault(); setFocus((i) => Math.min(tiles.length - 1, i + 1)); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); setFocus((i) => Math.max(0, i - 1)); }
       else if (e.key === 'Enter') { e.preventDefault(); setDetail(focus); }
-      else if (e.key === ' ') { e.preventDefault(); setPlaying((p) => !p); }
+      else if (e.key === ' ') { e.preventDefault(); if (world.live) brief.toggle().catch(() => { /* shown by the chip below */ }); else setDemoPlaying((p) => !p); }
+      else if (world.live && world.pending && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); act('confirm', 'pad'); }
+      else if (world.live && world.pending && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); act('cancel', 'pad'); }
     };
     window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
-  }, [interactive, tiles.length, focus, detail]);
+  }, [interactive, tiles.length, focus, detail, world.live, world.pending, brief, act]);
   const level = statusLevel(world);
   const d = detail !== null ? tiles[detail] : null;
+  const liveNote = world.live && state.talk.phase === 'answer' && state.talk.answer ? state.talk.answer.speak : null;
   return (
     <div className={`tv2 ds2 tv2--${variant}`}>
       <div className="gridfloor" />
@@ -106,9 +112,9 @@ function Now({ interactive, variant }: { interactive: boolean; variant: TvVarian
       <ScannerBar level={level} />
       {world.offline && <div className="tv2-notice"><Icon name="off" size={36} />Hub unreachable since {world.asOf}. Showing the cached copy.</div>}
       <main className="tv2-main">
-        <p className="tv2-eyebrow">{playing ? 'Reading the brief…' : world.pending ? 'Needs your decision' : `Morning brief · ${world.date}`}</p>
+        <p className="tv2-eyebrow">{playing ? (world.live && brief.current ? `Playing · ${brief.current.title}` : 'Reading the brief…') : brief.loading ? 'Loading the brief…' : world.pending ? 'Needs your decision' : world.live ? `Now · ${world.date}` : `Morning brief · ${world.date}`}</p>
         <h1 className="tv2-headline">{world.pending ? world.pending.summary : top.headline}</h1>
-        <p className="tv2-sub">{world.pending ? 'Press Select to review, or hold the Siri button and say “Ask Kit to confirm”.' : top.sub}</p>
+        <p className="tv2-sub">{world.pending ? (world.live ? 'Press Y to confirm or N to cancel, or say “Hey Siri, confirm with Kitt”.' : 'Press Select to review, or hold the Siri button and say “Ask Kit to confirm”.') : top.sub}</p>
       </main>
       <ul className="tv2-tiles" aria-label="Skills">
         {tiles.map((c, i) => (
@@ -125,9 +131,10 @@ function Now({ interactive, variant }: { interactive: boolean; variant: TvVarian
         <div className="tv2-chips">
           <span className={`tv2-chip${world.critical ? ' tv2-chip--alert' : ''}`}>{LEVEL_CHIP[level]}</span>
           {world.pending && <span className="tv2-chip tv2-chip--alert">1 needs your decision</span>}
-          <span className="tv2-chip tv2-chip--quiet">Hub {world.hub.coverage}% · 7 days</span>
+          <span className="tv2-chip tv2-chip--quiet">Hub {world.hub.coverage}% · 7 days{world.live && world.hub.version ? ` · ${world.hub.version}` : ''}</span>
+          {liveNote && <span className="tv2-chip tv2-chip--quiet">{liveNote.slice(0, 90)}</span>}
         </div>
-        <p className="tv2-hint"><span><b>Select</b>open</span><span><b>Play/Pause</b>hear the brief</span><span><b>Siri</b>“Ask Kit …”</span></p>
+        <p className="tv2-hint"><span><b>Select</b>open</span><span><b>Play/Pause</b>{playing ? 'pause' : 'hear the brief'}</span>{world.live && world.pending && <span><b>Y / N</b>decide</span>}<span><b>Siri</b>“Ask Kit …”</span></p>
       </footer>
       {d && (
         <div className="tv2-detail" role="dialog" aria-label={`${d.eyebrow} detail`}>

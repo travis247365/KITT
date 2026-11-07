@@ -35,6 +35,8 @@ export function ProtoControls() {
 /** Floating controls for the full-size device routes. */
 export function ProtoBar() {
   const [open, setOpen] = useState(false);
+  const { isLive } = useStore();
+  if (isLive) return null;   // the scenario switches mean nothing on the hub's data
   return (
     <div className="proto" data-theme="dark">
       <button type="button" className="proto-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide controls' : 'Prototype controls'}</button>

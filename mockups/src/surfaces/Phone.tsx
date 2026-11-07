@@ -8,6 +8,7 @@ import { skillView } from '../views';
 import { speak, stopSpeaking } from '../speech';
 import { useStore, type Appearance } from '../state';
 import { HubHealth, StackCard, Switch, TalkPanel, briefItems } from './shared';
+import { LiveBriefs, LiveSettings } from '../app/connect';
 
 type Tab = 'now' | 'briefs' | 'skills' | 'settings';
 const TABS: { id: Tab; label: string; icon: IconName }[] = [{ id: 'now', label: 'Now', icon: 'home' }, { id: 'briefs', label: 'Briefs', icon: 'play' }, { id: 'skills', label: 'Skills', icon: 'grid' }, { id: 'settings', label: 'Settings', icon: 'sliders' }];
@@ -32,7 +33,7 @@ export function Phone({ bleed = false, initialTab = 'now', initialSkill = null, 
         <>
           <div className="ph-body" key={`${tab}-${skill ?? ''}`}>
             {tab === 'now' && <NowTab cards={cards} glance={layout === 'glance'} onOpen={open} onSettings={() => setTab('settings')} />}
-            {tab === 'briefs' && <BriefsTab cards={cards} />}
+            {tab === 'briefs' && (world.live ? <LiveBriefs /> : <BriefsTab cards={cards} />)}
             {tab === 'skills' && <SkillsTab cards={cards} skill={skill} setSkill={setSkill} />}
             {tab === 'settings' && <SettingsTab />}
           </div>
@@ -89,7 +90,7 @@ function NowTab({ cards, glance, onOpen, onSettings }: { cards: ReturnType<typeo
       <div className={`stack${glance || quiet ? ' stack--glance' : ''}`}>
         {cards.map((c, i) => <StackCard key={c.id} card={c} index={i} device="phone" density={glance || quiet ? 'glance' : 'comfort'} onOpen={onOpen} />)}
       </div>
-      <p className="t-micro muted" style={{ marginTop: 16 }}>Demo data, synthetic. Tap a number to see why a card is where it is.</p>
+      <p className="t-micro muted" style={{ marginTop: 16 }}>{world.live ? 'Live from your hub, refreshed every 20 seconds. Tap a number to see why a card is where it is.' : 'Demo data, synthetic. Tap a number to see why a card is where it is.'}</p>
     </>
   );
 }
@@ -154,11 +155,15 @@ function SettingsTab() {
   return (
     <>
       <header className="hdr"><div className="hdr-l"><span className="accent-block" /><h1 className="t-title"><b>Settings</b></h1></div></header>
-      <h2 className="eyebrow muted">Hub</h2>
-      <div className="set-row"><div><div className="row-title">kitt-mac.your-tailnet.ts.net</div><div className="row-sub">Private tunnel, no public address</div></div><span className="hub-chip">{world.offline ? <><span className="dot-off" />Offline</> : <><span className="dot-live" />Online</>}</span></div>
-      <div className="set-row"><div><div className="row-title">This iPhone</div><div className="row-sub">App scope: ask and confirm, no admin · paired 26 Oct</div></div><Btn kind="ghost" size="sm">Revoke</Btn></div>
+      {world.live ? <LiveSettings /> : (
+        <>
+          <h2 className="eyebrow muted">Hub</h2>
+          <div className="set-row"><div><div className="row-title">kitt-mac.your-tailnet.ts.net</div><div className="row-sub">Private tunnel, no public address</div></div><span className="hub-chip">{world.offline ? <><span className="dot-off" />Offline</> : <><span className="dot-live" />Online</>}</span></div>
+          <div className="set-row"><div><div className="row-title">This iPhone</div><div className="row-sub">App scope: ask and confirm, no admin · paired 26 Oct</div></div><Btn kind="ghost" size="sm">Revoke</Btn></div>
+        </>
+      )}
 
-      <div className="set-sec"><h2 className="eyebrow muted" style={{ marginBottom: 8 }}>Reachability gate</h2><HubHealth /></div>
+      <div className="set-sec"><h2 className="eyebrow muted" style={{ marginBottom: 8 }}>{world.live ? 'Hub health' : 'Reachability gate'}</h2><HubHealth /></div>
 
       <div className="set-sec">
         <h2 className="eyebrow muted">Display</h2>
@@ -178,14 +183,16 @@ function SettingsTab() {
         <ul>{world.audit.slice(0, 5).map((a, i) => <li className="row" key={i}><div className="row-main"><div className="row-title">{a.intent}</div><div className="row-sub">{a.ts} · {a.source}</div></div><span className="tag">{a.outcome}</span></li>)}</ul>
       </div>
 
-      <div className="set-sec" style={{ paddingBottom: 8 }}>
-        <h2 className="eyebrow muted" style={{ marginBottom: 8 }}>Prototype controls · mock only</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {SCENARIOS.map((s) => <button key={s.id} type="button" className="sugg-btn" aria-pressed={state.scenario === s.id} onClick={() => scenario(s.id)}>{s.label}</button>)}
+      {!world.live && (
+        <div className="set-sec" style={{ paddingBottom: 8 }}>
+          <h2 className="eyebrow muted" style={{ marginBottom: 8 }}>Prototype controls · mock only</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SCENARIOS.map((s) => <button key={s.id} type="button" className="sugg-btn" aria-pressed={state.scenario === s.id} onClick={() => scenario(s.id)}>{s.label}</button>)}
+          </div>
+          <p className="t-micro muted" style={{ marginTop: 8 }}>{SCENARIOS.find((s) => s.id === state.scenario)?.hint}</p>
+          <div style={{ marginTop: 12 }}><Btn kind="ghost" size="sm" onClick={reset}>Reset demo data</Btn></div>
         </div>
-        <p className="t-micro muted" style={{ marginTop: 8 }}>{SCENARIOS.find((s) => s.id === state.scenario)?.hint}</p>
-        <div style={{ marginTop: 12 }}><Btn kind="ghost" size="sm" onClick={reset}>Reset demo data</Btn></div>
-      </div>
+      )}
     </>
   );
 }

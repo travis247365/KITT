@@ -21,13 +21,13 @@ const money = (w: World): SkillView => {
   return { id: 'money', headline: `Cash position ${zmw(w.cashTotal)}`, sections: [
     { type: 'kpis', cols: 2, items: [
       { label: 'Cash position', value: zmw(w.cashTotal), prov: 'measured', sub: `sum of ${w.wallets.length} wallets` },
-      { label: 'Spent, 7 days', value: zmw(w.spend7), prov: 'measured', delta: { text: '+12% vs last week', good: false } },
+      { label: 'Spent, 7 days', value: zmw(w.spend7), prov: 'measured', delta: w.live ? undefined : { text: '+12% vs last week', good: false } },
       { label: 'Spent, 30 days', value: zmw(w.spend30), prov: 'measured' },
       { label: 'Income, 30 days', value: zmw(w.income30), prov: 'measured' },
     ] },
     { type: 'table', title: 'Wallets', cols: [{ key: 'w', label: 'Wallet' }, { key: 'd', label: 'As of' }, { key: 'b', label: 'Balance', align: 'r' }],
       rows: w.wallets.map((x) => ({ w: x.name, d: x.asOf, b: zmw(x.balance) })), total: { w: 'Total', b: zmw(w.cashTotal) } },
-    { type: 'line', title: 'Daily spend, 30 days', points: w.spendDaily, label: 'Daily spend over 30 days', labels: ['30 days ago', 'today'], note: `Daily values sum to ${zmw(w.spend30)}, the 30-day figure above.` },
+    { type: 'line', title: 'Daily spend, 30 days', points: w.spendDaily, label: 'Daily spend over 30 days', labels: ['30 days ago', 'today'], note: w.live ? 'Drawn from the newest 50 transactions the hub returned; the 30-day total above is the hub’s own figure.' : `Daily values sum to ${zmw(w.spend30)}, the 30-day figure above.` },
     { type: 'bars', title: 'Spend by category, 30 days', unit: 'kwacha', items: cats.map((c, i) => ({ label: c.label, value: c.value, text: zmw(c.value), accent: i === 0 })), note: `Categories sum to ${zmw(cats.reduce((a, c) => a + c.value, 0))}.` },
     { type: 'list', title: 'Recent transactions', rows: w.txs.slice(0, 8).map((t) => ({ title: t.who, sub: `${t.ts} · ${t.wallet} · ${t.cat}`, right: signed(t.amount), prov: t.prov })) },
     { type: 'notice', tone: 'info', text: `${plural(w.unparsed, 'alert')} could not be parsed and was kept raw. Alerts arrive through an iOS Shortcuts automation; nothing leaves the Mac.` },
@@ -51,7 +51,8 @@ const subs = (w: World): SkillView => {
 const security = (w: World): SkillView => ({ id: 'security', headline: w.critical ? 'Critical finding' : w.actionable ? `${plural(w.actionable, 'finding')}` : 'Clear', sections: [
   { type: 'kpis', cols: 2, items: [
     { label: 'Need attention', value: String(w.actionable), prov: 'measured' }, { label: 'Critical', value: w.critical ? '1' : '0', prov: 'measured' },
-    { label: 'Providers checked', value: '4', sub: 'code, hosting, servers, CDN' }, { label: 'Last sweep', value: '07:00', sub: 'took 3 min' },
+    ...(w.live ? [{ label: 'Open findings', value: String(w.findings.length), prov: 'measured' as Prov }, { label: 'Providers', value: String(new Set(w.findings.map((f) => f.provider).filter((p) => p && p !== '–')).size || '–'), sub: 'with open findings' }]
+      : [{ label: 'Providers checked', value: '4', sub: 'code, hosting, servers, CDN' }, { label: 'Last sweep', value: '07:00', sub: 'took 3 min' }]),
   ] },
   ...(w.critical ? [{ type: 'notice' as const, tone: 'attention' as const, text: `${w.critical.title}. ${w.critical.detail}` }] : []),
   { type: 'list', title: 'Open findings', rows: w.findings.map((f) => ({ title: f.title, sub: `${f.provider} · since ${f.since}`, level: f.level })) },
@@ -61,7 +62,7 @@ const security = (w: World): SkillView => ({ id: 'security', headline: w.critica
 const chief = (w: World): SkillView => ({ id: 'chief', headline: `${w.board.overdue.length} overdue · ${w.board.blocked.length} blocked`, sections: [
   { type: 'kpis', cols: 2, items: [
     { label: 'Overdue', value: String(w.board.overdue.length), prov: 'measured' }, { label: 'Blocked', value: String(w.board.blocked.length), prov: 'measured' },
-    { label: 'Due this week', value: String(w.board.dueSoon.length) }, { label: 'Open incidents', value: String(w.board.incidents), sub: 'all severity 3' },
+    { label: 'Due this week', value: String(w.board.dueSoon.length) }, { label: 'Open incidents', value: String(w.board.incidents), sub: w.live ? undefined : 'all severity 3' },
   ] },
   { type: 'list', title: 'Overdue', empty: 'Nothing overdue.', rows: w.board.overdue.map((o) => ({ title: o.title, sub: `${o.client} · ${plural(o.late, 'day')} late`, right: o.ref })) },
   { type: 'list', title: 'Blocked', empty: 'Nothing blocked.', rows: w.board.blocked.map((o) => ({ title: o.title, sub: o.client, right: o.ref })) },
@@ -85,14 +86,16 @@ const whatsapp = (w: World): SkillView => ({ id: 'whatsapp', headline: w.wa.unre
   { type: 'notice', tone: 'attention', text: 'Runs as a linked device, an unofficial client. KITT reads and drafts; you send from your phone.' },
 ] });
 
-const trips = (w: World): SkillView => ({ id: 'trips', headline: `${plural(w.concerts.length, 'concert')} on file`, sections: [
-  { type: 'list', title: 'Upcoming events', rows: w.concerts.map((c) => ({ title: c.who, sub: `${c.date} · ${c.venue}, ${c.city}` })) },
-  { type: 'map' },
-  { type: 'kpis', cols: 2, items: [
-    { label: 'Budget envelope', value: zmw(w.trip.total), prov: 'assumed', sub: 'not a quote' }, { label: 'Flight', value: zmw(w.trip.flight), prov: 'assumed' },
-    { label: `Hotel × ${w.trip.nights}`, value: zmw(w.trip.hotel * w.trip.nights), prov: 'assumed' }, { label: `Per diem × ${w.trip.days}`, value: zmw(w.trip.perDiem * w.trip.days), prov: 'assumed' },
-  ] },
-  { type: 'notice', tone: 'attention', text: w.trip.visa },
+const trips = (w: World): SkillView => ({ id: 'trips', headline: `${plural(w.concerts.length, 'event')} on file`, sections: [
+  { type: 'list', title: 'Upcoming events', empty: 'Nothing on file yet.', rows: w.concerts.map((c) => ({ title: c.who, sub: [c.date, [c.venue, c.city].filter(Boolean).join(', ')].filter(Boolean).join(' · ') })) },
+  ...(w.live ? [] : [{ type: 'map' as const }]),
+  ...(w.trip.total ? [
+    { type: 'kpis' as const, cols: 2, items: [
+      { label: 'Budget envelope', value: zmw(w.trip.total), prov: 'assumed' as Prov, sub: 'not a quote' }, { label: 'Flight', value: zmw(w.trip.flight), prov: 'assumed' as Prov },
+      { label: `Hotel × ${w.trip.nights}`, value: zmw(w.trip.hotel * w.trip.nights), prov: 'assumed' as Prov }, { label: `Per diem × ${w.trip.days}`, value: zmw(w.trip.perDiem * w.trip.days), prov: 'assumed' as Prov },
+    ] },
+    { type: 'notice' as const, tone: 'attention' as const, text: w.trip.visa },
+  ] : []),
   { type: 'actions', items: [{ label: 'Any concerts worth a trip', utterance: 'any concerts worth a trip', kind: 'primary' }] },
 ] });
 
@@ -109,13 +112,15 @@ const collab = (w: World): SkillView => ({ id: 'collab', headline: `${w.collab.l
 
 const links = (w: World): SkillView => ({ id: 'linktree', headline: `${w.links.filter((l) => !l.hidden).length} links live`, sections: [
   { type: 'kpis', cols: 2, items: [{ label: 'Clicks, 7 days', value: String(w.links.reduce((a, l) => a + l.clicks, 0)), prov: 'measured' }, { label: 'Live links', value: String(w.links.filter((l) => !l.hidden).length) }] },
-  { type: 'links' },
+  w.live
+    ? { type: 'list', title: 'Links', empty: 'Not synced yet.', rows: w.links.map((l, i) => ({ title: l.title, sub: `${l.clicks} clicks · ${l.hidden ? 'hidden' : 'live'}`, right: `#${i + 1}` })) }
+    : { type: 'links' },
   { type: 'notice', tone: 'info', text: 'Edits go through Linktree’s official connection and always wait for “Kit, confirm”.' },
 ] });
 
-const shoplog = (w: World): SkillView => ({ id: 'shoplog', headline: `${w.shoplog.length} entries`, sections: [
-  { type: 'list', title: 'This week', rows: w.shoplog.map((e) => ({ title: e.title, sub: `${e.kind} · ${e.when}`, tag: e.status === 'public' ? 'Public' : 'Private' })) },
-  { type: 'scrub' },
+const shoplog = (w: World): SkillView => ({ id: 'shoplog', headline: `${plural(w.shoplog.length, 'entry', 'entries')}`, sections: [
+  { type: 'list', title: w.live ? 'Recent' : 'This week', empty: 'Nothing logged yet.', rows: w.shoplog.map((e) => ({ title: e.title, sub: `${e.kind} · ${e.when}`, tag: e.status === 'public' ? 'Public' : 'Private' })) },
+  ...(w.live ? [] : [{ type: 'scrub' as const }]),
 ] });
 
 const ideas = (w: World): SkillView => ({ id: 'ideas', headline: `${plural(w.ideas.length, 'idea')}`, sections: [
