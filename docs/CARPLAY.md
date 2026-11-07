@@ -48,7 +48,13 @@ It shares the player (`KITTCar/CarPlayer.swift`) and the hub access (`KITTCar/Hu
 
 CarPlay audio needs an entitlement Apple must approve for the App ID `com.tpcl.kitt`:
 
-1. Request it at developer.apple.com/contact/carplay (category: **Audio**).
+0. **Be in the paid Apple Developer Program.** The request page is for program members only: with a free Apple ID
+   ("Personal Team") it answers `developer.apple.com/unauthorized/` — checked 7 Nov 2026, the account was not enrolled
+   (developer.apple.com/account showed "Join the Apple Developer Program"). Enrol at developer.apple.com/enroll (individual,
+   yearly fee, Apple's approval takes a day or two); the Personal Team becomes the paid team with the same Team ID. Until then
+   a free team also means **7-day provisioning**: the iPhone build stops launching a week after it was signed and must be
+   reinstalled (`ONLY=iphone bash scripts/uat-install.sh`, phone plugged in and unlocked).
+1. Request it at developer.apple.com/contact/carplay (category: **Audio**). Apple reviews the use case; allow weeks.
 2. When approved, add the CarPlay (Audio) capability to the App ID and regenerate the provisioning profile.
 3. Put `KITT_CARPLAY_ENTITLEMENTS = Config/KITTCar.entitlements` in `apps/KITT/Config/Signing.local.xcconfig`.
 
