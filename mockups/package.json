@@ -2,7 +2,7 @@
   "name": "kitt-mockups",
   "private": true,
   "license": "Apache-2.0",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "KITT interactive mockups — iPhone, iPad, Apple Watch and the car. Synthetic data only.",
   "type": "module",
   "scripts": {

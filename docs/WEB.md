@@ -64,3 +64,6 @@ webOS television browser cannot run the web app (it targets 2019+ browsers, `es2
 `npx vercel --prod` from the repository root (the project is linked in `.vercel/`, root directory `mockups`). Pushes to the repository
 also deploy, provided the commit author's e-mail belongs to a member of the Vercel team: Vercel blocks a deployment whose author it
 cannot match, which is why this repository's git identity is the GitHub no-reply address.
+
+The root `.vercelignore` uploads only `mockups/` and strips everything else, `.git` included, so a Vercel "ignored build step" that runs
+`git diff` can never work here (it exits 129 and the deployment errors, as every push did until 0.3.1). Every push builds instead.

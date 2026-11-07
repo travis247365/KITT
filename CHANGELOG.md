@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — 2026-11-07
+- Fix, Vercel: every Git deployment of the web app failed in about a second. The repository's `.vercelignore` keeps only `mockups/`
+  (so nothing private is ever uploaded) and therefore also strips `.git`; `mockups/vercel.json`'s `ignoreCommand`
+  (`git diff --quiet HEAD^ HEAD -- ./`) then ran outside a repository, printed git's usage and exited 129, which Vercel treats as an
+  error. The ignore step is removed: a push now always builds the web app (about 15 s). Earlier pushes were blocked for a different
+  reason, an unrecognised commit author, fixed in 0.3.0 by committing as the GitHub account's no-reply address.
+
 ## 0.3.0 — 2026-11-07
 - **The designed surfaces run on the hub** (`mockups/`, now the live web client): connect once with the hub address and the app
   token, and the iPhone screens (Now stack, Briefs, Skills, Settings), the iPad command centre (sidebar by priority, the board, the
