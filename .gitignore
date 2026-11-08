@@ -29,3 +29,11 @@ mockups/qa/visual/
 build/
 # your Apple Developer team id (see apps/KITT/Config/Signing.xcconfig)
 apps/KITT/Config/Signing.local.xcconfig
+
+# Backups and the key to them (docs/BACKUP.md). The encrypted archives live in iCloud Drive › KITT, the passphrase only in
+# ~/.config/kitt/migration-passphrase.txt (and your password manager): none of it belongs in a repository, public or private.
+*.tar.enc
+migration-passphrase.txt
+kitt-secrets*
+kitt-migration-*
+backups/

@@ -27,6 +27,16 @@ By hand today. For a weekly run: `launchd/com.tpcl.kitt-backup.plist` can be wri
 iCloud keeps the dated folders, delete old ones yourself (never automatically). The ledger database is checkpointed before it is
 copied, so the copy is consistent.
 
+## Pushing to both repositories when the internet is there
+
+`scripts/autopush.sh` is a plain shell script, no AI and no tokens, that launchd runs every ten minutes
+(`bash scripts/install-autopush.sh`; `--remove` stops it). Each pass: is GitHub reachable; is another pass running; is `main`
+strictly ahead of origin (then push, never force; a branch that is behind is logged for you to sort out by hand); has this commit
+been published yet (then `scripts/public-sync/sync.sh`: export, scrub, leak scan, tests, push, once per commit). It never commits
+for you: uncommitted work stays where it is, so half-written notes and untracked files are never published. If you want tracked
+changes committed as well, run it with `KITT_AUTOPUSH_COMMIT=1` (message "autosave <date>", untracked files still excluded).
+One line per pass with an outcome goes to `~/Library/Logs/kitt-autopush.log`; a pass with nothing to do writes nothing.
+
 ## Not in the backup
 
 `node_modules`, `build/`, `mockups/dist`, Xcode's DerivedData and the simulator runtimes: all re-made from the repository

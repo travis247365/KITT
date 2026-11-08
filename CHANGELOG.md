@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.3 — 2026-11-08
+- Tooling: `scripts/autopush.sh`, a plain shell script launchd runs every ten minutes (`scripts/install-autopush.sh`,
+  `launchd/com.tpcl.kitt-autopush.plist`): when GitHub is reachable it pushes committed work on `main` to the private repository
+  (only when strictly ahead, never force) and publishes the same commit to the public one through the scrub and leak scan, once per
+  commit. It never commits on its own unless asked (`KITT_AUTOPUSH_COMMIT=1`, tracked files only). Log in
+  `~/Library/Logs/kitt-autopush.log`. Details in `docs/BACKUP.md`.
+
 ## 0.6.2 — 2026-11-08
 - Backup: `scripts/backup-to-icloud.sh` writes a dated folder into iCloud Drive › KITT › backups: a git bundle of every branch
   and tag (and of the public mirror), the untracked files a rebuild needs, the secrets and data encrypted with the passphrase kept
