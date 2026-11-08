@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1 — 2026-11-08
+- Tooling: moving the hub to another Mac. `scripts/migrate-to-mac.sh` makes an encrypted kit (config, secrets, the ledger, the
+  WhatsApp session; audio, spool and backups left out) into iCloud Drive › KITT with a passphrase kept only on the old Mac;
+  `scripts/restore-on-mac.sh` restores it on the new one. `docs/MIGRATE.md` is the step list, including pointing the apps at the
+  new address (nothing in the apps needs rebuilding).
+
 ## 0.6.0 — 2026-11-08
 - **Widgets** (iPhone, iPad), in the design of the mockups' widget row: **Now** (the number that needs you, a decision waiting or
   skills to review, with the status; small on the home screen, and on the Lock Screen as the circular count, the rectangular
