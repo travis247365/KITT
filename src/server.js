@@ -25,7 +25,7 @@ export async function startServer({ port, host } = {}) {
   // The web app (mockups/, built with Vite) is served by the hub itself at /app, so every device on the LAN gets it over plain http;
   // the copy hosted on Vercel talks to the hub cross-origin, hence CORS for the origins in server.web_origins.
   const web = createWebApp({ dir: config.server?.web_dir || path.join(REPO_DIR, 'mockups', 'dist') });
-  const cors = createCors(config.server?.web_origins || ['https://kitt-mockups-tpcl.vercel.app', 'https://kitt-mockups-*-tpcl.vercel.app']);
+  const cors = createCors(config.server?.web_origins || ['https://kitt-mockups-tpcl.vercel.app', 'https://kitt-mockups-*-tpcl.vercel.app', 'https://kitt-web.pages.dev', 'https://*.kitt-web.pages.dev']);
 
   router.get('/healthz', () => ({ ok: true, version: app.version, uptime_s: Math.round((Date.now() - started) / 1000) }));
   router.get('/v1/health', async (c) => { requireScope(c.identity, 'read'); return app.health(); });

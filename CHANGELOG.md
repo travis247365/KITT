@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.2 — 2026-11-08
+- Backup: `scripts/backup-to-icloud.sh` writes a dated folder into iCloud Drive › KITT › backups: a git bundle of every branch
+  and tag (and of the public mirror), the untracked files a rebuild needs, the secrets and data encrypted with the passphrase kept
+  only on the Mac, and a description of the machine. `docs/BACKUP.md` says how each piece is restored and why the passphrase
+  belongs in your password manager.
+- Disaster recovery for the web app: a second copy on Cloudflare Pages (project `kitt-web`, `scripts/deploy-cloudflare.sh`),
+  the same build Vercel serves with the same headers (`mockups/public/_headers`); the hub's default CORS list now includes it.
+- `docs/HOSTING.md`: the options for hosting the hub so the web, Mac, iPhone and iPad apps reach it from anywhere, what each
+  keeps working, what it costs and a recommendation.
+
 ## 0.6.1 — 2026-11-08
 - Tooling: moving the hub to another Mac. `scripts/migrate-to-mac.sh` makes an encrypted kit (config, secrets, the ledger, the
   WhatsApp session; audio, spool and backups left out) into iCloud Drive › KITT with a passphrase kept only on the old Mac;

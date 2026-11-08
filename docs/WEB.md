@@ -9,6 +9,7 @@ prototype (still there, with synthetic data, at `#/demo`); since 0.3.0 the front
 |---|---|---|
 | From the hub, on your own network | `http://<your-mac>:2000/app/` | plain http, no tunnel, same origin: the hub serves `mockups/dist` |
 | Hosted (Vercel project `kitt-mockups`) | `https://kitt-mockups-tpcl.vercel.app/` | an https page may only call an **https** hub (browsers block http from https), so this copy needs the tunnel below |
+| Disaster-recovery copy (Cloudflare Pages project `kitt-web`) | `https://kitt-web.pages.dev/` | the same build, deployed by `scripts/deploy-cloudflare.sh`; same https rule |
 | Development | `cd mockups && npm run dev` | http://localhost:5173, talking to whatever hub address you enter |
 
 The hub serves the files it finds in `mockups/dist` (`server.web_dir` in `kitt.json` overrides the folder). Build them with
@@ -50,7 +51,7 @@ The hub listens on this Mac. For the hosted copy, or for the phone away from the
 1. `ngrok http 2000` (ngrok is installed and authenticated on the Mac, see `docs/SETUP.md`; a reserved domain keeps the address stable).
 2. Put that address in `server.public_base_url` in `~/.config/kitt/kitt.json`.
 3. Use it as the hub address in the hosted app. The hub's CORS list (`server.web_origins`) names the *web app's* origins, not the hub's own;
-   the Vercel production and preview origins are the default, add any other host you serve the app from.
+   the Vercel production and preview origins and the Cloudflare Pages copy (`kitt-web.pages.dev` and its previews) are the default; add any other host you serve the app from.
 
 Tailscale Funnel or a Cloudflare Tunnel do the same job.
 
