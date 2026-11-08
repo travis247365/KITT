@@ -128,7 +128,7 @@ private struct UnreachablePanel: View {
             Text("Hub unreachable").font(Tv.sys(22, .semibold)).foregroundStyle(Tv.ice)
             Text(error).font(Tv.mono(13)).foregroundStyle(Tv.fog)
             Text(address).font(Tv.mono(12)).foregroundStyle(Tv.fog)
-            Text("Kitt's screens come from the hub on your Mac. On your home network they load in a moment; away from home the hub needs a tunnel (docs/WEB.md). Trying again every few seconds.")
+            Text("Kitt's screens come from the hub on your Mac. Over Tailscale they load in a moment, at home or away (docs/HOSTING.md). Trying again every few seconds.")
                 .font(Tv.sys(14, .regular)).foregroundStyle(Tv.fog)
             HStack(spacing: 12) {
                 Button("Try again", action: retry).buttonStyle(CyanButtonStyle()).frame(maxWidth: 180)

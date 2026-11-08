@@ -34,7 +34,7 @@ struct PlayBriefIntent: AudioPlaybackIntent {
         case .evening: episodes.first { $0.isEvening }
         }
         guard let episode = pick else {
-            return .result(dialog: "There is no brief on this phone yet. Open Kitt on your home Wi-Fi once to download them.")
+            return .result(dialog: "There is no brief on this phone yet. Open Kitt once while it can reach the hub to download them.")
         }
         let title = episode.isEvening ? "Evening recap" : "Morning brief"
         guard let source = await HubAccess.source(for: episode, store: store) else {

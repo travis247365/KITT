@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.6.5 — 2026-11-09
+- Fix, security (GRC audit 8 Nov, R1): the hub no longer listens on every network the laptop joins. It had been on all interfaces
+  since `scripts/uat-lan.sh on` (the setting never ended), with the macOS firewall off. So anyone on the same home, office or hotel
+  network could reach it, and the LG proxy's `/kitt` route (which adds a token itself) showed them the brief with the cash position
+  and client names. Now `src/net.js` decides where it listens:
+  - this Mac only by default;
+  - `server.host: "tailscale"` adds the Mac's Tailscale addresses on their own: picked up within about ten seconds of Tailscale
+    connecting and dropped when it disconnects. Only an interface that carries Tailscale's IPv6 prefix counts, so a network that
+    hands out 100.64/10 addresses is never mistaken for it, even when typed in as a literal address. Connections from any other
+    address are refused;
+  - the local network (every network the Mac is on: Wi-Fi, Ethernet, a hotspot) only through `scripts/uat-lan.sh on [hours]`, a
+    window of 1–12 hours that ends by itself at the end time. The script records the network it was opened on: the router's address
+    and hardware address, read from each physical interface's service in the system configuration store (so a VPN as the primary
+    service does not hide it), plus the Mac's own address. On macOS it refuses to open a window when the router cannot be read. The
+    window pauses within about ten seconds of the Mac joining another network (or of the router becoming unreadable) and resumes if
+    the Mac comes back before the end time; `uat-lan.sh off` ends it for good. A connection that arrives after the end time is
+    refused even before the next check;
+  - every spelling of "all interfaces" (`0.0.0.0`, `::`, `0`, …) and any other network address or host name still work, but they
+    are warned about at start, and `uat-lan.sh off` replaces them with `"tailscale"`. `off` then lists the sockets actually open and
+    fails if one is still on the network.
+- `/tv` (the TV and big-screen view) shows counts and status only: "Morning brief ready", the pending and coverage pills, which skill
+  needs attention. It never shows the brief's text or a skill's health detail; the brief is heard in the app.
+- The security sweep checks this Mac too (provider `mac`, read-only). It reads the hub's real sockets as well as its plan, so a hub
+  socket on the network is raised even when the config says otherwise (HIGH unless the firewall is confirmed on). The firewall off
+  is MEDIUM; other node/python servers open to the network are LOW. A run that cannot read the firewall never clears an earlier
+  "off", and a run that cannot read the sockets leaves those findings as they were.
+- Fix, security sweep (found while reviewing the above): a check that could not run no longer clears what it found before. A
+  provider that could not run at all (GitHub, Vercel or Fly unreachable, Cloudflare zones unreadable, the Cloudflare token invalid or
+  removed) keeps its open findings; a sub-check that failed part-way (GitHub 2FA, Dependabot or secret scanning for one repo, Vercel
+  env or domains, Fly certificates, a Cloudflare zone setting) keeps the findings it would have produced, and the provider's note says
+  "partial". Each observation is now compared with its own latest earlier value, so a failed run is never the baseline and, for
+  example, a repo that turns public across a failed sweep is still reported. Removing the Cloudflare token settles the old "token
+  invalid" finding. Test: `test/skills/security.test.js` (a stub `gh`).
+  `kitt doctor` prints the hub's open sockets, the other servers open to the network and the firewall state.
+- Shutting the hub down lets requests in progress finish again; only a listener whose address leaves the plan has its connections
+  cut. `close()` waits for a change in progress, so nothing is left listening.
+- In-app and web texts no longer say the hub is on the home Wi-Fi: they point at Tailscale (the connect screens and their
+  address placeholders, the unreachable panel, the CarPlay and Siri messages, the web connect screen). `scripts/restore-on-mac.sh`
+  resets a kit made before 9 Nov 2026 (which still says every interface) to `"tailscale"`; `docs/BACKUP.md` says to run
+  `uat-lan.sh off` after restoring an older backup.
+- Outside this repo, in the LG TV launcher (`~/dev/lgtv-vibehack`; earlier versions of `launcher/server.py`, `tools/autohome.py`,
+  `tools/lgtv.py`, `tools/tvguard.py`, `state/tv.json`, `CLAUDE.md` and `docs/INSTALL-WEBOS-APP.md` kept next to them as `*.bak-20261109-*`):
+  - every route answers only this Mac, or a sender at the TV's address while the paired TV proves itself there. The proof is a TLS
+    handshake against the TV's own certificate on port 3001, pinned in `state/tv.json` by `tools/tvguard.py pin`, cached for ten
+    seconds per (TV address, Mac address). Anyone else gets 403, at home or on another network that reuses the same numbering;
+  - the pairing key is sent only after a 4 s probe of port 3001 shows the pinned certificate (nothing there, or another certificate:
+    no socket opened, nothing sent), then over `wss://TV:3001` with the certificate checked again on that same socket, or over the
+    plain socket if the TV refuses wss. The link used is logged once per process. This is in the server, the auto-home loop and
+    `tools/lgtv.py`, including a first pairing once a certificate is pinned. Not yet tried against the TV: it was off;
+  - a web page cannot drive it: the Host header must be an IP address or localhost, a browser `Origin` must be the launcher itself
+    (or `null`/`file://` from the proven TV, for the packaged Home app), a POST must be JSON and Transfer-Encoding is refused, and every
+    response closes its connection, so nothing after a request is ever parsed as another one; an idle connection times out after 15 s;
+  - `/icon/` can no longer read files outside the icon folder (it could read any `.png` the user can read);
+  - it uses a new read-only `KITT_READ_TOKEN` instead of the app token.
+- On this Mac, `kitt.json` moved to `server.host: "tailscale"` (the old file is kept next to it) and the Mac app to
+  `http://127.0.0.1:2000`. Until Tailscale is installed and signed in, the iPhone and iPad reach the hub only during a `uat-lan.sh on`
+  window at home.
+- The window tests bind "every interface" to `::1`, so `npm test` (which also runs unattended in the public sync) never opens a port on
+  the network it runs on; `KITT_TEST_LAN=1` adds one real check.
+
 ## 0.6.4 — 2026-11-08
 - Fix, hub: the language-brain fallback never ran. `route()` in `src/intents/router.js` took one argument while `app.js` passed a
   second (`{ fast }` for Siri's shorter timeout), so `fast` was undeclared and every question the grammar did not match threw

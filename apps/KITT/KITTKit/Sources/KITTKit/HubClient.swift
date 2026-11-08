@@ -13,7 +13,7 @@ public enum HubClientError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .invalidServerURL:
-            return "Use an https:// address, or http:// only for this device (127.0.0.1) or your own home network."
+            return "Use an https:// address, or http:// only for this device (127.0.0.1), Tailscale (100.x) or your own network."
         case .invalidToken:
             return "Enter a valid Kitt app token."
         case .invalidCommand:

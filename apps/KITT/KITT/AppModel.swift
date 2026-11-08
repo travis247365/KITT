@@ -178,7 +178,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Keeps the newest briefs on the phone while the hub is reachable (home network), so CarPlay can play them on the road.
+    /// Keeps the newest briefs on the phone while the hub is reachable (Tailscale, or a test window at home), so CarPlay can play them on the road.
     /// iPhone only, and at most every 10 minutes: the car scene does its own sync when it connects.
     private func syncBriefsForTheCar(_ client: HubClient) {
         #if os(iOS)

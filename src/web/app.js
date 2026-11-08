@@ -1,4 +1,4 @@
-// Serves the built web app (mockups/dist, Vite) under /app so every device on the LAN gets it from the hub over plain http,
+// Serves the built web app (mockups/dist, Vite) under /app so every device that can reach the hub (this Mac, the tailnet) gets it over plain http,
 // and answers CORS for the copy of the same app hosted elsewhere (Vercel), which talks to the hub cross-origin.
 import fs from 'node:fs';
 import path from 'node:path';

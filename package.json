@@ -1,6 +1,6 @@
 {
   "name": "kitt",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "private": true,
   "license": "Apache-2.0",
   "description": "KITT — Travis's hybrid personal AI agent: a 12-skill hub on the Mac, voice in/out through Apple CarPlay via Siri Shortcuts.",

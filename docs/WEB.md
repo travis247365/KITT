@@ -7,7 +7,7 @@ prototype (still there, with synthetic data, at `#/demo`); since 0.3.0 the front
 
 | Where | Address | Notes |
 |---|---|---|
-| From the hub, on your own network | `http://<your-mac>:2000/app/` | plain http, no tunnel, same origin: the hub serves `mockups/dist` |
+| From the hub, on this Mac or over Tailscale | `http://<the hub>:2000/app/` (`127.0.0.1` on the Mac itself, the Mac's Tailscale address elsewhere) | plain http, no tunnel, same origin: the hub serves `mockups/dist`. Since 0.6.5 the hub is not on the home Wi-Fi except during a `scripts/uat-lan.sh on` window |
 | Hosted (Vercel project `kitt-mockups`) | `https://kitt-mockups-tpcl.vercel.app/` | an https page may only call an **https** hub (browsers block http from https), so this copy needs the tunnel below |
 | Disaster-recovery copy (Cloudflare Pages project `kitt-web`) | `https://kitt-web.pages.dev/` | the same build, deployed by `scripts/deploy-cloudflare.sh`; same https rule |
 | Development | `cd mockups && npm run dev` | http://localhost:5173, talking to whatever hub address you enter |
@@ -22,7 +22,7 @@ browser only (localStorage) and sent to nothing but the hub. A television browse
 the address bar:
 
 ```
-http://<your-mac>:2000/app/#/tv?hub=http://<your-mac>:2000&token=<app token>
+http://<the hub>:2000/app/#/tv?hub=http://<the hub>:2000&token=<app token>
 ```
 
 The secret is removed from the address as soon as it is stored.

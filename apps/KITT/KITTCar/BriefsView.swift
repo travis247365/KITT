@@ -16,7 +16,7 @@ struct BriefsView: View {
 
     private var emptyHint: String {
         if !model.isConnected { return "Connect Kitt to the hub in Settings, then the newest briefs download here." }
-        if model.isOffline { return "The hub is not reachable. Open Kitt on your home Wi-Fi once and the briefs download." }
+        if model.isOffline { return "The hub is not reachable. Open Kitt once while it can reach the hub (Tailscale) and the briefs download." }
         return "The hub has not rendered a brief yet. The morning brief renders at 07:05, the evening recap at 17:45."
     }
 

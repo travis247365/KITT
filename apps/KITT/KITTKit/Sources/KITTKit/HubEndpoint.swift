@@ -32,7 +32,7 @@ public enum HubEndpoint {
     public static func note(for url: URL) -> String? {
         switch classify(url) {
         case .thisDevice: return "This hub is on this device: the connection never leaves it."
-        case .privateNetwork: return "Not encrypted: use this only on your own home network."
+        case .privateNetwork: return "Not encrypted by the app: use this only over Tailscale or on your own network."
         default: return nil
         }
     }

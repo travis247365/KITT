@@ -1,5 +1,5 @@
-// HTTP front door for Siri Shortcuts, the podcast feed, the dashboard and skill routes. Binds 127.0.0.1 only; a tunnel fronts it.
-import http from 'node:http';
+// HTTP front door for Siri Shortcuts, the podcast feed, the dashboard and skill routes. Listens on this Mac only, or this Mac plus
+// its Tailscale addresses (server.host "tailscale"); the local network only for a time-limited test window. See src/net.js.
 import fs from 'node:fs';
 import path from 'node:path';
 import { createApp } from './app.js';
@@ -12,6 +12,7 @@ import { renderDashboard } from './web/dashboard.js';
 import { renderTV } from './web/tv.js';
 import { createWebApp, createCors } from './web/app.js';
 import { REPO_DIR } from './config.js';
+import { createListeners } from './net.js';
 
 export async function startServer({ port, host } = {}) {
   const app = await createApp();
@@ -22,7 +23,8 @@ export async function startServer({ port, host } = {}) {
   const podcast = app.podcast;
   const router = createRouter();
   const started = Date.now();
-  // The web app (mockups/, built with Vite) is served by the hub itself at /app, so every device on the LAN gets it over plain http;
+  // The web app (mockups/, built with Vite) is served by the hub itself at /app, so every device that can reach the hub (this Mac,
+  // the tailnet) gets it over plain http;
   // the copy hosted on Vercel talks to the hub cross-origin, hence CORS for the origins in server.web_origins.
   const web = createWebApp({ dir: config.server?.web_dir || path.join(REPO_DIR, 'mockups', 'dist') });
   const cors = createCors(config.server?.web_origins || ['https://kitt-mockups-tpcl.vercel.app', 'https://kitt-mockups-*-tpcl.vercel.app', 'https://kitt-web.pages.dev', 'https://*.kitt-web.pages.dev']);
@@ -84,7 +86,7 @@ export async function startServer({ port, host } = {}) {
 
   function publicBase(c) { return config.server?.public_base_url || `${c.req.headers['x-forwarded-proto'] || 'http'}://${c.req.headers['x-forwarded-host'] || c.req.headers.host}`; }
 
-  const server = http.createServer((req, res) => {
+  const handler = (req, res) => {
     const url = new URL(req.url, 'http://kitt.local');
     if (cors.apply(req, res)) return;        // a preflight from the hosted app
     if (web.handle(req, res, url)) return;   // the app's own files: no token, not rate limited
@@ -94,15 +96,17 @@ export async function startServer({ port, host } = {}) {
     if (!limiter(key)) return sendJson(res, 429, { error: 'rate limited' });
     if (presented && !identity && url.pathname !== '/healthz') log.warn('bad token presented', { path: url.pathname, ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress });
     dispatch(router, req, res, ({ params, route }) => ({ req, res, url, params, route, identity, app }));
-  });
-  server.keepAliveTimeout = 5000;
-  const p = port || config.server?.port || 2000; const h = host || config.server?.host || '127.0.0.1';
-  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(p, h, resolve); });
-  log.info('kitt listening', { host: h, port: p, version: app.version, skills: app.skillList.map((s) => s.id), unavailable: app.failures.map((f) => f.id) });
+  };
+  const p = port || config.server?.port || 2000;
+  const server = createListeners(handler, { port: p, server: { ...(config.server || {}), ...(host ? { host, lan_until: undefined } : {}) }, log, setup: (s) => { s.keepAliveTimeout = 5000; } });
+  await server.start();
+  const plan = server.plan();
+  log.info('kitt listening', { mode: plan.mode, addresses: server.addresses(), port: p, lan_until: plan.expires || undefined, version: app.version, skills: app.skillList.map((s) => s.id), unavailable: app.failures.map((f) => f.id) });
+  if (plan.lan && !plan.expires) log.warn(`the hub is open to the local network with no end time (server.host ${plan.legacy ? 'is every interface' : `is the network address ${plan.addresses[0]}`}): anyone on the same network can reach it. Run: bash scripts/uat-lan.sh off`);
   app.scheduler.start();
   const shutdown = (sig) => { log.info('shutting down', { sig }); app.scheduler.stop(); server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 3000).unref(); };
   process.on('SIGTERM', () => shutdown('SIGTERM')); process.on('SIGINT', () => shutdown('SIGINT'));
-  return { server, app, port: p, host: h, podcast };
+  return { server, app, port: p, host: server.addresses().join(','), podcast };
 }
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname);

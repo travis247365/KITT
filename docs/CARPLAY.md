@@ -32,8 +32,10 @@ play/pause and the 15-second skips. Kitt uses exactly that:
 | "Hey Siri, ask Kitt what's on my plate" | the plate, spoken |
 | "Hey Siri, confirm with Kitt" / "cancel with Kitt" | resolves the pending decision |
 
-Siri also answers to "Kit" (`INAlternativeAppNames`). Everything except "play my brief" needs the hub: on home Wi-Fi it works as is;
-on the road it needs a tunnel (Tailscale or similar) and an https address in Settings.
+Siri also answers to "Kit" (`INAlternativeAppNames`). Everything except "play my brief" needs the hub. Since 0.6.5 the hub does
+not listen on the home Wi-Fi by default (GRC audit R1): the phone reaches it over Tailscale (the Tailscale app on the Mac and the
+phone; the Mac's `server.host` is `"tailscale"`), at home and on the road, or at home during a test window
+(`bash scripts/uat-lan.sh on`, which closes by itself after four hours).
 
 The phone keeps the **newest four briefs** in `Application Support/KITTBriefs` (out of iCloud backups):
 
@@ -42,7 +44,7 @@ The phone keeps the **newest four briefs** in `Application Support/KITTBriefs` (
 - the car scene (below) also syncs when CarPlay connects, then every minute while connected;
 - older audio is deleted.
 
-So: open Kitt once on the home network before driving.
+So: open Kitt once where it reaches the hub (Tailscale, or a test window at home) before driving.
 
 ## 2. The CarPlay app (waits on Apple)
 

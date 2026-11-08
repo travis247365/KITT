@@ -1,6 +1,6 @@
 import Foundation
 
-/// The briefs kept on the phone so the car can play them away from the home network.
+/// The briefs kept on the phone so the car can play them when the hub cannot be reached.
 /// A folder holding `episodes.json` (the hub's list as last seen) and the newest audio files.
 public struct BriefStore: Sendable {
     public let directory: URL

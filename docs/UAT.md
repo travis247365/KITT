@@ -6,8 +6,8 @@ Log every finding in `docs/UAT_LOG.md` (one line each: where, what you did, what
 | Device | Install | Hub address | Token |
 |---|---|---|---|
 | This Mac | already in `~/Applications/KITT.app` | `http://127.0.0.1:2000` | the app token is on the clipboard: paste it |
-| iPad, iPhone | `bash scripts/uat-install.sh` (needs your Apple ID in Xcode and Developer Mode on) | `bash scripts/uat-lan.sh on`, then `http://<your-mac-name>.local:2000` | `grep ^KITT_APP_TOKEN= ~/.config/kitt/kitt.env \| cut -d= -f2- \| pbcopy`, then paste (Universal Clipboard carries it to the iPad/iPhone) |
-| Apple TV | later, on the home network, from Xcode | same address as the iPad | typed with the iPhone keyboard |
+| iPad, iPhone | `bash scripts/uat-install.sh` (needs your Apple ID in Xcode and Developer Mode on) | over Tailscale `http://<the Mac's Tailscale address>:2000`; or at home `bash scripts/uat-lan.sh on` (open for 4 hours, then it closes by itself; `off` closes it sooner), then `http://<your-mac-name>.local:2000` | `grep ^KITT_APP_TOKEN= ~/.config/kitt/kitt.env \| cut -d= -f2- \| pbcopy`, then paste (Universal Clipboard carries it to the iPad/iPhone) |
+| Apple TV | later, from Xcode | same address as the iPad (Tailscale, or a `uat-lan.sh on` window at home) | typed with the iPhone keyboard |
 
 ## Test cases
 | # | Do this | Expected |
@@ -26,11 +26,11 @@ Log every finding in `docs/UAT_LOG.md` (one line each: where, what you did, what
 ## In the car (iPhone, 0.2.0)
 | # | Do this | Expected |
 |---|---|---|
-| 11 | On home Wi-Fi open **Briefs** | The newest briefs list with "Today HH:MM · m:ss"; none says "needs the hub" after a few seconds |
+| 11 | With the hub reachable (Tailscale, or a `uat-lan.sh on` window at home) open **Briefs** | The newest briefs list with "Today HH:MM · m:ss"; none says "needs the hub" after a few seconds |
 | 12 | Press play on one, lock the phone | It keeps playing; the lock screen shows "Morning brief · Kitt" with the artwork, play/pause and the 15 s skips work |
 | 13 | Plug into CarPlay (or Bluetooth) with it playing | CarPlay's Now Playing shows the brief; steering-wheel play/pause and skip work |
 | 14 | Away from home, Airplane mode on: "Hey Siri, play my brief in Kitt" | The newest brief plays from the phone's copy; Siri says "Playing your morning brief" |
 | 15 | "Hey Siri, play my evening recap in Kitt" | The evening one |
-| 16 | On home Wi-Fi: "Hey Siri, ask Kitt" → "what's my cash position" | Siri reads the hub's answer |
+| 16 | With the hub reachable (Tailscale, or a `uat-lan.sh on` window at home): "Hey Siri, ask Kitt" → "what's my cash position" | Siri reads the hub's answer |
 | 17 | Ask "log cash 50 parking" in the app, then "Hey Siri, confirm with Kitt" | Siri says "Logged 50 kwacha cash for parking"; the decision disappears |
-| 18 | Away from home: "Hey Siri, ask Kitt what's on my plate" | Siri says the hub is not reachable (not a raw error, not silence) |
+| 18 | With the phone off Tailscale and no window open: "Hey Siri, ask Kitt what's on my plate" | Siri says the hub is not reachable (not a raw error, not silence) |

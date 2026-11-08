@@ -393,7 +393,7 @@ struct SettingsView: View {
             PanelSection(title: "Hub connection") {
                 VStack(alignment: .leading, spacing: 16) {
                     LabeledPanel(label: "Hub address") {
-                        TextField("http://your-mac-name.local:2000", text: $serverAddress)
+                        TextField("http://100.x.y.z:2000 (the Mac's Tailscale address)", text: $serverAddress)
                             .hubURLEntry()
                             .focused($focus, equals: .address)
                             .submitLabel(.next)
@@ -405,7 +405,7 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(HubEndpoint.classify(url) == .thisDevice ? Tv.fog : Color.orange)
                     } else if let url = addressURL, HubEndpoint.classify(url) == .rejected, !serverAddress.isEmpty {
-                        Label("Start with https://, or http:// for this device or your home network.", systemImage: "xmark.circle")
+                        Label("Start with https://, or http:// for this device, Tailscale or your own network.", systemImage: "xmark.circle")
                             .font(.caption).foregroundStyle(Tv.signal)
                     }
 
@@ -445,7 +445,7 @@ struct SettingsView: View {
                     .keyboardShortcut(.defaultAction)    // Return connects from anywhere
                     ConnectStatus(missing: missing, onRetry: connect)
 
-                    Text("Use the hub’s https:// address. http:// is accepted only for this device (127.0.0.1) or your own home network, and the app says when it is not encrypted. The app token is sent only in the Authorization header and stored in the Keychain.")
+                    Text("Use the hub’s https:// address. http:// is accepted only for this device (127.0.0.1), Tailscale (100.x) or your own network, and the app says when it is not encrypted. The app token is sent only in the Authorization header and stored in the Keychain.")
                         .font(.caption).foregroundStyle(Tv.fog)
                 }
                 .cockpitPanel()

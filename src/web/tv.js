@@ -1,6 +1,8 @@
 // Always-on, big-screen view for a TV or a propped-up laptop. Separate from /dashboard on purpose:
 // this reads only the cheap, already-computed app.state() (same data as /v1/state) — never the
 // per-skill dashboard panels, which make live calls and took the admin dashboard ~27s to render.
+// A screen in a room is read by whoever is in the room, so it shows counts and status only (GRC audit 8 Nov 2026, R1): never the
+// brief's text (cash, client names, people), never a skill's health detail. The brief is heard in the app.
 // Rendered HTML must also run on a 2017 webOS TV browser if proxied there: ES5 only, flexbox only,
 // no CSS custom properties, no blur, animate transform/opacity only. See lgtv-vibehack/CLAUDE.md.
 
@@ -11,8 +13,9 @@ function latestBrief(briefs) {
   if (!entries.length) return null;
   entries.sort((a, b) => (b[1].at || '').localeCompare(a[1].at || ''));
   const [kind, b] = entries[0];
-  return { kind, at: b.at, text: b.text };
+  return { kind, at: b.at };
 }
+const cap = (s) => { const t = String(s || ''); return t.charAt(0).toUpperCase() + t.slice(1); };
 
 export async function renderTV(app) {
   const s = await app.state();
@@ -24,14 +27,14 @@ export async function renderTV(app) {
   const cov = s.coverage || {};
 
   const problemRows = unhealthy
-    .map(([id, v]) => `<div class="prob">${esc(v.name || id)} — ${esc(v.detail || 'needs attention')}</div>`)
+    .map(([id, v]) => `<div class="prob">${esc(v.name || id)} needs attention</div>`)
     .join('');
   const unavailRows = (s.unavailable || [])
-    .map((f) => `<div class="prob">${esc(f.id || f.name || String(f))} failed to load</div>`)
+    .map((f) => `<div class="prob">${esc(f.id || f.name || 'a skill')} failed to load</div>`)
     .join('');
 
   const briefBlock = brief
-    ? `<p class="brief-text">${esc(brief.text)}</p><p class="brief-meta">${esc(brief.kind)} brief · as of ${esc(new Date(brief.at).toLocaleString('en-ZM', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }))}</p>`
+    ? `<p class="brief-text">${esc(cap(brief.kind))} brief ready</p><p class="brief-meta">as of ${esc(new Date(brief.at).toLocaleString('en-ZM', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }))} · open the KITT app to hear it</p>`
     : `<p class="brief-text muted">No brief generated yet.</p>`;
 
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

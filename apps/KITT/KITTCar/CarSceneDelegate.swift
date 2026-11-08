@@ -110,7 +110,7 @@ final class CarController {
             return item
         }
         if items.isEmpty {
-            let hint = client == nil ? "Open Kitt on your iPhone and connect to the hub" : (offline ? "Hub not reachable. Open Kitt on home Wi-Fi to download them" : "Nothing rendered yet")
+            let hint = client == nil ? "Open Kitt on your iPhone and connect to the hub" : (offline ? "Hub not reachable. Open Kitt while it can reach the hub to download them" : "Nothing rendered yet")
             items = [CPListItem(text: "No briefs on this phone", detailText: hint)]
         }
         var sections = [CPListSection(items: items, header: "Briefs", sectionIndexTitle: nil)]

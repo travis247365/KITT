@@ -377,7 +377,7 @@ struct ConnectScreen: View {
                             step("3", "Select Connect.")
                         }
                         .padding(.bottom, 44)
-                        Text("Use an https:// address (for example your Tailscale name), or an http:// address on your own home network. The token is the Kitt app token from the hub.")
+                        Text("Use an https:// address (for example your Tailscale name), or the Mac's http:// Tailscale address. The token is the Kitt app token from the hub.")
                             .font(Tv.sys(29)).foregroundStyle(Tv.fog).lineSpacing(6)
                     }
                     .frame(maxWidth: 880, alignment: .leading)

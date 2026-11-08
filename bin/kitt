@@ -161,7 +161,19 @@ async function main() {
       const acSleep = (/AC Power:[\s\S]*?\n\s*sleep\s+(\d+)/.exec(custom) || [])[1]; const battSleep = (/Battery Power:[\s\S]*?\n\s*sleep\s+(\d+)/.exec(custom) || [])[1];
       let healthz = 'down'; try { const r = await fetch(`http://127.0.0.1:${app.config.server?.port || 2000}/healthz`, { signal: AbortSignal.timeout(3000) }); healthz = r.ok ? `up (${(await r.json()).uptime_s}s)` : `HTTP ${r.status}`; } catch { /* down */ }
       const cov = app.coverage(7);
-      console.log([`hub process      ${healthz}`, `launchd agent    ${la ? 'installed' : 'NOT installed → sh ~/dev/kitt/scripts/install.sh'}`, `tunnel agent     ${ng ? 'installed' : 'NOT installed (ngrok) — prefer Tailscale; see docs/APPLE_APPS_PLAN.md §5'}`, `public_base_url  ${app.config.server?.public_base_url || '(unset)'}`, `power            ${batt}`, `sleep (AC/batt)  ${acSleep ?? '?'} / ${battSleep ?? '?'} min  ${acSleep && Number(acSleep) > 0 ? '→ run: sudo pmset -c sleep 0 displaysleep 15' : ''}`, `7-day coverage   ${cov.uptime_pct}% of expected heartbeats (${cov.heartbeats}/${cov.expected}), on AC ${cov.on_ac_pct ?? '?'}%`, `tokens           full=${app.secrets.KITT_TOKEN ? 'set' : 'MISSING'} app=${app.secrets.KITT_APP_TOKEN ? 'set' : 'MISSING (kitt token new app)'} feed=${app.secrets.KITT_FEED_TOKEN ? 'set' : 'MISSING'}`].join('\n'));
+      // where the hub actually listens (the open sockets, not the config) and the firewall: GRC audit R1
+      const os = await import('node:os'); const { listenPlan, readNetworkSignature, tailscaleAddresses } = await import(path.join(SRC, 'net.js')); const { readFirewall, readListeners, openToNetwork } = await import(path.join(SRC, 'skills', 'security', 'exposure.js'));
+      const hubPort = app.config.server?.port || 2000; const plan = listenPlan(app.config.server || {}, { ifaces: os.networkInterfaces(), signature: readNetworkSignature(), requireRouter: process.platform === 'darwin' });
+      const listeners = await readListeners(); const firewall = await readFirewall(); const ts = tailscaleAddresses();
+      const hubSockets = (listeners || []).filter((l) => l.port === hubPort);
+      const exposed = hubSockets.some((l) => openToNetwork(l.host, ts));
+      const others = (listeners || []).filter((l) => l.port !== hubPort && openToNetwork(l.host, ts) && /^(node|python|ruby|php|java|deno|bun)/i.test(l.command));
+      console.log([
+        `listening on     ${listeners === null ? 'could not check (lsof did not run)' : hubSockets.length ? [...new Set(hubSockets.map((l) => `${l.host}:${l.port}`))].join(', ') : '(nothing)'}  (kitt.json: ${plan.mode}${plan.expires ? ` until ${plan.expires}` : ''})${exposed ? '  → OPEN TO THE LOCAL NETWORK; close: bash scripts/uat-lan.sh off' : ''}`,
+        `other servers    ${listeners === null ? 'could not check (lsof did not run)' : others.length ? [...new Set(others.map((l) => `${l.command} ${l.host}:${l.port}`))].join(', ') + ' open to the network' : 'none open to the network'}`,
+        `macOS firewall   ${firewall}${firewall === 'off' ? '  → System Settings › Network › Firewall: turn it on' : ''}`,
+      ].join('\n'));
+      console.log([`hub process      ${healthz}`,`launchd agent    ${la ? 'installed' : 'NOT installed → sh ~/dev/kitt/scripts/install.sh'}`, `tunnel agent     ${ng ? 'installed' : 'NOT installed (ngrok) — prefer Tailscale; see docs/APPLE_APPS_PLAN.md §5'}`, `public_base_url  ${app.config.server?.public_base_url || '(unset)'}`, `power            ${batt}`, `sleep (AC/batt)  ${acSleep ?? '?'} / ${battSleep ?? '?'} min  ${acSleep && Number(acSleep) > 0 ? '→ run: sudo pmset -c sleep 0 displaysleep 15' : ''}`, `7-day coverage   ${cov.uptime_pct}% of expected heartbeats (${cov.heartbeats}/${cov.expected}), on AC ${cov.on_ac_pct ?? '?'}%`, `tokens           full=${app.secrets.KITT_TOKEN ? 'set' : 'MISSING'} app=${app.secrets.KITT_APP_TOKEN ? 'set' : 'MISSING (kitt token new app)'} feed=${app.secrets.KITT_FEED_TOKEN ? 'set' : 'MISSING'}`].join('\n'));
       break;
     }
     case 'setup': {

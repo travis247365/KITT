@@ -37,7 +37,7 @@ export function ConnForm({ compact, onDone }: { compact?: boolean; onDone?: () =
   };
   return (
     <form className="kw-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-      <label><span className="eyebrow muted">Hub address</span><input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://your-mac.local:2000" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="url" /></label>
+      <label><span className="eyebrow muted">Hub address</span><input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://100.x.y.z:2000 (the Mac’s Tailscale address)" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="url" /></label>
       <label><span className="eyebrow muted">App token</span>
         <span style={{ display: 'flex', gap: 8 }}><input type={show ? 'text' : 'password'} value={token} onChange={(e) => setToken(e.target.value)} placeholder="from: kitt token new" autoCapitalize="none" autoCorrect="off" spellCheck={false} style={{ flex: 1 }} />
           <button type="button" className="icon-btn" aria-label={show ? 'Hide token' : 'Show token'} onClick={() => setShow(!show)}><Icon name={show ? 'eye' : 'lock'} size={18} /></button></span></label>
@@ -54,6 +54,7 @@ export function ConnForm({ compact, onDone }: { compact?: boolean; onDone?: () =
 
 /** Shown instead of the app until a hub is connected. */
 export function ConnectScreen({ tv }: { tv?: boolean }) {
+  const live = useLive();
   return (
     <div className="kw-connect ds2" data-theme="dark">
       <div className="kw-connect-box">
@@ -65,8 +66,8 @@ export function ConnectScreen({ tv }: { tv?: boolean }) {
         </div>
         <ConnForm />
         <p className="t-micro muted">
-          {tv ? <>On a television, connect once from the address bar instead: <code>…/#/tv?hub=http://&lt;mac&gt;:2000&amp;token=…</code> (the secret is dropped from the address as soon as it is stored). </> : null}
-          On your home Wi-Fi the hub serves this app itself at <code>http://&lt;your-mac&gt;:2000/app</code>; away from home it needs the hub’s https address.
+          {tv ? <>On a television, connect once from the address bar instead: <code>…/#/tv?hub=http://&lt;hub&gt;:2000&amp;token=…</code>, where the hub is the Mac’s Tailscale address (the secret is dropped from the address as soon as it is stored). </> : null}
+          The hub serves this app itself at <code>http://&lt;hub&gt;:2000/app</code> to the Mac it runs on and, over Tailscale, to your other devices{live.hubHere ? '.' : '; this hosted copy needs the hub’s https address.'}
           Want a look first? <a href="#/demo">Open the design prototype</a> (synthetic data).
         </p>
       </div>

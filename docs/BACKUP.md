@@ -7,7 +7,7 @@
 | `kitt-repo.bundle` | every branch and tag of this repository (a complete clone source) | `git clone kitt-repo.bundle ~/dev/kitt`, then `git remote set-url origin https://github.com/travis247365/kitt-private.git` |
 | `kitt-repo.HEAD` | the commit the bundle was made at | |
 | `kitt-untracked.tar.gz` | files git ignores on purpose but the build needs: the Vercel link (`.vercel/`), the signing team (`Config/Signing.local.xcconfig`), the design folder, the plans, the built Shortcuts | `tar -xzf kitt-untracked.tar.gz -C ~/dev/kitt` |
-| `kitt-secrets.tar.enc` | **encrypted**: `~/.config/kitt` (config, secrets, SMS cursor), `~/.local/share/kitt` (the ledger with its backups, briefs audio, WhatsApp session), ngrok's config, the launchd agents, the Xcode provisioning profiles | `openssl enc -d -aes-256-cbc -pbkdf2 -in kitt-secrets.tar.enc \| tar -xz -C ~` (asks for the passphrase) |
+| `kitt-secrets.tar.enc` | **encrypted**: `~/.config/kitt` (config, secrets, SMS cursor), `~/.local/share/kitt` (the ledger with its backups, briefs audio, WhatsApp session), ngrok's config, the launchd agents, the Xcode provisioning profiles | `openssl enc -d -aes-256-cbc -pbkdf2 -in kitt-secrets.tar.enc \| tar -xz -C ~` (asks for the passphrase), then `bash scripts/uat-lan.sh off`: a backup made before 9 Nov 2026 has the hub open to every network (`server.host` 0.0.0.0), and that resets it |
 | `environment.txt` | macOS, Node, Xcode, Homebrew packages, the launchd jobs | read it when setting a Mac up |
 | `README.md` | this file | |
 

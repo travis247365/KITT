@@ -36,6 +36,6 @@ enum HubAccess {
             return "The hub refused the app token. Open Kitt and connect it again."
         }
         if error is HubClientError { return error.localizedDescription }
-        return "Kitt can't reach the hub right now. It needs your home network or a tunnel."
+        return "Kitt can't reach the hub right now. It needs Tailscale (or a tunnel) to your Mac."
     }
 }
