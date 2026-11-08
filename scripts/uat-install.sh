@@ -42,15 +42,49 @@ for x in d.get("result", {}).get("devices", []):
 PY
 }
 
+signing() {   # args: udid list. Prints whether Xcode can renew signing, and how long each device's install stays valid.
+  defaults export com.apple.dt.Xcode - 2>/dev/null > "$TMP/x.plist"
+  for f in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision; do
+    [ -f "$f" ] && security cms -D -i "$f" 2>/dev/null > "$TMP/p-$(basename "$f").plist"
+  done
+  python3 - "$TMP" "$BUNDLE" "$@" <<'PY'
+import glob, os, plistlib, sys, datetime as dt
+tmp, bundle, udids = sys.argv[1], sys.argv[2], sys.argv[3:]
+try: x = plistlib.load(open(os.path.join(tmp, "x.plist"), "rb"))
+except Exception: x = {}
+accounts = [a for v in (x.get("DVTDeveloperAccountManagerAppleIDLists") or {}).values() for a in (v or [])]
+free = any(t.get("isFreeProvisioningTeam") for v in (x.get("IDEProvisioningTeamByIdentifier") or {}).values() for t in (v or []))
+if accounts: print("Xcode account: signed in" + (" (free Personal Team: every install is valid for 7 days, then reinstall)" if free else ""))
+else: print("Xcode account: NONE. Builds can only reuse the profile below until it expires; nothing can be renewed or added.\n   -> Xcode > Settings > Accounts > + > Apple Account, sign in, then run this again")
+best = None
+for p in glob.glob(os.path.join(tmp, "p-*.plist")):
+    try: d = plistlib.load(open(p, "rb"))
+    except Exception: continue
+    if not str((d.get("Entitlements") or {}).get("application-identifier", "")).endswith("." + bundle): continue
+    if best is None or d["ExpirationDate"] > best["ExpirationDate"]: best = d
+if not best: print("signing profile: none for " + bundle); sys.exit(0)
+exp = best["ExpirationDate"].replace(tzinfo=dt.timezone.utc)
+left = exp - dt.datetime.now(dt.timezone.utc)
+local = exp.astimezone().strftime("%a %d %b %H:%M %Z")
+hours = int(left.total_seconds() // 3600)
+state = "EXPIRED" if hours < 0 else (f"{hours} h left" if hours < 48 else f"{hours // 24} days left")
+print(f"signing profile: expires {local} ({state}); made {best['CreationDate'].replace(tzinfo=dt.timezone.utc).astimezone().strftime('%a %d %b %H:%M')}")
+covered = set(best.get("ProvisionedDevices") or [])
+for u in udids:
+    if u: print(f"   {u}: " + ("covered" if u in covered else "NOT in the profile: a build with the Xcode account signed in adds it"))
+PY
+}
+
 TEAM=$(team)
 echo "Apple team: ${TEAM:-NOT SET (Xcode > Settings > Accounts > + > Apple ID, then run this again)}"
 LIST=$(devices)
 [ -z "$LIST" ] && echo "No physical iPhone/iPad found. Connect it by cable, unlock it and tap Trust."
 echo "$LIST" | while IFS='|' read -r udid name type state dev; do
   [ -z "$udid" ] && continue
-  echo "device: $name ($type)  connection: $state  Developer Mode: $dev"
+  echo "device: $name ($type)  udid: $udid  connection: $state  Developer Mode: $dev"
   [ "$dev" != "enabled" ] && echo "   -> on the device: Settings > Privacy & Security > Developer Mode > On (it restarts), then unlock and confirm"
 done
+signing $(echo "$LIST" | cut -d'|' -f1)
 [ "${1:-}" = "--check" ] && exit 0
 [ -z "$TEAM" ] && exit 1
 
@@ -59,8 +93,11 @@ echo "$LIST" | while IFS='|' read -r udid name type state dev; do
   case "${ONLY:-}" in ipad) [[ "$type" == iPad* ]] || continue;; iphone) [[ "$type" == iPhone* ]] || continue;; esac
   if [ "$dev" != "enabled" ] && [ "${FORCE:-0}" != "1" ]; then echo "skip $name: Developer Mode is not on (FORCE=1 tries anyway: the attempt makes the device show its Developer Mode switch)"; continue; fi
   echo "== building for $name"
+  # -allowProvisioningDeviceRegistration: a device that is not in the team's profile yet (a new iPad) is registered and a fresh
+  # profile made for it; without it xcodebuild stops at "no profile includes this device".
   ( cd "$APPDIR" && xcodebuild -project KITT.xcodeproj -scheme KITT -configuration Release -destination "id=$udid" -derivedDataPath "$ROOT/build/DerivedData-device" \
-      -allowProvisioningUpdates DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic build 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" )
+      -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic build 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" ) | tee "$TMP/build.log"
+  grep -q "No Accounts" "$TMP/build.log" && echo "   -> Xcode has no Apple account signed in: Xcode > Settings > Accounts > + > Apple Account, then run this again"
   APP="$ROOT/build/DerivedData-device/Build/Products/Release-iphoneos/KITT.app"
   [ -d "$APP" ] || { echo "no build for $name"; continue; }
   xcrun devicectl device install app --device "$udid" "$APP" 2>&1 | tail -2
