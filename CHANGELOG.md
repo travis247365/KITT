@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.1 — 2026-11-08
+- Fix, CarPlay: the Briefs rows handed the car a raw 600 px image to scale; they now draw the artwork once at the size and scale
+  the connected head unit reports (`CPListItem.maximumImageSize` × the car's `displayScale`), so it is sharp on the truck's 9-inch
+  display and on a 7-inch unit alike. The Now Playing artwork (`CarArtwork`) is rendered at 1024 px by
+  `scripts/make-icons.mjs` instead of a hand-made 600 px file. The templates themselves (tab bar, lists, Now Playing) are drawn by
+  the car at its own size, so nothing in the car scene assumes a width. `docs/CARPLAY.md` says what shows in the truck today
+  (Now Playing + Siri) and what waits on the entitlement (the Kitt tabs).
+
 ## 0.5.0 — 2026-11-08
 - **Kitt on the Lock Screen** (iPhone, iPad): a Live Activity card in the design of the mockups' Live Activity, where a music app
   has back · play · next: **Open** (the app, on its home surface), **Talk** (the app opens listening; a locked phone asks for

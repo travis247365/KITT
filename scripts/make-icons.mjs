@@ -96,6 +96,9 @@ json(path.join(BA, 'Contents.json'), { assets: [
   { filename: 'Top Shelf Image.imageset', idiom: 'tv', role: 'top-shelf-image', size: '1920x720' },
 ], info: INFO });
 
+// ---- CarPlay artwork: Now Playing on the car's screen and the Briefs rows (drawn by the car at its own size) --------------
+await render(path.join(ROOT, 'apps/KITT/KITTCar/Artwork.xcassets/CarArtwork.imageset/car-artwork.png'), 1024, 1024, art({ w: 1024, h: 1024 }));
+
 // ---- PWA (mockups) and the podcast artwork --------------------------------------------------------------------------------
 await render(path.join(ROOT, 'mockups/public/apple-touch-icon.png'), 180, 180, art({ w: 180, h: 180 }));
 await render(path.join(ROOT, 'mockups/public/icon-192.png'), 192, 192, art({ w: 192, h: 192 }));

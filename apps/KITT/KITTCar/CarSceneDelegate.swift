@@ -33,6 +33,17 @@ final class CarController {
     private var syncMessage: String?
     private var loop: Task<Void, Never>?
 
+    /// The artwork for a list row, drawn once at the size and scale this car's display wants (CPListItem.maximumImageSize at the
+    /// head unit's displayScale): sharp on the truck's 9-inch unit and on a small 7-inch one alike, instead of the 1024 px asset handed
+    /// over raw and scaled by the car.
+    private lazy var rowArtwork: UIImage? = {
+        guard let art = UIImage(named: "CarArtwork") else { return nil }
+        let size = CPListItem.maximumImageSize
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = interface.carTraitCollection.displayScale
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in art.draw(in: CGRect(origin: .zero, size: size)) }
+    }()
+
     init(interface: CPInterfaceController) {
         self.interface = interface
         briefsTab.tabTitle = "Briefs"; briefsTab.tabImage = UIImage(systemName: "waveform") ?? UIImage()
@@ -87,7 +98,7 @@ final class CarController {
         var items: [CPListItem] = rows.compactMap { row -> CPListItem? in
             guard let episode = byID[row.id] else { return nil }
             let downloaded = store.localAudio(for: episode) != nil
-            let item = CPListItem(text: row.title, detailText: downloaded ? row.detail : row.detail + " · needs the hub", image: UIImage(named: "CarArtwork"))
+            let item = CPListItem(text: row.title, detailText: downloaded ? row.detail : row.detail + " · needs the hub", image: rowArtwork)
             item.accessoryType = .none
             item.isPlaying = CarPlayer.shared.current?.id == episode.id && CarPlayer.shared.isPlaying
             item.handler = { [weak self] _, completion in

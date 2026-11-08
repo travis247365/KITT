@@ -2,6 +2,19 @@
 
 Kitt reaches the car two ways. The first works today with no Apple approval; the second is the CarPlay app and waits on an entitlement.
 
+## The car's screen (the truck's 9-inch unit)
+
+CarPlay apps do not draw pixels: the head unit draws Apple's templates (tab bar, lists, Now Playing, alerts) at its own size, so
+Kitt fills a 9-inch display and a 7-inch one alike, in the car's own type size, with no layout of ours involved. What we
+control is the artwork: the list rows draw it at the size and scale the connected car reports (`CPListItem.maximumImageSize` ×
+`carTraitCollection.displayScale`), and the Now Playing artwork is the 1024 px `CarArtwork` asset. The tab bar has three tabs
+(audio apps may have four). Nothing in the car scene assumes a width or a resolution.
+
+What can be seen in the truck today, with no entitlement: Now Playing (the brief playing, artwork, play/pause, ±15 s, the
+steering-wheel buttons) and Siri. The Kitt tabs on the car screen (Briefs · Now · Ask) appear only after the CarPlay audio
+entitlement is approved (next section) and `KITT_CARPLAY_ENTITLEMENTS` points at the entitlements file. This Mac's Xcode has no
+Simulator app, so the CarPlay simulator window cannot be used here; the first look at the tabs will be in the truck.
+
 ## 1. Now Playing + Siri (works now)
 
 Any app that plays audio in the background shows up in CarPlay's own **Now Playing** app, with artwork, the steering-wheel buttons,
