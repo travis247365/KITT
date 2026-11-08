@@ -339,7 +339,7 @@ private struct AskView: View {
 
 // MARK: Settings
 
-private struct SettingsView: View {
+struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
     @State private var serverAddress = ""
     @State private var token = ""

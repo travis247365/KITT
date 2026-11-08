@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { nativePost, onNative } from '../native';
 import { Icon, type IconName } from '../icons';
 import { Btn, KMark, ProvChip, Scanner, Seg } from '../kit';
 import { SCENARIOS, skillMeta, type SkillId } from '../data';
@@ -20,6 +21,7 @@ export function Phone({ bleed = false, initialTab = 'now', initialSkill = null, 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [skill, setSkill] = useState<SkillId | null>(initialSkill);
   const [sheet, setSheet] = useState(openTalk);
+  useEffect(() => onNative('kitt:listening', () => setSheet(true)), []);
   const talkActive = state.talk.device === 'phone' && state.talk.phase !== 'idle';
   const open = (s: SkillId) => { setSkill(s); setTab('skills'); };
   const close = () => { dismissTalk(); setSheet(false); };
@@ -37,7 +39,7 @@ export function Phone({ bleed = false, initialTab = 'now', initialSkill = null, 
             {tab === 'skills' && <SkillsTab cards={cards} skill={skill} setSkill={setSkill} />}
             {tab === 'settings' && <SettingsTab />}
           </div>
-          <button type="button" className="talkbar" onClick={() => { say('', 'phone'); close(); setSheet(true); }} aria-label="Talk to Kit">
+          <button type="button" className="talkbar" onClick={() => { close(); setSheet(true); if (!nativePost({ type: 'mic' })) say('', 'phone'); }} aria-label="Talk to Kit">
             <Icon name="mic" size={24} />
             <span>Talk to Kit<small>Or say “Hey Siri, ask Kit”</small></span>
           </button>

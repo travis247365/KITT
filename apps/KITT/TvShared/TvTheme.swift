@@ -10,6 +10,16 @@ import AppKit
 /// Shared by the Apple TV app and the macOS preview tool that renders its screens to PNG for review.
 enum Tv {
     static let size = CGSize(width: 1920, height: 1080)
+    /// On the Mac the sweeping header is still: a TimelineView at 30 frames a second inside an NSHostingView re-lays out the whole
+    /// window on every frame (sampled 8 Nov 2026: the main thread spent 100 % of its time in NSWindow layout, the app stopped
+    /// taking clicks and the window's own controls misbehaved). The TV and the phone are unaffected.
+    static let motionPaused: Bool = {
+        #if os(macOS)
+        return true
+        #else
+        return false
+        #endif
+    }()
     static let void = Color(hex: 0x050507)
     static let cockpit = Color(hex: 0x0E1116)
     static let panel = Color(hex: 0x161B22)

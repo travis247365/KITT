@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import { nativePost, onNative } from './native';
 import { answer, resolveLayout, type Answer, type Layout, type LayoutPref } from './engine';
 import { buildWorld, SKILLS, type CashLog, type Device, type IdeaAdd, type Pending, type ScenarioId, type SkillId, type World } from './data';
 import { HubError, type AskReply } from './hub';
@@ -120,6 +121,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         let a: Answer;
         try { a = liveAnswer(await client.ask(text, 'web'), device); } catch (e) { a = failAnswer(e); }
         dispatch({ t: 'talk', talk: { phase: 'answer', device, transcript: text, answer: a } });
+        nativePost({ type: 'answer', speak: a.speak, needsConfirm: Boolean(a.needsConfirm) });   // the native app reads it aloud
         void l.refresh();
       })();
       return;
@@ -133,6 +135,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       dispatch({ t: 'talk', talk: { phase: 'answer', device, transcript: text, answer: a } });
     }, 1550));
   }, []);
+  // The native apps drive this same flow from the phone's microphone (native.ts): words so far while you speak, then the final words.
+  useEffect(() => {
+    const dev = (): Device => (window.innerWidth <= 760 ? 'phone' : 'pad');
+    const offListening = onNative<{ text?: string }>('kitt:listening', (d) => dispatch({ t: 'talk', talk: { phase: 'listening', device: dev(), transcript: d?.text ?? '', answer: null } }));
+    const offSay = onNative<{ text?: string }>('kitt:say', (d) => {
+      if (d?.text?.trim()) say(d.text.trim(), dev());
+      else dispatch({ t: 'talk', talk: { phase: 'idle', device: dev(), transcript: '', answer: null } });
+    });
+    return () => { offListening(); offSay(); };
+  }, [say]);
 
   const act = useCallback((what: 'confirm' | 'cancel', device: Device) => {
     const { isLive: lv, live: l, world: w } = ref.current;

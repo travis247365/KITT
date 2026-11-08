@@ -10,8 +10,8 @@ struct ScannerBar: View {
 
     var body: some View {
         let p = level.palette
-        TimelineView(.animation(minimumInterval: level == .critical ? 1.0 / 60.0 : 1.0 / 30.0, paused: reduceMotion || frozen != nil)) { context in
-            let phase = frozen ?? (reduceMotion ? 0.5 : sweepPhase(at: context.date, period: p.period))
+        TimelineView(.animation(minimumInterval: level == .critical ? 1.0 / 60.0 : 1.0 / 30.0, paused: reduceMotion || frozen != nil || Tv.motionPaused)) { context in
+            let phase = frozen ?? ((reduceMotion || Tv.motionPaused) ? 0.5 : sweepPhase(at: context.date, period: p.period))
             GeometryReader { geo in
                 let barWidth = geo.size.width * p.barWidth
                 ZStack(alignment: .topLeading) {
@@ -57,8 +57,8 @@ struct KittName: View {
 
     var body: some View {
         let p = level.palette
-        TimelineView(.animation(minimumInterval: level == .critical ? 1.0 / 60.0 : 1.0 / 30.0, paused: reduceMotion || frozen != nil)) { context in
-            let phase = frozen ?? (reduceMotion ? 0.5 : sweepPhase(at: context.date, period: p.period))
+        TimelineView(.animation(minimumInterval: level == .critical ? 1.0 / 60.0 : 1.0 / 30.0, paused: reduceMotion || frozen != nil || Tv.motionPaused)) { context in
+            let phase = frozen ?? ((reduceMotion || Tv.motionPaused) ? 0.5 : sweepPhase(at: context.date, period: p.period))
             let centre = -p.bandHalfWidth + (1 + 2 * p.bandHalfWidth) * phase
             Text("KITT")
                 .font(Tv.display(size))

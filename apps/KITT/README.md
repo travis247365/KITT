@@ -1,13 +1,19 @@
-# KITT iPhone and iPad app
+# KITT iPhone, iPad and Mac app
 
-This is the first native KITT client, built as one universal iOS/iPadOS app. It currently provides:
+One universal iOS/iPadOS app (`KITT`), a Mac app (`KITTMac`) and the Apple TV app (`KITTtv`), on one version number.
 
-- Secure HTTPS connection to the KITT hub
-- Hub status, skill health and recent routine status
-- Ask Kitt
-- Explicit Confirm and Cancel controls for pending actions
-- App-token storage in the device Keychain
-- An iPad-friendly split navigation layout that adapts to iPhone
+Since 0.4.0 the iPhone, iPad and Mac apps open on **the designed surface**: the web app in `../../mockups/`, which the hub serves
+at `/app`, shown in a web view (`KITT/KittSurface.swift`) with the connection the app holds. Around it the app adds what a web
+page cannot do (`KITT/KittShell.swift`): the microphone and voice for Talk to Kit, the brief player (lock-screen controls,
+background audio, the copies kept for the car), the Lock Screen card (`KITTWidgets/`, a Live Activity with Open · Talk ·
+Brief; 0.5.0), Siri App Shortcuts and CarPlay. The earlier console (Overview, Feed, Ask, Settings; `KITT/ContentView.swift`)
+stays reachable from the surface's Settings and, on the Mac, Go › Hub Console. The Apple TV app draws its glance board natively.
+
+The app:
+
+- Holds the hub address and the app token (device Keychain); the surface never shows its own Connect form inside the app
+- Shows "Hub unreachable" with Try again and Connection when the hub cannot be reached (home network, or a tunnel)
+- Explicit Confirm and Cancel for pending actions, on the surface and in the console
 
 The app uses the hub's limited `KITT_APP_TOKEN` scope. It does not store a full Mac token and does not put tokens in URLs.
 The token is currently entered manually; per-device QR pairing and token revocation require the planned hub `/v1/pair` work.

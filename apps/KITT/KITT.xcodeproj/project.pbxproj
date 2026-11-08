@@ -9,20 +9,27 @@
 /* Begin PBXBuildFile section */
 		00E4AC526AEA40ED8B9A5968 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037A286D5F5540EFE2EA7DC /* Theme.swift */; };
 		017AC5AA9D34FBE3CAE3F838 /* KITTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3A27A8E6B97A8C5603C19B44 /* KITTKit */; };
+		065F7BC5E139E133FA07DC26 /* KITTWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4B57092B784D759B146D79EF /* KITTWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		07245EB9CB7194EC34ADA8FE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A435266A09733306EAC70436 /* ContentView.swift */; };
 		074F6A4DE2A008D170292BE3 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD59147D757287AE048A48D /* AppModel.swift */; };
 		09E60908F286014EB7893302 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD59147D757287AE048A48D /* AppModel.swift */; };
 		0B44B9F374D6407DDB6DE9B4 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */; };
+		0E6A258510D6BFED499B60F0 /* KittSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84264980154B1AF8EFD54AF6 /* KittSurface.swift */; };
 		15021FF5CCBE0E07BE393D15 /* KITTApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF258CAF248CE06A240486D /* KITTApp.swift */; };
 		1810672228DE2B3C5A614944 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7604678120145546CC8423 /* FeedView.swift */; };
 		21B15E2A4602CEE7C75EDFA7 /* TvScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1900FDE426BAB50590F20A /* TvScreens.swift */; };
 		2213CF45EBA647445AA1309B /* HubAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD250412D519DFB0568540F3 /* HubAccess.swift */; };
 		2D22DA9AC561F8F8D041EEC3 /* SiriGlassButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5247A7177BFC04F74242B89B /* SiriGlassButton.swift */; };
 		2EF5544DFDCC35597ED1FB49 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */; };
+		30CFB54658D46100CB145D5D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D265652F9DC3130195B12F95 /* RootView.swift */; };
 		33E8C4DCE0E2A264A746104F /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD59147D757287AE048A48D /* AppModel.swift */; };
+		387860DF43967D5BDEFE0C0E /* KittActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A104B555DC4E3644B829D3D /* KittActivityManager.swift */; };
 		395393D9E937A0F2821E897C /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */; };
 		3E0231E4D75C1B619BECFBF9 /* SpeechInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF06F768C16197236D5AB2E1 /* SpeechInput.swift */; };
 		488CF1E1FB69F80E8B46D0F2 /* PlatformModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */; };
+		48AE259AD79F07CC3B8846EA /* KittWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC46F7B53CFEEBAA57EEBAAE /* KittWidgets.swift */; };
+		4B70924B298D22E6577953F6 /* KittActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A104B555DC4E3644B829D3D /* KittActivityManager.swift */; };
+		4ECC5748C41198FA5EB20874 /* KittSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84264980154B1AF8EFD54AF6 /* KittSurface.swift */; };
 		4EDF7295BE6109F5EABC38B4 /* KITTApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF258CAF248CE06A240486D /* KITTApp.swift */; };
 		515E836AE9D0B2C3031038EB /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037A286D5F5540EFE2EA7DC /* Theme.swift */; };
 		51E457CD748A2371798EBB9F /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
@@ -38,6 +45,8 @@
 		75E28244F0CDF919DD6C9F19 /* TvMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */; };
 		7D6FB73D78FBDB9049AE58A5 /* PlatformModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */; };
 		81153AF922C11E56276B45AB /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */; };
+		829CF3DEBDD95A335BFAC285 /* KittShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8013E595969D30BB55BF05 /* KittShell.swift */; };
+		890DAA235C4924E1D944EE8B /* KittActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A466A7AAB69A59627E291B /* KittActivityIntents.swift */; };
 		8B03CB834DB27158F466880F /* KITTtvUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F1DBC2F111D69F35EA16EC /* KITTtvUITests.swift */; };
 		8C6F8EEEFE6FFA0D2EB83AD9 /* TvScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1900FDE426BAB50590F20A /* TvScreens.swift */; };
 		8E5F8C4EBC00E87078885754 /* Speech.swift in Sources */ = {isa = PBXBuildFile; fileRef = E65CD0499096951B1CCB3DAA /* Speech.swift */; };
@@ -46,15 +55,20 @@
 		9767902F4F1E6486D7EE75AF /* SiriGlassButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5247A7177BFC04F74242B89B /* SiriGlassButton.swift */; };
 		9D9BEFEA56741FF059FE62B7 /* KITTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9801819C0E28E1981D92C152 /* KITTKit */; };
 		9F472DF0636AD47E972472A2 /* CarPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C32FB7D616A6B2547E59E6 /* CarPlayer.swift */; };
+		A029547D078EE9D16BD4764F /* KittShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8013E595969D30BB55BF05 /* KittShell.swift */; };
 		A6750FF9650B1D13C2ADA26B /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
 		AC68A606167CCDCCAF67E924 /* KittIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096300B60EC5B306D72B5AA /* KittIntents.swift */; };
 		B172EBC1B43E3A9AA5259EDF /* TvMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76722EF49CDBA0CC32E7C61 /* TvMotion.swift */; };
+		B2B32EFADC8AC4ACD2405198 /* KittActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A466A7AAB69A59627E291B /* KittActivityIntents.swift */; };
+		B5970FF16B17DEFBAA33CE96 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D265652F9DC3130195B12F95 /* RootView.swift */; };
+		B7AB7E9C762F74711CD3E292 /* KittActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B0C46AB29C726D265A4048 /* KittActivity.swift */; };
 		B8322ED02A26648D76DCEF00 /* TvTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */; };
 		B94E515560C86D2C04BC6CAC /* KITTtvApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DF52363554673152630F66 /* KITTtvApp.swift */; };
 		BDBAECD2784D1155D33BF8F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13172FB21B9E878B0AA87D7D /* Assets.xcassets */; };
 		C367A6005E572DF6D060CF1E /* Artwork.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9212D796455A087C735AC8 /* Artwork.xcassets */; };
 		C49AC148CEDA7A058E218A46 /* CarSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1133EA1E5B46A5B6761B04E2 /* CarSceneDelegate.swift */; };
 		C54B3202D166BA9C02B6D93E /* BriefsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DCF7920D783EDECD171F63B /* BriefsView.swift */; };
+		C80E5C0FE6C462B2554DD9CE /* KittActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B0C46AB29C726D265A4048 /* KittActivity.swift */; };
 		CAC4A3D56C33D13556BADB46 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */; };
 		E4C5A1F1700BEF96D5DC3E47 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7604678120145546CC8423 /* FeedView.swift */; };
 		E4C97122A6D6713C012FFC68 /* TvRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E0D9A844178647ED9DAFB6 /* TvRootView.swift */; };
@@ -73,19 +87,44 @@
 			remoteGlobalIDString = 685DB69B6A124F82D11708D3;
 			remoteInfo = KITTtv;
 		};
+		D8EABDA60ED11E7D5FA0591C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5345C32DC633741753F9C30 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AB2480076792AB0C5737DDCB;
+			remoteInfo = KITTWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		132927DCA6442FADE07B1B50 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				065F7BC5E139E133FA07DC26 /* KITTWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		00DF52363554673152630F66 /* KITTtvApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KITTtvApp.swift; sourceTree = "<group>"; };
 		077B214A11EC672161146F83 /* FlowChips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowChips.swift; sourceTree = "<group>"; };
+		0A8013E595969D30BB55BF05 /* KittShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittShell.swift; sourceTree = "<group>"; };
 		0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformModifiers.swift; sourceTree = "<group>"; };
 		1133EA1E5B46A5B6761B04E2 /* CarSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarSceneDelegate.swift; sourceTree = "<group>"; };
 		13172FB21B9E878B0AA87D7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1D1900FDE426BAB50590F20A /* TvScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvScreens.swift; sourceTree = "<group>"; };
 		1DCF7920D783EDECD171F63B /* BriefsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefsView.swift; sourceTree = "<group>"; };
+		25B0C46AB29C726D265A4048 /* KittActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittActivity.swift; sourceTree = "<group>"; };
+		2A104B555DC4E3644B829D3D /* KittActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittActivityManager.swift; sourceTree = "<group>"; };
 		2C9212D796455A087C735AC8 /* Artwork.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Artwork.xcassets; sourceTree = "<group>"; };
 		423B74DD20AACBCF932933B0 /* KITTMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KITTMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44E0D9A844178647ED9DAFB6 /* TvRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvRootView.swift; sourceTree = "<group>"; };
+		4B57092B784D759B146D79EF /* KITTWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = KITTWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		50E9F330C13383268A4695CF /* KITT.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KITT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5247A7177BFC04F74242B89B /* SiriGlassButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiriGlassButton.swift; sourceTree = "<group>"; };
 		5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStore.swift; sourceTree = "<group>"; };
@@ -94,6 +133,7 @@
 		6BCCED331CBDC819F452BD8A /* Orbitron-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Orbitron-Bold.ttf"; sourceTree = "<group>"; };
 		74E33A863BE646664084C520 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		80F1DBC2F111D69F35EA16EC /* KITTtvUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KITTtvUITests.swift; sourceTree = "<group>"; };
+		84264980154B1AF8EFD54AF6 /* KittSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittSurface.swift; sourceTree = "<group>"; };
 		89818F750EF93527D9C5F337 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8FF258CAF248CE06A240486D /* KITTApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KITTApp.swift; sourceTree = "<group>"; };
 		9CD59147D757287AE048A48D /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -104,14 +144,18 @@
 		D037A286D5F5540EFE2EA7DC /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		D096300B60EC5B306D72B5AA /* KittIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittIntents.swift; sourceTree = "<group>"; };
 		D23EE80E43EF4B1E8B6ECB89 /* TvTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvTheme.swift; sourceTree = "<group>"; };
+		D265652F9DC3130195B12F95 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		D3B7C1FE66B49BABC03AFC52 /* KITTKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KITTKit; path = KITTKit; sourceTree = SOURCE_ROOT; };
 		D49A51B86C14A57558DCCC30 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D59BD8A47E53FB52A3AFEA8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D5A466A7AAB69A59627E291B /* KittActivityIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittActivityIntents.swift; sourceTree = "<group>"; };
 		D7C32FB7D616A6B2547E59E6 /* CarPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayer.swift; sourceTree = "<group>"; };
 		DC0CD1C07CD10E4E7F7932DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DF6635F5CE8B268F69956490 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E65CD0499096951B1CCB3DAA /* Speech.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speech.swift; sourceTree = "<group>"; };
 		EA060E74CD5499DEA9CC680A /* KITTtvPreview */ = {isa = PBXFileReference; includeInIndex = 0; path = KITTtvPreview; sourceTree = BUILT_PRODUCTS_DIR; };
 		F94F63E9F70346F8D0D6BA26 /* KITTtv.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KITTtv.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC46F7B53CFEEBAA57EEBAAE /* KittWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittWidgets.swift; sourceTree = "<group>"; };
 		FD250412D519DFB0568540F3 /* HubAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubAccess.swift; sourceTree = "<group>"; };
 		FD7604678120145546CC8423 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -161,7 +205,9 @@
 				CED500DA34C5C83808FEC0F7 /* KITTCar */,
 				FC5B84E3EEEF4383300491C8 /* KITTtv */,
 				F8BA6C0F56213D3FF5FCB4BD /* KITTtvUITests */,
+				68F7C09427A0FC3FDEDA7D88 /* KITTWidgets */,
 				AA8540CF10D332EE5FEC5A08 /* Packages */,
+				E9207F705BAE367577D68E1A /* Shared */,
 				908BCA96A8A978AA5AC8477A /* TvPreview */,
 				9B230D9F7D38D04907BF9152 /* TvShared */,
 				44BB2197A885EDE24D40B0F2 /* Products */,
@@ -176,6 +222,7 @@
 				F94F63E9F70346F8D0D6BA26 /* KITTtv.app */,
 				EA060E74CD5499DEA9CC680A /* KITTtvPreview */,
 				C8C8856D14B4DF08AC5E3F7A /* KITTtvUITests.xctest */,
+				4B57092B784D759B146D79EF /* KITTWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -188,6 +235,15 @@
 			);
 			name = Fonts;
 			path = KITTtv/Fonts;
+			sourceTree = "<group>";
+		};
+		68F7C09427A0FC3FDEDA7D88 /* KITTWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				D59BD8A47E53FB52A3AFEA8D /* Info.plist */,
+				FC46F7B53CFEEBAA57EEBAAE /* KittWidgets.swift */,
+			);
+			path = KITTWidgets;
 			sourceTree = "<group>";
 		};
 		908BCA96A8A978AA5AC8477A /* TvPreview */ = {
@@ -218,8 +274,12 @@
 				077B214A11EC672161146F83 /* FlowChips.swift */,
 				D49A51B86C14A57558DCCC30 /* Info.plist */,
 				5F4A334C822D50716D5FEB52 /* KeychainTokenStore.swift */,
+				2A104B555DC4E3644B829D3D /* KittActivityManager.swift */,
 				8FF258CAF248CE06A240486D /* KITTApp.swift */,
+				0A8013E595969D30BB55BF05 /* KittShell.swift */,
+				84264980154B1AF8EFD54AF6 /* KittSurface.swift */,
 				0AA61B2F84C547F24A46838A /* PlatformModifiers.swift */,
+				D265652F9DC3130195B12F95 /* RootView.swift */,
 				5247A7177BFC04F74242B89B /* SiriGlassButton.swift */,
 				E65CD0499096951B1CCB3DAA /* Speech.swift */,
 				AF06F768C16197236D5AB2E1 /* SpeechInput.swift */,
@@ -255,6 +315,15 @@
 				D096300B60EC5B306D72B5AA /* KittIntents.swift */,
 			);
 			path = KITTCar;
+			sourceTree = "<group>";
+		};
+		E9207F705BAE367577D68E1A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				25B0C46AB29C726D265A4048 /* KittActivity.swift */,
+				D5A466A7AAB69A59627E291B /* KittActivityIntents.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		F8BA6C0F56213D3FF5FCB4BD /* KITTtvUITests */ = {
@@ -325,10 +394,12 @@
 				B6609195162C3F86054EAB08 /* Sources */,
 				CFE0499999F17C501CB49FD3 /* Resources */,
 				D4A401D83E9868B382FFBE56 /* Frameworks */,
+				132927DCA6442FADE07B1B50 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8C3D23F6A0AB4B04929CEECD /* PBXTargetDependency */,
 			);
 			name = KITT;
 			packageProductDependencies = (
@@ -357,6 +428,23 @@
 			productName = KITTtv;
 			productReference = F94F63E9F70346F8D0D6BA26 /* KITTtv.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AB2480076792AB0C5737DDCB /* KITTWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D751325D5011912EF8F9314 /* Build configuration list for PBXNativeTarget "KITTWidgets" */;
+			buildPhases = (
+				863CE628558447A81B384C2E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KITTWidgets;
+			packageProductDependencies = (
+			);
+			productName = KITTWidgets;
+			productReference = 4B57092B784D759B146D79EF /* KITTWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		AC6327FC7FBD2495A88A6D3B /* KITTMac */ = {
 			isa = PBXNativeTarget;
@@ -396,6 +484,9 @@
 					685DB69B6A124F82D11708D3 = {
 						ProvisioningStyle = Automatic;
 					};
+					AB2480076792AB0C5737DDCB = {
+						ProvisioningStyle = Automatic;
+					};
 					AC6327FC7FBD2495A88A6D3B = {
 						ProvisioningStyle = Automatic;
 					};
@@ -419,6 +510,7 @@
 			projectRoot = "";
 			targets = (
 				569363A8DF116E109F1AF113 /* KITT */,
+				AB2480076792AB0C5737DDCB /* KITTWidgets */,
 				AC6327FC7FBD2495A88A6D3B /* KITTMac */,
 				685DB69B6A124F82D11708D3 /* KITTtv */,
 				3AC674996EAFABFF1E6ED57F /* KITTtvUITests */,
@@ -483,6 +575,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		863CE628558447A81B384C2E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C80E5C0FE6C462B2554DD9CE /* KittActivity.swift in Sources */,
+				890DAA235C4924E1D944EE8B /* KittActivityIntents.swift in Sources */,
+				48AE259AD79F07CC3B8846EA /* KittWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B6609195162C3F86054EAB08 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -497,8 +599,14 @@
 				2213CF45EBA647445AA1309B /* HubAccess.swift in Sources */,
 				4EDF7295BE6109F5EABC38B4 /* KITTApp.swift in Sources */,
 				0B44B9F374D6407DDB6DE9B4 /* KeychainTokenStore.swift in Sources */,
+				B7AB7E9C762F74711CD3E292 /* KittActivity.swift in Sources */,
+				B2B32EFADC8AC4ACD2405198 /* KittActivityIntents.swift in Sources */,
+				387860DF43967D5BDEFE0C0E /* KittActivityManager.swift in Sources */,
 				AC68A606167CCDCCAF67E924 /* KittIntents.swift in Sources */,
+				829CF3DEBDD95A335BFAC285 /* KittShell.swift in Sources */,
+				0E6A258510D6BFED499B60F0 /* KittSurface.swift in Sources */,
 				488CF1E1FB69F80E8B46D0F2 /* PlatformModifiers.swift in Sources */,
+				B5970FF16B17DEFBAA33CE96 /* RootView.swift in Sources */,
 				2D22DA9AC561F8F8D041EEC3 /* SiriGlassButton.swift in Sources */,
 				8E5F8C4EBC00E87078885754 /* Speech.swift in Sources */,
 				EC60316D7ABD99BFE18CB683 /* SpeechInput.swift in Sources */,
@@ -529,7 +637,11 @@
 				6C05C33D061472AB7613806E /* FlowChips.swift in Sources */,
 				15021FF5CCBE0E07BE393D15 /* KITTApp.swift in Sources */,
 				CAC4A3D56C33D13556BADB46 /* KeychainTokenStore.swift in Sources */,
+				4B70924B298D22E6577953F6 /* KittActivityManager.swift in Sources */,
+				A029547D078EE9D16BD4764F /* KittShell.swift in Sources */,
+				4ECC5748C41198FA5EB20874 /* KittSurface.swift in Sources */,
 				7D6FB73D78FBDB9049AE58A5 /* PlatformModifiers.swift in Sources */,
+				30CFB54658D46100CB145D5D /* RootView.swift in Sources */,
 				9767902F4F1E6486D7EE75AF /* SiriGlassButton.swift in Sources */,
 				5723CF528E798009E5632D6B /* Speech.swift in Sources */,
 				3E0231E4D75C1B619BECFBF9 /* SpeechInput.swift in Sources */,
@@ -542,6 +654,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		8C3D23F6A0AB4B04929CEECD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AB2480076792AB0C5737DDCB /* KITTWidgets */;
+			targetProxy = D8EABDA60ED11E7D5FA0591C /* PBXContainerItemProxy */;
+		};
 		8E2717C80AEF67EA1A64744F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 685DB69B6A124F82D11708D3 /* KITTtv */;
@@ -584,7 +701,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -603,7 +720,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.3.5;
+				MARKETING_VERSION = 0.5.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -634,6 +751,29 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tpcl.kitt;
 				PRODUCT_NAME = KITT;
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		299F0DC4277CE763AA5214C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 74E33A863BE646664084C520 /* Signing.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KITTWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kitt;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tpcl.kitt.widgets;
+				PRODUCT_NAME = KITTWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -744,6 +884,29 @@
 			};
 			name = Release;
 		};
+		86C5767318359AE84BED58FA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 74E33A863BE646664084C520 /* Signing.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KITTWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kitt;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tpcl.kitt.widgets;
+				PRODUCT_NAME = KITTWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		8D29A4F95EE270112864F56F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -778,7 +941,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -791,7 +954,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.3.5;
+				MARKETING_VERSION = 0.5.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -933,6 +1096,15 @@
 			buildConfigurations = (
 				5597D7AD7B65AF5A905F1053 /* Debug */,
 				7F362499C1DF0DF1EC5A53D2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6D751325D5011912EF8F9314 /* Build configuration list for PBXNativeTarget "KITTWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				86C5767318359AE84BED58FA /* Debug */,
+				299F0DC4277CE763AA5214C4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

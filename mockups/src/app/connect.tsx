@@ -1,6 +1,7 @@
 // The pieces the designed surfaces need when they run on the hub: the connection form and gate, the live settings block,
 // the real briefs with a player, and one shared audio element so the TV, the phone and the iPad never play over each other.
 import { useEffect, useState } from 'react';
+import { nativeHost, nativePost, onNative } from '../native';
 import { Icon } from '../icons';
 import { Btn } from '../kit';
 import { KittName, Mark, ScannerBar } from '../surfaces/AppleTv2';
@@ -13,6 +14,20 @@ export function ConnForm({ compact, onDone }: { compact?: boolean; onDone?: () =
   const [url, setUrl] = useState(live.conn?.url ?? live.hubHere ?? '');
   const [token, setToken] = useState(live.conn?.token ?? ''); const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null); const [ok, setOk] = useState<string | null>(null);
+  const host = nativeHost();
+  if (host) {
+    // Inside the iPhone, iPad or Mac app the hub address and token live in the app (Keychain), not in this page.
+    return (
+      <div className="kw-form">
+        <p className="t-small muted">{live.conn ? `Connected through the app to ${live.conn.url}.` : 'The app manages the connection to the hub.'}</p>
+        <div className="actions">
+          <Btn kind="primary" icon="sliders" onClick={() => nativePost({ type: 'settings' })}>Connection settings</Btn>
+          <Btn kind="ghost" onClick={() => nativePost({ type: 'console' })}>Hub console</Btn>
+          {live.conn && <Btn kind="ghost" onClick={() => nativePost({ type: 'disconnect' })}>Disconnect</Btn>}
+        </div>
+      </div>
+    );
+  }
   const mixed = mixedContent(normalizeURL(url));
   const submit = async () => {
     setBusy(true); setErr(null); setOk(null);
@@ -92,6 +107,18 @@ let audioEl: HTMLAudioElement | null = null;
 let currentEp: Episode | null = null;
 let loading = false;
 const subs = new Set<() => void>();
+// On the iPhone and iPad the app plays briefs itself (lock-screen controls, background audio, the copies kept for the car) and
+// reports back here once a second; this page only shows that state and asks for play / pause.
+const nativePlayer = Boolean(nativeHost()?.player);
+type NativePlayerState = { playing: boolean; position: number; duration: number; id?: number | null; title?: string; file?: string };
+let nativeState: NativePlayerState | null = null;
+if (nativePlayer) {
+  onNative<NativePlayerState | null>('kitt:player', (d) => {
+    nativeState = d;
+    if (d?.id != null && currentEp?.id !== d.id) currentEp = { id: d.id, slug: '', title: d.title ?? 'Brief', file: d.file ?? '', duration_s: d.duration ? Math.round(d.duration) : undefined };
+    subs.forEach((f) => f());
+  });
+}
 const notify = () => subs.forEach((f) => f());
 function el(): HTMLAudioElement {
   if (!audioEl) {
@@ -106,8 +133,15 @@ export function useBriefPlayer() {
   const [, tick] = useState(0);
   useEffect(() => { const f = () => tick((n) => n + 1); subs.add(f); return () => { subs.delete(f); }; }, []);
   const a = audioEl;
-  const playing = Boolean(a && !a.paused && !a.ended);
+  const playing = nativePlayer ? Boolean(nativeState?.playing) : Boolean(a && !a.paused && !a.ended);
   const play = async (ep?: Episode) => {
+    if (nativePlayer) {
+      let target = ep ?? currentEp;
+      if (!target) { loading = true; notify(); try { target = (await live.episodes())[0] ?? null; } finally { loading = false; } if (!target) { notify(); throw new Error('No brief rendered yet'); } }
+      currentEp = target; notify();
+      nativePost({ type: 'play', id: target.id, file: target.file, title: target.title });
+      return;
+    }
     const e = el();
     let target = ep ?? currentEp;
     if (!target) { loading = true; notify(); try { target = (await live.episodes())[0] ?? null; } finally { loading = false; } if (!target) { notify(); throw new Error('No brief rendered yet'); } }
@@ -115,8 +149,9 @@ export function useBriefPlayer() {
     notify();
     await e.play();
   };
-  const pause = () => { audioEl?.pause(); };
+  const pause = () => { if (nativePlayer) { nativePost({ type: 'pause' }); return; } audioEl?.pause(); };
   const toggle = () => (playing ? Promise.resolve(pause()) : play());
+  if (nativePlayer) return { playing, loading, current: currentEp, position: nativeState?.position ?? 0, duration: nativeState?.duration || currentEp?.duration_s || 0, play, pause, toggle };
   return { playing, loading, current: currentEp, position: a?.currentTime ?? 0, duration: a && Number.isFinite(a.duration) ? a.duration : currentEp?.duration_s ?? 0, play, pause, toggle };
 }
 

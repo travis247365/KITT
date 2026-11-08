@@ -6,8 +6,8 @@ options:
 # One version for every app (the hub's package.json carries the same number): bump both together, see CHANGELOG.md.
 settings:
   base:
-    MARKETING_VERSION: "0.3.5"
-    CURRENT_PROJECT_VERSION: "5"
+    MARKETING_VERSION: "0.5.0"
+    CURRENT_PROJECT_VERSION: "6"
 packages:
   KITTKit:
     path: KITTKit
@@ -28,8 +28,10 @@ targets:
           - TvMotion.swift
       - path: KITTtv/Fonts/Orbitron-Bold.ttf
       - path: KITTCar
+      - path: Shared
     dependencies:
       - package: KITTKit
+      - target: KITTWidgets
     settings:
       base:
         # CarPlay audio needs Apple to approve the entitlement for this App ID. Until then it is applied to simulator builds only
@@ -62,6 +64,15 @@ targets:
           - Orbitron-Bold.ttf
         UIBackgroundModes:
           - audio
+        # The Lock Screen card (Open · Talk · Brief) is a Live Activity drawn by the KITTWidgets extension.
+        NSSupportsLiveActivities: true
+        NSSupportsLiveActivitiesFrequentUpdates: false
+        # kitt://open and kitt://talk, from the Lock Screen card.
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Viewer
+            CFBundleURLName: com.tpcl.kitt
+            CFBundleURLSchemes:
+              - kitt
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
           UISceneConfigurations:
@@ -85,6 +96,34 @@ targets:
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
           NSAllowsLocalNetworking: true
+  KITTWidgets:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
+    sources:
+      - path: KITTWidgets
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt.widgets
+        PRODUCT_NAME: KITTWidgets
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Kitt
+        CODE_SIGN_STYLE: Automatic
+        SKIP_INSTALL: YES
+    info:
+      path: KITTWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Kitt
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
   KITTMac:
     type: application
     platform: macOS

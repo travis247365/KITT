@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.5.0 — 2026-11-08
+- **Kitt on the Lock Screen** (iPhone, iPad): a Live Activity card in the design of the mockups' Live Activity, where a music app
+  has back · play · next: **Open** (the app, on its home surface), **Talk** (the app opens listening; a locked phone asks for
+  Face ID as for any app) and **Brief** (plays the newest brief through the same player as Siri and CarPlay, without opening the
+  app). The card shows the hub's headline, status and what is playing; in the Dynamic Island the K mark and status colour, with
+  the three buttons when expanded. It starts when the app comes to the front connected, follows every state refresh and player
+  change, and ends on disconnect (iOS keeps it for at most 8 hours without a push, then the next open starts a fresh one).
+  New extension target `KITTWidgets`; `kitt://open` and `kitt://talk` URL scheme. The Apple TV and the Mac have no Lock Screen;
+  there Open is the app itself.
+
+## 0.4.0 — 2026-11-08
+- **The designed surface is the app** (iPhone, iPad, Mac): the Overview / Feed / Briefs / Ask / Settings console that opened
+  before is replaced, as the front door, by the designed screens the hub serves at `/app` (the phone's Now stack, Briefs,
+  Skills and Settings; the iPad and Mac command centre), on the hub's data. The app holds the connection (hub address, Keychain
+  token) and hands it to the surface; the surface's Settings opens the app's own connection screen and the hub console (the old
+  screens, kept one tap away; on the Mac also Go › Hub Console, ⌘4). Talk to Kit uses the phone's microphone and voice: the
+  words appear in the surface's talk sheet as you speak, the hub's answer is shown there and read aloud; Briefs play through the
+  app's own player (lock-screen controls, background audio, the copies kept for the car). When the hub cannot be reached the
+  app says so and offers Try again and Connection; the Apple TV keeps its native glance board.
+- Fix, Mac: the app spun at 35 % CPU, took no clicks and its window controls misbehaved (the Move & Resize menu displaced,
+  tiling dead). The header's sweeping light, a TimelineView at 30 frames a second, made the window re-lay out on every frame
+  (sampled: the main thread spent all its time in NSWindow layout). The sweep is still on the Mac; the TV and phone keep it.
+
 ## 0.3.5 — 2026-11-08
 - Fix, Money SMS feed: when macOS refused the Messages database, the feed said only "cannot open the Messages database (unable
   to open database file)", which is what node's SQLite reports for a privacy refusal. It now checks the file itself and says

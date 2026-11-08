@@ -10,15 +10,15 @@ struct KITTApp: App {
 
     var body: some Scene {
         WindowGroup {
+            // The designed surface (the web app the hub serves at /app) is the front door on iPhone, iPad and Mac; the Apple TV
+            // keeps its native glance board. The earlier console screens stay reachable from the surface's Settings and the Go menu.
             #if os(macOS)
-            ZoomContainer(zoom: ZoomLevel.snapped(storedZoom)) {
-                ContentView()
-                    .environmentObject(model)
-                    .scannerGridSurface()
-                    .onAppear { scheduleSnapshotIfRequested() }
-            }
+            RootView(zoom: ZoomLevel.snapped(storedZoom))
+                .environmentObject(model)
+                .scannerGridSurface()
+                .onAppear { scheduleSnapshotIfRequested() }
             #else
-            ContentView()
+            RootView()
                 .environmentObject(model)
                 .scannerGridSurface()
             #endif
@@ -27,10 +27,10 @@ struct KITTApp: App {
         .commands {
             ZoomCommands(zoom: $storedZoom)
             CommandMenu("Go") {
-                Button("Overview") { NotificationCenter.default.post(name: .kittGo, object: "overview") }.keyboardShortcut("1", modifiers: .command)
-                Button("Feed") { NotificationCenter.default.post(name: .kittGo, object: "feed") }.keyboardShortcut("2", modifiers: .command)
-                Button("Ask Kitt") { NotificationCenter.default.post(name: .kittGo, object: "ask") }.keyboardShortcut("3", modifiers: .command)
-                Button("Settings") { NotificationCenter.default.post(name: .kittGo, object: "settings") }.keyboardShortcut("4", modifiers: .command)
+                Button("Home") { NotificationCenter.default.post(name: .kittGo, object: "home") }.keyboardShortcut("1", modifiers: .command)
+                Button("Talk to Kitt") { NotificationCenter.default.post(name: .kittGo, object: "talk") }.keyboardShortcut("2", modifiers: .command)
+                Button("Connection…") { NotificationCenter.default.post(name: .kittGo, object: "settings") }.keyboardShortcut("3", modifiers: .command)
+                Button("Hub Console") { NotificationCenter.default.post(name: .kittGo, object: "console") }.keyboardShortcut("4", modifiers: .command)
                 Divider()
                 Button("Copy Picture of This Window") { copySnapshotToClipboard() }.keyboardShortcut("c", modifiers: [.command, .option])
             }

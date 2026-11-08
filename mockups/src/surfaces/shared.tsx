@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { nativeHost, nativePost } from '../native';
 import { Icon } from '../icons';
 import { Btn, Delta, Kpis, ProvChip, Scanner, Spark } from '../kit';
 import { skillMeta, type Device, type SkillId } from '../data';
@@ -98,6 +99,7 @@ export function TalkPanel({ device, onClose, onOpen }: { device: Device; onClose
           <div className="sugg">{SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => say(s, device)}>{s}</button>)}</div>
           <form className="tp-form" onSubmit={(e) => { e.preventDefault(); if (text.trim()) { say(text.trim(), device); setText(''); } }}>
             <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a command" aria-label="Type a command for Kit" />
+            {nativeHost()?.speech && <Btn kind="ghost" size="sm" icon="mic" label="Speak" onClick={() => nativePost({ type: 'mic' })} />}
             <Btn kind="solid" size="sm" icon="right" label="Send">Send</Btn>
           </form>
         </div>

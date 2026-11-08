@@ -98,6 +98,7 @@ echo "$LIST" | while IFS='|' read -r udid name type state dev; do
   ( cd "$APPDIR" && xcodebuild -project KITT.xcodeproj -scheme KITT -configuration Release -destination "id=$udid" -derivedDataPath "$ROOT/build/DerivedData-device" \
       -allowProvisioningUpdates -allowProvisioningDeviceRegistration DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic build 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" ) | tee "$TMP/build.log"
   grep -q "No Accounts" "$TMP/build.log" && echo "   -> Xcode has no Apple account signed in: Xcode > Settings > Accounts > + > Apple Account, then run this again"
+  grep -q "BUILD SUCCEEDED" "$TMP/build.log" || { echo "not installed on $name: the build failed (the previous build in DerivedData is left alone)"; continue; }
   APP="$ROOT/build/DerivedData-device/Build/Products/Release-iphoneos/KITT.app"
   [ -d "$APP" ] || { echo "no build for $name"; continue; }
   xcrun devicectl device install app --device "$udid" "$APP" 2>&1 | tail -2
