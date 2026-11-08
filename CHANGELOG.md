@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.5 — 2026-11-08
+- Fix, Money SMS feed: when macOS refused the Messages database, the feed said only "cannot open the Messages database (unable
+  to open database file)", which is what node's SQLite reports for a privacy refusal. It now checks the file itself and says
+  what to do: no Full Disk Access for the app running the hub, or no Messages database on this Mac (Text Message Forwarding off).
+
 ## 0.3.4 — 2026-11-08
 - Fix, Money SMS feed: nothing read new messages after 5 Nov. `scripts/sms-watch.mjs` had run once by hand (it set its cursor
   and stopped) and was never scheduled, so the ledger's newest transaction stayed at 5 Nov 06:14 UTC with no warning anywhere.

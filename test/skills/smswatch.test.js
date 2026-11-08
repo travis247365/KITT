@@ -62,7 +62,7 @@ test('sms watch: first pass only sets the cursor; later passes read money sender
 
 test('sms watch: an unreadable Messages database is an error with a reason, and turns the money skill red', { skip: process.platform !== 'darwin' }, async () => {
   const { dir, money, kv } = setup();
-  assert.throws(() => readNewSms({ chatDb: path.join(dir, 'missing', 'chat.db'), cursor: { rowid: 0 } }), (e) => e.code === 'CHAT_DB_UNAVAILABLE');
+  assert.throws(() => readNewSms({ chatDb: path.join(dir, 'missing', 'chat.db'), cursor: { rowid: 0 } }), (e) => e.code === 'NO_CHAT_DB');
   const routine = money.routines.find((r) => r.name === 'money.sms_watch');
   assert.ok(routine && routine.enabled !== false);
   assert.equal((await money.health()).ok, true);
@@ -71,4 +71,11 @@ test('sms watch: an unreadable Messages database is an error with a reason, and 
   assert.equal(h.ok, false); assert.match(h.detail, /SMS feed down since 2026-11-08 10:00 UTC: cannot read the Messages database/);
   kv.set('money', 'sms_watch', { at: '2026-11-08T10:10:00.000Z', ok: true, detail: 'no new messages' });
   assert.equal((await money.health()).ok, true);
+});
+
+test('sms watch: a Messages database macOS refuses to open is reported as missing Full Disk Access', { skip: process.platform !== 'darwin' }, () => {
+  const { dir } = setup();
+  const locked = path.join(dir, 'locked.db'); fs.writeFileSync(locked, ''); fs.chmodSync(locked, 0o000);
+  try { assert.throws(() => readNewSms({ chatDb: locked, cursor: { rowid: 0 } }), (e) => e.code === 'NO_FULL_DISK_ACCESS' && /Full Disk Access/.test(e.message)); }
+  finally { fs.chmodSync(locked, 0o600); }
 });

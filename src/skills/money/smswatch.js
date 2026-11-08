@@ -43,7 +43,12 @@ export function readNewSms({ chatDb = CHAT_DB, cursor, senders = SMS_SENDERS }) 
   let chat;
   try { chat = new DatabaseSync(chatDb, { readOnly: true }); }
   catch (e) {
-    const denied = /authori[sz]ation denied|not authori[sz]ed|operation not permitted/i.test(e.message);
+    // node:sqlite says only "unable to open database file" when macOS privacy protection refuses the file; opening it plainly
+    // tells the cases apart (EPERM: no Full Disk Access; ENOENT: no Messages database on this Mac)
+    let fsCode = null;
+    try { fs.closeSync(fs.openSync(chatDb, 'r')); } catch (fe) { fsCode = fe.code; }
+    const denied = fsCode === 'EPERM' || fsCode === 'EACCES' || /authori[sz]ation denied|not authori[sz]ed|operation not permitted/i.test(e.message);
+    if (fsCode === 'ENOENT') { const err = new Error('no Messages database on this Mac (~/Library/Messages/chat.db): turn on Text Message Forwarding for this Mac on the iPhone'); err.code = 'NO_CHAT_DB'; throw err; }
     const err = new Error(denied
       ? 'cannot read the Messages database: the app running the hub has no Full Disk Access (System Settings > Privacy & Security > Full Disk Access; Terminal if the hub is started from Terminal), then restart the hub from there'
       : `cannot open the Messages database (${e.message})`);
