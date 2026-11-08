@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.4 — 2026-11-08
+- Fix, hub: the language-brain fallback never ran. `route()` in `src/intents/router.js` took one argument while `app.js` passed a
+  second (`{ fast }` for Siri's shorter timeout), so `fast` was undeclared and every question the grammar did not match threw
+  "fast is not defined" before the classifier was called; the app then said "I couldn't reach my language brain", which was not
+  true. Since 27 Oct (commit e03b4fe) no free-text ask from any client reached the model. Found by the 8 Nov engineering and AI
+  reviews of the v1.0.0 assessment (`docs/reviews/2026-11-08-platform-v1-bj-review.md`). Now `route(text, { fast })`, with a test
+  that drives a stub brain through a grammar miss (the old test passed `brain: null`, so it could never see this).
+
 ## 0.6.3 — 2026-11-08
 - Tooling: `scripts/autopush.sh`, a plain shell script launchd runs every ten minutes (`scripts/install-autopush.sh`,
   `launchd/com.tpcl.kitt-autopush.plist`): when GitHub is reachable it pushes committed work on `main` to the private repository

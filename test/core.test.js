@@ -62,6 +62,24 @@ test('intent normalization, templates, and routing without a brain', async () =>
   assert.equal((await r.route('kitt tell me a joke')).intent, 'unknown');
 });
 
+test('intent router: a grammar miss reaches the brain, and Siri gets the short timeout (0.6.4)', async () => {
+  // Before 0.6.4 route() took one argument while app.js passed { fast }, so `fast` was undeclared and every grammar miss threw
+  // "fast is not defined" before classify() ran; the brain never saw a single real question from a client (27 Oct to 8 Nov 2026).
+  const calls = [];
+  const brain = { classify: async (text, catalog, opts) => { calls.push({ text, n: catalog.length, ...opts }); return { skill: 'money', intent: 'position', slots: {}, confidence: 0.9 }; } };
+  const skills = [{ id: 'money', intents: [{ name: 'position', patterns: ['cash position'] }] }];
+  const r = createIntentRouter({ skills, brain });
+  const a = await r.route('kitt how much money do I have left this month');
+  assert.equal(a.via, 'llm'); assert.equal(a.intent, 'position'); assert.equal(a.confidence, 0.9);
+  assert.equal(calls.length, 1); assert.equal(calls[0].timeoutMs, 45000); assert.equal(calls[0].n, 1);
+  const b = await r.route('kitt what is waiting on me', { fast: true });
+  assert.equal(b.via, 'llm'); assert.equal(calls[1].timeoutMs, 15000);
+  // a brain that fails still yields an honest llm-error with the reason, never a thrown exception
+  const broken = createIntentRouter({ skills, brain: { classify: async () => { throw Object.assign(new Error('offline'), { kind: 'network' }); } } });
+  const c = await broken.route('kitt something the grammar does not know');
+  assert.equal(c.via, 'llm-error'); assert.equal(c.error, 'offline'); assert.equal(c.kind, 'network');
+});
+
 test('env parsing, tokens, rate limiter, redaction', () => {
   const env = parseEnvFile('# c\nA=1\nexport B="two words"\nC=\'x=y\'\nbad line\n');
   assert.deepEqual(env, { A: '1', B: 'two words', C: 'x=y' });

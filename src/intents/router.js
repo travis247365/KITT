@@ -58,7 +58,9 @@ export function createIntentRouter({ skills, brain, minConfidence = 0.6 }) {
     return null;
   }
 
-  async function route(text) {
+  /** `fast` (Siri's turn) shortens the classifier's timeout. Until 0.6.4 this took one argument while app.js passed two, so
+   *  `fast` was undeclared and every grammar miss threw before the brain was called (found by the 8 Nov review). */
+  async function route(text, { fast = false } = {}) {
     const norm = normalize(text);
     if (!norm) return { skill: 'kitt', intent: 'empty', slots: {}, via: 'none', norm };
     const det = matchDeterministic(norm);
