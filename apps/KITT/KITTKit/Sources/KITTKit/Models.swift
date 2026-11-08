@@ -151,3 +151,56 @@ public struct KITTReply: Decodable, Equatable, Sendable {
     /// Whether the hub answered this from its own deterministic grammar rather than a guess from the language model.
     public var ruleMatched: Bool { via == "global" || via == "pattern" }
 }
+
+
+// MARK: Skill views
+
+/// `GET /v1/skills/{id}/view`: the skill's own view object under `view`.
+public struct SkillViewResponse<V: Decodable & Sendable>: Decodable, Sendable {
+    public let id: String
+    public let view: V
+}
+
+/// The Money skill's view (`src/skills/money/index.js` → `view()`), as much of it as the apps read.
+public struct MoneyView: Decodable, Equatable, Sendable {
+    public struct Balance: Decodable, Equatable, Sendable {
+        public let wallet: String
+        public let balance: Double?
+        public let asOf: String?
+    }
+    public struct Window: Decodable, Equatable, Sendable {
+        public let s: Double
+        public let n: Int
+    }
+    public struct Tx: Decodable, Equatable, Sendable {
+        public let ts: String
+        public let direction: String?
+        public let amount: Double?
+        public let fee: Double?
+    }
+
+    public let balances: [Balance]
+    public let spend7d: Window?
+    public let spend30d: Window?
+    public let income30d: Window?
+    public let recent: [Tx]
+
+    /// Every wallet's last known balance added up (the hub keeps one balance per wallet).
+    public var cashTotal: Double { balances.reduce(0) { $0 + ($1.balance ?? 0) } }
+
+    /// The newest `as_of` among the balances.
+    public var cashAsOf: Date? { balances.compactMap { $0.asOf.flatMap(KITTState.parseDate) }.max() }
+
+    /// Debits per day over the last `days` days, oldest first, from the newest transactions the hub sends (50): a sparkline, not a ledger.
+    public func dailyDebits(days: Int = 14, now: Date = Date(), calendar: Calendar = .current) -> [Double] {
+        var out = Array(repeating: 0.0, count: days)
+        let start = calendar.startOfDay(for: now)
+        for tx in recent where tx.direction == "out" {
+            guard let d = KITTState.parseDate(tx.ts) else { continue }
+            let back = calendar.dateComponents([.day], from: calendar.startOfDay(for: d), to: start).day ?? 0
+            guard back >= 0, back < days else { continue }
+            out[days - 1 - back] += (tx.amount ?? 0) + (tx.fee ?? 0)
+        }
+        return out
+    }
+}

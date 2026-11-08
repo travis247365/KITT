@@ -6,8 +6,8 @@ options:
 # One version for every app (the hub's package.json carries the same number): bump both together, see CHANGELOG.md.
 settings:
   base:
-    MARKETING_VERSION: "0.5.1"
-    CURRENT_PROJECT_VERSION: "7"
+    MARKETING_VERSION: "0.6.0"
+    CURRENT_PROJECT_VERSION: "8"
 packages:
   KITTKit:
     path: KITTKit
@@ -34,10 +34,11 @@ targets:
       - target: KITTWidgets
     settings:
       base:
-        # CarPlay audio needs Apple to approve the entitlement for this App ID. Until then it is applied to simulator builds only
-        # (a device build with an unapproved entitlement cannot be signed). After approval, set KITT_CARPLAY_ENTITLEMENTS=Config/KITTCar.entitlements in Config/Signing.local.xcconfig.
+        # Device builds: the App Group the widgets read (Config/KITT.entitlements). CarPlay audio needs Apple to approve the entitlement
+        # for this App ID; until then it is in the simulator file only (a device build with an unapproved entitlement cannot be signed).
+        # After approval, add com.apple.developer.carplay-audio to Config/KITT.entitlements as well.
         "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/KITTCar.entitlements
-        "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": $(KITT_CARPLAY_ENTITLEMENTS)
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": Config/KITT.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: com.tpcl.kitt
         PRODUCT_NAME: KITT
         SWIFT_VERSION: "6.0"
@@ -115,6 +116,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Kitt
         CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Config/KITTWidgets.entitlements
         SKIP_INSTALL: YES
     info:
       path: KITTWidgets/Info.plist

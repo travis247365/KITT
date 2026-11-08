@@ -61,6 +61,12 @@ public actor HubClient {
         try await request(path: "v1/state", method: "GET", body: Optional<EmptyBody>.none)
     }
 
+    /// The Money skill's view: wallet balances, spend windows and the newest transactions (the Cash widget).
+    public func moneyView() async throws -> MoneyView {
+        let response: SkillViewResponse<MoneyView> = try await request(path: "v1/skills/money/view", method: "GET", body: Optional<EmptyBody>.none)
+        return response.view
+    }
+
     /// The brief episodes, newest first.
     public func episodes() async throws -> [Episode] {
         let response: EpisodesResponse = try await request(path: "v1/episodes", method: "GET", body: Optional<EmptyBody>.none)

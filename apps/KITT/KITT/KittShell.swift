@@ -3,6 +3,9 @@ import AVFoundation
 import Combine
 import Foundation
 import KITTKit
+#if os(iOS)
+import WidgetKit
+#endif
 
 /// What sits around the designed surface in the iPhone, iPad and Mac apps: the phone's microphone and voice for "Talk to Kitt",
 /// the brief player, the Lock Screen card, and the two native screens the page asks for (connection, hub console).
@@ -21,6 +24,11 @@ final class KittShell: ObservableObject {
     private var subscriptions = Set<AnyCancellable>()
     private var wasListening = false
     private var attached = false
+    #if os(iOS)
+    private var moneyView: MoneyView?
+    private var moneyFetchedAt: Date?
+    private var lastSnapshot: KittWidgetSnapshot?
+    #endif
 
     func attach(_ model: AppModel) {
         guard !attached else { return }
@@ -154,6 +162,34 @@ final class KittShell: ObservableObject {
         guard model.isConnected else { KittActivityManager.shared.end(); return }
         let p = CarPlayer.shared
         KittActivityManager.shared.sync(state: model.state, offline: model.isOffline, playing: p.isPlaying, briefTitle: p.current == nil ? nil : p.title, hub: model.baseURL)
+        refreshMoneyIfStale()
+        writeWidgetSnapshot()
+    }
+
+    /// The Cash widget's figures, from the Money skill's view, at most every five minutes.
+    private func refreshMoneyIfStale() {
+        if let at = moneyFetchedAt, Date().timeIntervalSince(at) < 300 { return }
+        guard let client = HubAccess.makeClient() else { return }
+        moneyFetchedAt = Date()
+        Task { @MainActor in
+            if let view = try? await client.moneyView() { moneyView = view; writeWidgetSnapshot() }
+        }
+    }
+
+    /// The home-screen and Lock Screen widgets read this file from the App Group; written only when something changed.
+    private func writeWidgetSnapshot() {
+        guard let model, let state = model.state else { return }
+        let g = state.glance(offline: model.isOffline)
+        let brief = BriefStore.standard.episodes().first
+        let snap = KittWidgetSnapshot(
+            level: g.level.rawValue, eyebrow: g.hasPending ? "Waiting for your OK" : g.eyebrow, headline: g.hasPending ? (g.pendingSummary ?? g.headline) : g.headline, detail: g.sub,
+            pending: g.hasPending ? 1 : 0, actionable: g.tiles.filter(\.needsAttention).count, critical: g.level == .critical,
+            cashTotal: moneyView?.cashTotal, spendDaily: moneyView?.dailyDebits() ?? [], cashAsOf: moneyView?.cashAsOf,
+            briefTitle: brief.map { $0.isEvening ? "Evening recap" : "Morning brief" }, briefWhen: brief?.date, briefDurationS: brief?.durationS, updatedAt: Date()
+        )
+        guard snap.withoutTime != lastSnapshot?.withoutTime else { return }
+        lastSnapshot = snap
+        do { try snap.save(); WidgetCenter.shared.reloadAllTimelines() } catch { /* the widgets keep their last snapshot */ }
     }
     #endif
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0 — 2026-11-08
+- **Widgets** (iPhone, iPad), in the design of the mockups' widget row: **Now** (the number that needs you, a decision waiting or
+  skills to review, with the status; small on the home screen, and on the Lock Screen as the circular count, the rectangular
+  headline and the inline line), **Cash** (the position across wallets, a 14-day spend sparkline, the Measured mark and how old
+  the balances are; small and medium) and **Brief** (the newest brief, the hub's headline and a Play button that starts it
+  without opening the app; medium). Tapping a widget opens the app on its home surface. The app writes what they show into an
+  App Group (`group.com.tpcl.kitt`) whenever its state refreshes, and the Cash figures come from the Money skill's view at most
+  every five minutes; the widgets never see the hub or the token. A widget placed before the app has run once says so.
+- Hub client: a typed `moneyView()` (balances, spend windows, newest transactions). Entitlements: device builds now carry
+  `Config/KITT.entitlements` (the App Group; the CarPlay key is added there after Apple's approval), the widget extension
+  `Config/KITTWidgets.entitlements`.
+- The Mac and the Apple TV have no widgets of this kind; they carry the version only.
+
 ## 0.5.1 — 2026-11-08
 - Fix, CarPlay: the Briefs rows handed the car a raw 600 px image to scale; they now draw the artwork once at the size and scale
   the connected head unit reports (`CPListItem.maximumImageSize` × the car's `displayScale`), so it is sharp on the truck's 9-inch

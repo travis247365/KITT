@@ -7,7 +7,12 @@ import WidgetKit
 /// void black, cyan, square corners): the hub's headline, then Open · Talk · Brief where a music app has back · play · next.
 @main
 struct KittWidgets: WidgetBundle {
-    var body: some Widget { KittLiveActivity() }
+    var body: some Widget {
+        KittNowWidget()
+        KittCashWidget()
+        KittBriefWidget()
+        KittLiveActivity()
+    }
 }
 
 enum Palette {

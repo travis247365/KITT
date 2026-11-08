@@ -12,7 +12,7 @@ control is the artwork: the list rows draw it at the size and scale the connecte
 
 What can be seen in the truck today, with no entitlement: Now Playing (the brief playing, artwork, play/pause, ±15 s, the
 steering-wheel buttons) and Siri. The Kitt tabs on the car screen (Briefs · Now · Ask) appear only after the CarPlay audio
-entitlement is approved (next section) and `KITT_CARPLAY_ENTITLEMENTS` points at the entitlements file. This Mac's Xcode has no
+entitlement is approved (next section) and `com.apple.developer.carplay-audio` is added to `Config/KITT.entitlements`. This Mac's Xcode has no
 Simulator app, so the CarPlay simulator window cannot be used here; the first look at the tabs will be in the truck.
 
 ## 1. Now Playing + Siri (works now)
@@ -69,7 +69,7 @@ CarPlay audio needs an entitlement Apple must approve for the App ID `com.tpcl.k
    reinstalled (`ONLY=iphone bash scripts/uat-install.sh`, phone plugged in and unlocked).
 1. Request it at developer.apple.com/contact/carplay (category: **Audio**). Apple reviews the use case; allow weeks.
 2. When approved, add the CarPlay (Audio) capability to the App ID and regenerate the provisioning profile.
-3. Put `KITT_CARPLAY_ENTITLEMENTS = Config/KITTCar.entitlements` in `apps/KITT/Config/Signing.local.xcconfig`.
+3. Add `com.apple.developer.carplay-audio` (true) to `apps/KITT/Config/KITT.entitlements` (the simulator file `KITTCar.entitlements` already has it).
 
 Until then the entitlement is applied to **simulator builds only**; a device build with an unapproved entitlement cannot be signed, so the
 iPhone install keeps working, and the Now Playing + Siri path above is what you get in the car.

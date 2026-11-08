@@ -14,6 +14,7 @@ The app:
 - Holds the hub address and the app token (device Keychain); the surface never shows its own Connect form inside the app
 - Shows "Hub unreachable" with Try again and Connection when the hub cannot be reached (home network, or a tunnel)
 - Explicit Confirm and Cancel for pending actions, on the surface and in the console
+- Home-screen and Lock Screen widgets (Now, Cash, Brief; `KITTWidgets/KittHomeWidgets.swift`, 0.6.0), fed by a snapshot the app writes into the App Group `group.com.tpcl.kitt`
 
 The app uses the hub's limited `KITT_APP_TOKEN` scope. It does not store a full Mac token and does not put tokens in URLs.
 The token is currently entered manually; per-device QR pairing and token revocation require the planned hub `/v1/pair` work.
