@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { HubClient, HubError, loadConn, saveConn, servedByHub, type AskReply, type AuditRow, type Episode, type HubConn, type HubState, type PendingAction, type SkillViewResponse } from './hub';
 import { HEADLINE_SKILLS } from './model';
+import { SKILLS } from './data';
 
 export type LiveStatus = 'unset' | 'connecting' | 'online' | 'offline';
 export interface Talk { phase: 'idle' | 'thinking' | 'answer'; text: string; reply: AskReply | null; error?: string }
@@ -85,7 +86,8 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   // the headline skills feed the Now screen and the TV tiles: refreshed every minute while online
   useEffect(() => {
     if (status !== 'online' || !state) return;
-    const ids = HEADLINE_SKILLS.filter((id) => state.skills[id]);
+    const known = new Set<string>(SKILLS.map((s) => s.id));   // plus every skill the hub runs that has no designed screen here
+    const ids = [...HEADLINE_SKILLS.filter((id) => state.skills[id]), ...Object.keys(state.skills).filter((id) => !known.has(id))];
     void Promise.allSettled(ids.map((id) => loadView(id)));
   }, [status, state, loadView]);
 

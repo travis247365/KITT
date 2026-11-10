@@ -130,3 +130,12 @@ const ideas = (w: World): SkillView => ({ id: 'ideas', headline: `${plural(w.ide
 
 const BUILDERS: Record<SkillId, (w: World) => SkillView> = { money, subscriptions: subs, security, chief, receptionist: inbox, whatsapp, trips, comments, collab, linktree: links, shoplog, ideas };
 export const skillView = (id: SkillId, w: World): SkillView => BUILDERS[id](w);
+
+/** The screen for any skill id: a designed builder for the twelve, else the descriptor the hub sent (World.extra); null if neither. */
+export const viewFor = (id: string, w: World): SkillView | null => {
+  const b = (BUILDERS as Record<string, (w: World) => SkillView>)[id];
+  if (b) return b(w);
+  const x = w.extra?.find((e) => e.id === id); if (!x) return null;
+  const sections = (x.ui?.sections ?? []).filter((s): s is Section => typeof s === 'object' && s !== null && typeof (s as { type?: unknown }).type === 'string');
+  return { id: id as SkillId, headline: x.ui?.headline || x.headline, sections: sections.length ? sections : [{ type: 'notice', tone: 'info', text: x.detail || 'The hub sent no screen for this skill yet.' }] };
+};

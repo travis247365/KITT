@@ -24,6 +24,15 @@ export const SKILLS: SkillMeta[] = [
 ];
 export const skillMeta = (id: SkillId) => SKILLS.find((s) => s.id === id)!;
 
+/** A skill the hub runs that this app has no designed screen for (the thirteenth onwards): the hub's `view` carries a `ui`
+ *  descriptor ({ headline, sections, icon? }) and the same renderer draws it, so a new skill appears without an app release. */
+export interface ExtraSkill { id: string; name: string; blurb: string; icon: IconName; ok: boolean; detail?: string; headline: string; ui?: { headline: string; sections: unknown[] } }
+export const metaFor = (id: string, extra?: ExtraSkill[]): SkillMeta => {
+  const known = SKILLS.find((s) => s.id === id); if (known) return known;
+  const x = extra?.find((e) => e.id === id);
+  return { id: id as SkillId, name: x?.name ?? id, icon: x?.icon ?? 'flag', blurb: x?.blurb ?? '' };
+};
+
 export type ScenarioId = 'morning' | 'pending' | 'critical' | 'offline' | 'quiet';
 export const SCENARIOS: { id: ScenarioId; label: string; hint: string }[] = [
   { id: 'morning', label: 'Morning', hint: 'Normal day: one medium finding, items overdue' },
@@ -62,6 +71,8 @@ export interface World {
   links: LinkItem[]; shoplog: { kind: string; title: string; status: 'public' | 'private'; when: string }[]; ideas: Idea[];
   hub: { coverage: number; onAc: number; siri: number; brainSec: number; routinesOk: number; routinesTotal: number; spark: number[]; version?: string; brainOk?: boolean; brainDetail?: string };
   pending: Pending | null; audit: { ts: string; source: string; intent: string; outcome: string }[];
+  /** Live only: skills the hub runs beyond the twelve designed ones, with the screen descriptor each sent. */
+  extra?: ExtraSkill[];
   /** True when the world is the hub's own data (src/liveWorld.ts), not the synthetic scenario. */
   live?: boolean;
   /** Live only: each skill's health as the hub reports it; a red skill outranks its own quiet data. */

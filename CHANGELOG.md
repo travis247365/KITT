@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.0 — 2026-11-10
+- Feature, skill 13 **Jobs**: the state of your job applications on every device, with no model and no API key. It reads the
+  tracker AppyJobHunter keeps (`jobs.tracker` in `kitt.json`, the markdown file in the Career Applications folder) and the
+  application mail the Receptionist has already stored on this Mac (portal senders, LinkedIn message notifications, and people
+  writing about an employer the tracker knows; sender and subject only, bodies never read). Ask "job status", "what's closing",
+  "job decisions", "any job replies"; say "Kit, new job <link>" (or `POST /v1/jobs/link`) to queue a posting in
+  `00_KITT_LINKS.md` next to the tracker for AppyJobHunter to triage and pack. The morning brief gets a Jobs line (closing dates
+  within 7 days, packs ready and sent, mail this week, decisions waiting); the evening recap speaks only when something closes
+  within 2 days or application mail arrived today. KITT never sends an application. Tests: `test/skills/jobs.test.js`.
+- Apps: any skill the hub runs beyond the twelve designed ones now draws itself from the `ui` descriptor its view returns
+  (`docs/SKILL_CONTRACT.md`): a card on the Now board, a tile in Skills, the full screen on iPhone, iPad, Mac and TV, without an
+  app release. Jobs is the first.
+
 ## 0.6.5 — 2026-11-09
 - Fix, security (GRC audit 8 Nov, R1): the hub no longer listens on every network the laptop joins. It had been on all interfaces
   since `scripts/uat-lan.sh on` (the setting never ended), with the macOS firewall off. So anyone on the same home, office or hotel

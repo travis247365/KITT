@@ -3,6 +3,7 @@
 // (src/skills/*/index.js in the hub) with tolerant fallbacks for the ones that vary.
 import { SKILLS, type Device, type Finding, type Idea, type LinkItem, type Pending, type SkillId, type Tx, type World } from './data';
 import type { Prov } from './kit';
+import { ICON_NAMES, type IconName } from './icons';
 import type { Live } from './live';
 import { coveragePct, first, firstNum, firstStr, fmtDay, fmtTime, fmtWhen, isObj, levelOf, num, objs, parseDate, str, type Obj } from './model';
 
@@ -114,6 +115,14 @@ export function buildLiveWorld(live: Live): World {
   } : null;
   const audit = live.audit.slice(0, 12).map((a) => ({ ts: fmtWhen(a.ts, tz, now), source: a.source, intent: [a.skill, a.intent].filter(Boolean).join('.') || a.outcome, outcome: a.outcome }));
 
+  // Skills the hub runs that have no designed screen here: name and health from the state, the screen from the view's `ui`.
+  const extra = Object.entries(st?.skills ?? {}).filter(([id]) => !SKILL_IDS.includes(id)).map(([id, raw]) => {
+    const h = (isObj(raw) ? raw : {}) as Obj; const v = view(live, id); const ui = isObj(v.ui) ? (v.ui as Obj) : undefined; const icon = str(ui?.icon);
+    const ok = h.ok !== false;
+    return { id, name: str(h.name) || id, blurb: str(h.description), icon: (ICON_NAMES.has(icon) ? icon : 'flag') as IconName, ok, detail: str(h.detail) || undefined,
+      headline: str(ui?.headline) || (ok ? 'Open to see the details' : 'Needs attention'), ui: ui ? { headline: str(ui.headline), sections: Array.isArray(ui.sections) ? ui.sections : [] } : undefined };
+  });
+
   return {
     scenario: 'morning', offline, asOf, clock: fmtTime(nowIso, tz), date: fmtDay(nowIso, tz),
     wallets, cashTotal, txs, spendDaily: daily, spend7: num(m.spend_7d), spend30: num(m.spend_30d), income30: num(m.income_30d), categories, unparsed: num(m.unparsed),
@@ -122,6 +131,6 @@ export function buildLiveWorld(live: Live): World {
     board: { overdue, blocked, dueSoon, incidents: objs(ch.incidents).length, approvals: objs(ch.approvals).length },
     inbox: { needsReply, fyi, receipts, events, drafts, sample },
     wa: { unread, online },
-    concerts, trip, comments, collab, links, shoplog, ideas, hub, pending, audit, live: true, health,
+    concerts, trip, comments, collab, links, shoplog, ideas, hub, pending, audit, live: true, health, extra,
   };
 }

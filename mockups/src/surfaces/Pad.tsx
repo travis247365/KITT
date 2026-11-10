@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Icon } from '../icons';
 import { Kpis, KMark, Seg } from '../kit';
-import { skillMeta, zmw, type SkillId } from '../data';
+import { metaFor, zmw, type SkillId } from '../data';
 import { buildCards } from '../engine';
 import { SkillScreen } from '../renderer';
-import { skillView } from '../views';
+import { viewFor } from '../views';
 import { useStore } from '../state';
 import { HubHealth, StackCard, TalkPanel } from './shared';
 import { LiveSettings } from '../app/connect';
 
-type Sel = 'now' | 'hub' | SkillId;
+type Sel = 'now' | 'hub' | (string & {});   // a skill id, the twelve designed ones or any the hub adds
 
 export function Pad({ initialSel = 'now' }: { initialSel?: Sel }) {
   const { state, world, themeFor, layoutFor, set, say, act, dismissTalk } = useStore();
@@ -17,6 +17,7 @@ export function Pad({ initialSel = 'now' }: { initialSel?: Sel }) {
   const cards = useMemo(() => buildCards(world), [world]);
   const [sel, setSel] = useState<Sel>(initialSel);
   const skillCards = cards.filter((c) => c.skill !== 'confirm');
+  const selView = sel !== 'now' && sel !== 'hub' ? viewFor(sel, world) : null;
   const glance = layout === 'glance';
 
   useEffect(() => {
@@ -60,14 +61,14 @@ export function Pad({ initialSel = 'now' }: { initialSel?: Sel }) {
           <div style={{ display: 'grid', gap: 12 }}>
             <span className="accent-block" />
             <div>
-              <p className="eyebrow muted">{sel === 'now' ? `${world.date} · ${world.clock}` : sel === 'hub' ? 'Hub' : skillMeta(sel).name}</p>
-              <h1 className="t-title" style={{ marginTop: 8 }}>{sel === 'now' ? <>Priority <b>board</b></> : sel === 'hub' ? <b>Connection</b> : <b>{skillView(sel, world).headline}</b>}</h1>
+              <p className="eyebrow muted">{sel === 'now' ? `${world.date} · ${world.clock}` : sel === 'hub' ? 'Hub' : metaFor(sel, world.extra).name}</p>
+              <h1 className="t-title" style={{ marginTop: 8 }}>{sel === 'now' ? <>Priority <b>board</b></> : sel === 'hub' ? <b>Connection</b> : <b>{selView?.headline ?? metaFor(sel, world.extra).name}</b>}</h1>
             </div>
           </div>
           <Seg<'desk' | 'glance'> label="Density" value={glance ? 'glance' : 'desk'} onChange={(v) => set({ layout: v })} options={[{ value: 'desk', label: 'Desk' }, { value: 'glance', label: 'Glance' }]} />
         </header>
         {world.offline && <div className="notice" style={{ marginBottom: 16 }}><Icon name="off" size={18} /><span>Hub unreachable since {world.asOf}. Reads come from the cached copy; writes are disabled.</span></div>}
-        {sel === 'now' ? <NowBoard cards={cards} glance={glance} open={(s) => setSel(s)} /> : sel === 'hub' ? <div style={{ maxWidth: 640 }}><LiveSettings /></div> : <SkillScreen view={skillView(sel, world)} density={glance ? 'glance' : 'desk'} onSay={(t) => say(t, 'pad')} />}
+        {sel === 'now' ? <NowBoard cards={cards} glance={glance} open={(s) => setSel(s)} /> : sel === 'hub' ? <div style={{ maxWidth: 640 }}><LiveSettings /></div> : selView ? <SkillScreen view={selView} density={glance ? 'glance' : 'desk'} onSay={(t) => say(t, 'pad')} /> : <p className="t-body muted">This skill is not available right now.</p>}
       </main>
 
       <aside className="pd-inspect">

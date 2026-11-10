@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { nativePost, onNative } from '../native';
 import { Icon, type IconName } from '../icons';
 import { Btn, KMark, ProvChip, Scanner, Seg } from '../kit';
-import { SCENARIOS, skillMeta, type SkillId } from '../data';
+import { SCENARIOS, metaFor, type SkillId } from '../data';
 import { buildCards, type Layout, type LayoutPref } from '../engine';
 import { SkillScreen } from '../renderer';
-import { skillView } from '../views';
+import { viewFor } from '../views';
 import { speak, stopSpeaking } from '../speech';
 import { useStore, type Appearance } from '../state';
 import { HubHealth, StackCard, Switch, TalkPanel, briefItems } from './shared';
@@ -19,11 +19,11 @@ export function Phone({ bleed = false, initialTab = 'now', initialSkill = null, 
   const theme = themeFor('phone'); const layout = layoutProp ?? layoutFor('phone');
   const cards = useMemo(() => buildCards(world), [world]);
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [skill, setSkill] = useState<SkillId | null>(initialSkill);
+  const [skill, setSkill] = useState<string | null>(initialSkill);
   const [sheet, setSheet] = useState(openTalk);
   useEffect(() => onNative('kitt:listening', () => setSheet(true)), []);
   const talkActive = state.talk.device === 'phone' && state.talk.phase !== 'idle';
-  const open = (s: SkillId) => { setSkill(s); setTab('skills'); };
+  const open = (s: string) => { setSkill(s); setTab('skills'); };
   const close = () => { dismissTalk(); setSheet(false); };
   useEffect(() => () => stopSpeaking(), []);
 
@@ -122,10 +122,11 @@ function BriefsTab({ cards }: { cards: ReturnType<typeof buildCards> }) {
   );
 }
 
-function SkillsTab({ cards, skill, setSkill }: { cards: ReturnType<typeof buildCards>; skill: SkillId | null; setSkill: (s: SkillId | null) => void }) {
+function SkillsTab({ cards, skill, setSkill }: { cards: ReturnType<typeof buildCards>; skill: string | null; setSkill: (s: string | null) => void }) {
   const { world, say } = useStore();
   if (skill) {
-    const v = skillView(skill, world); const m = skillMeta(skill);
+    const v = viewFor(skill, world); const m = metaFor(skill, world.extra);
+    if (!v) return <p className="t-body muted" style={{ padding: 16 }}>This skill is not available right now.</p>;
     return (
       <>
         <div className="subhdr"><button type="button" className="back-btn" onClick={() => setSkill(null)}><Icon name="left" size={20} />Skills</button></div>
@@ -136,10 +137,10 @@ function SkillsTab({ cards, skill, setSkill }: { cards: ReturnType<typeof buildC
   }
   return (
     <>
-      <header className="hdr"><div className="hdr-l"><span className="accent-block" /><h1 className="t-title">All <b>twelve</b> skills</h1></div></header>
+      <header className="hdr"><div className="hdr-l"><span className="accent-block" /><h1 className="t-title">All <b>{cards.filter((c) => c.skill !== 'confirm').length}</b> skills</h1></div></header>
       <div className="tiles">
         {cards.filter((c) => c.skill !== 'confirm').map((c) => (
-          <button type="button" className="tile" key={c.id} onClick={() => setSkill(c.skill as SkillId)}>
+          <button type="button" className="tile" key={c.id} onClick={() => setSkill(c.skill)}>
             {c.level >= 2 && <span className="badge" aria-label="needs attention">!</span>}
             <Icon name={c.icon} size={24} />
             <span><span className="tile-name" style={{ display: 'block' }}>{c.eyebrow}</span><span className="tile-sub" style={{ display: 'block', marginTop: 4 }}>{c.headline}</span></span>

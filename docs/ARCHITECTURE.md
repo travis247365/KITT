@@ -17,7 +17,7 @@ through Siri Shortcuts, and fed by scheduled routines. "Hybrid" means: **determi
 │ brain      → `claude -p` (Max plan, haiku, ~1.4k-token context, serialised) · optional Anthropic API fallback     │
 │ services   → gmail (Composio), calendar (Composio), cli (gh/vercel/flyctl), mcp-oauth (Linktree), composio CLI     │
 │ storage    → SQLite (node:sqlite) at ~/.local/share/kitt/kitt.sqlite · secrets ~/.config/kitt/kitt.env (0600)    │
-│ skills/    receptionist money whatsapp ideas chief comments collab linktree shoplog trips subscriptions security   │
+│ skills/    receptionist money whatsapp ideas chief comments collab linktree shoplog trips subscriptions security jobs │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -36,6 +36,7 @@ through Siri Shortcuts, and fed by scheduled routines. "Hybrid" means: **determi
 | 10 | Trips | Spotify concert e-mails (parser in `trips/parse.js`) + Google Calendar away events | tentative calendar hold |
 | 11 | Subscriptions | Gmail receipts (merchant rules in `subscriptions/rules.js`), FX from open.er-api.com | none |
 | 12 | Security | `gh`, `vercel api`, `flyctl` reads, Cloudflare API (token needed), baseline diff | none |
+| 13 | Jobs | the applications tracker AppyJobHunter keeps (`jobs.tracker`, a markdown file) + application mail already in the local store | a job link appended to a queue file next to the tracker (confirmed) |
 
 ## Request lifecycle (voice)
 1. Shortcut "Kit" asks Siri for the command and POSTs `{text, source:"siri"}` with the bearer token.

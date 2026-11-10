@@ -9,6 +9,7 @@ const P = {
   wallet: 'M3 6h16v14H3z M3 10h18 M16 15h2',
   shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
   board: 'M3 4h5v16H3z M10 4h5v10h-5z M17 4h4v13h-4z',
+  briefcase: 'M3 8h18v12H3z M9 8V5h6v3 M3 13h18',
   chat: 'M4 4h16v12H9l-5 4z',
   bulb: 'M9 18h6 M10 21h4 M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z',
   comment: 'M4 5h16v11h-9l-4 4v-4H4z',
@@ -48,6 +49,7 @@ const P = {
 } as const;
 
 export type IconName = keyof typeof P;
+export const ICON_NAMES = new Set<string>(Object.keys(P));
 const FILLED = new Set<IconName>(['play', 'pause', 'skip', 'back']);
 
 export function Icon({ name, size = 20, label, strokeWidth = 2 }: { name: IconName; size?: number; label?: string; strokeWidth?: number }) {

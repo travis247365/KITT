@@ -29,6 +29,28 @@ export default function define(ctx) {
 }
 ```
 
+## The screen (`view()` and its `ui` block)
+
+`GET /v1/skills/<id>/view` returns whatever `view()` gives, plus the skill's name, health, intents and routines. The twelve
+original skills have designed screens in the apps; any other skill draws itself by returning a **`ui` descriptor** inside its view:
+
+```js
+async view() { return { ...data, ui: { icon: 'briefcase', headline: 'Acme closes in 3 days', sections: [
+  { type: 'kpis', cols: 2, items: [{ label: 'Packs built', value: '4', sub: '1 sent', prov: 'measured' }] },
+  { type: 'list', title: 'Decisions', empty: 'None.', rows: [{ title: '1. Notice period', level: 'medium' }] },
+  { type: 'table', title: 'Packs', cols: [{ key: 'r', label: 'Role' }], rows: [{ r: 'Director Consulting' }] },
+  { type: 'timeline', items: [{ time: '2026-11-13', title: 'Acme', sub: 'in 3 days' }] },
+  { type: 'notice', tone: 'info', text: 'Where the numbers come from.' },
+  { type: 'actions', items: [{ label: 'Read my status', utterance: 'job status', kind: 'primary' }] },
+] } }; }
+```
+
+Section types: `kpis`, `list`, `table`, `bars`, `line`, `timeline`, `notice`, `actions` (`mockups/src/views.ts` is the schema; row
+`level` is `critical | high | medium | low | info`; `prov` is `measured | modelled | assumed`). The phone, iPad, Mac and TV surfaces
+render it with the same renderer as the designed screens, and the Now board gets a card from the headline and the health, so a new
+skill appears on every device without an app release. `icon` is one of the app's icon names (`mockups/src/icons.tsx`); unknown
+names fall back to a flag.
+
 ## The context object (`ctx`)
 `db` (node:sqlite DatabaseSync) · `kv.get/set/del/list(ns,key)` · `config` · `secrets` (never log) · `paths` · `log` ·
 `brain.speak(prompt)`, `brain.extract(prompt, schema)`, `brain.classify` · `notifier.push/email` · `composio.execute(slug, params)` ·

@@ -76,6 +76,13 @@ export function buildCards(w: World): CardModel[] {
   push({ id: 'linktree', skill: 'linktree', level: 0, prov: 'measured', headline: `${w.links.filter((l) => !l.hidden).length} links live`, sub: w.links[0] ? `Top link: ${w.links[0].title}` : 'Link page not synced yet', speak: `Link page has ${w.links.length} links.`, base: 2, bumps: [] });
   push({ id: 'shoplog', skill: 'shoplog', level: 0, headline: `${w.shoplog.length} entries this week`, sub: `${w.shoplog.filter((e) => e.status === 'private').length} still private`, speak: 'Shop log has entries waiting to be published.', base: 1, bumps: [] });
 
+  // skills the hub runs beyond the twelve designed ones: a card each, drawn from the hub's own headline and health
+  for (const x of w.extra ?? []) {
+    const red = !x.ok; const detail = (x.detail || 'the skill reported a problem').replace(/\s+/g, ' ');
+    cards.push({ id: x.id, skill: x.id as SkillId, icon: x.icon, eyebrow: x.name, headline: x.headline, sub: red ? `Needs attention: ${detail.length > 140 ? `${detail.slice(0, 140)}…` : detail}` : (x.blurb || 'Open to see the details'),
+      speak: `${x.name}: ${x.headline}.`, prov: 'measured', level: red ? 2 : 1, score: red ? 45 : 7, why: [red ? '45 skill health is red' : '7 base, a skill without a designed card'], stale });
+  }
+
   return cards.sort((a, b) => b.score - a.score);
 }
 
