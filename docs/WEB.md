@@ -62,9 +62,10 @@ webOS television browser cannot run the web app (it targets 2019+ browsers, `es2
 
 ## Deploying the hosted copy
 
-`npx vercel --prod` from the repository root (the project is linked in `.vercel/`, root directory `mockups`). Pushes to the repository
-also deploy, provided the commit author's e-mail belongs to a member of the Vercel team: Vercel blocks a deployment whose author it
-cannot match, which is why this repository's git identity is the GitHub no-reply address.
+`npx vercel --prod` from the repository root (the project is linked in `.vercel/`, root directory `mockups`), run only with the owner's
+approval of that version. Since 0.7.1 a push to `main` does **not** deploy production (`git.deploymentEnabled.main = false` in
+`mockups/vercel.json`); pushes to other branches still build previews, provided the commit author's e-mail belongs to a member of the
+Vercel team, which is why this repository's git identity is the GitHub no-reply address.
 
 The root `.vercelignore` uploads only `mockups/` and strips everything else, `.git` included, so a Vercel "ignored build step" that runs
-`git diff` can never work here (it exits 129 and the deployment errors, as every push did until 0.3.1). Every push builds instead.
+`git diff` can never work here (it exits 129 and the deployment errors, as every push did until 0.3.1). Every push to a branch other than `main` builds a preview instead.

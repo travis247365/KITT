@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 — 2026-11-11
+- Fix (8 Nov GRC finding R7): a git push no longer deploys the web app to Vercel production. `mockups/vercel.json` sets
+  `git.deploymentEnabled.main = false`; production changes only through `npx vercel --prod` run with the owner's approval of
+  that version. Pushes to other branches still build previews. `docs/WEB.md` updated.
+
 ## 0.7.0 — 2026-11-10
 - Feature, skill 13 **Jobs**: the state of your job applications on every device, with no model and no API key. It reads the
   tracker AppyJobHunter keeps (`jobs.tracker` in `kitt.json`, the markdown file in the Career Applications folder) and the

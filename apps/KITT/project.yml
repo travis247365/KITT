@@ -6,7 +6,7 @@ options:
 # One version for every app (the hub's package.json carries the same number): bump both together, see CHANGELOG.md.
 settings:
   base:
-    MARKETING_VERSION: "0.7.0"
+    MARKETING_VERSION: "0.7.1"
     CURRENT_PROJECT_VERSION: "8"
 packages:
   KITTKit:
