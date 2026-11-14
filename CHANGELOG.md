@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2 — 2026-11-14
+- Fix: Xcode 27.2 would not open `apps/KITT/KITT.xcodeproj` ("The reference "Fonts" is a member of more than one group").
+  The tvOS target took the whole `KITTtv` folder while the iOS and Mac targets named `KITTtv/Fonts/Orbitron-Bold.ttf` on
+  its own, so XcodeGen put the Fonts group in two places. `project.yml` now excludes `Fonts` from the tvOS folder source
+  and lists `KITTtv/Fonts` separately; every target bundles the same files as before (iOS and Mac: the font; tvOS: the font
+  and its OFL licence). `package-lock.json` also catches up (it was still 0.7.0).
+
 ## 0.7.1 — 2026-11-11
 - Fix (8 Nov GRC finding R7): a git push no longer deploys the web app to Vercel production. `mockups/vercel.json` sets
   `git.deploymentEnabled.main = false`; production changes only through `npx vercel --prod` run with the owner's approval of

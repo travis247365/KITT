@@ -6,7 +6,7 @@ options:
 # One version for every app (the hub's package.json carries the same number): bump both together, see CHANGELOG.md.
 settings:
   base:
-    MARKETING_VERSION: "0.7.1"
+    MARKETING_VERSION: "0.7.2"
     CURRENT_PROJECT_VERSION: "8"
 packages:
   KITTKit:
@@ -184,7 +184,12 @@ targets:
       Release: Config/Signing.xcconfig
     deploymentTarget: "26.0"
     sources:
+      # Fonts is listed on its own (not inside the KITTtv folder) because the iOS and Mac targets also use
+      # KITTtv/Fonts/Orbitron-Bold.ttf: inside the folder it became a member of two groups, which Xcode 27.2 refuses to open.
       - path: KITTtv
+        excludes:
+          - Fonts
+      - path: KITTtv/Fonts
       - path: TvShared
       - path: KITT/AppModel.swift
       - path: KITT/KeychainTokenStore.swift
